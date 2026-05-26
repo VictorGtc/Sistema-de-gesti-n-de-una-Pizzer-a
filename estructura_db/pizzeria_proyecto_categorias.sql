@@ -16,34 +16,28 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `usuarios`
+-- Table structure for table `categorias`
 --
 
-DROP TABLE IF EXISTS `usuarios`;
+DROP TABLE IF EXISTS `categorias`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `usuarios` (
-  `id_usuario` int NOT NULL AUTO_INCREMENT,
-  `nombre_u` varchar(50) DEFAULT NULL,
-  `apellido_u` varchar(50) DEFAULT NULL,
-  `correo_u` varchar(50) DEFAULT NULL,
-  `contraseña_u` varchar(255) DEFAULT NULL,
-  `telefono_u` varchar(10) DEFAULT NULL,
-  `rol` enum('Administrador','Cocina','Mesero') DEFAULT NULL,
-  `id_pedido` int DEFAULT NULL,
-  PRIMARY KEY (`id_usuario`),
-  KEY `id_pedido` (`id_pedido`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `categorias` (
+  `id_categoria` int NOT NULL AUTO_INCREMENT,
+  `nombre_c` varchar(100) DEFAULT NULL,
+  `imagen_c` varchar(200) DEFAULT NULL,
+  PRIMARY KEY (`id_categoria`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `usuarios`
+-- Dumping data for table `categorias`
 --
 
-LOCK TABLES `usuarios` WRITE;
-/*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'Víctor','Prueba','victor@pizzeria.com','scrypt:32768:8:1$ydn5jxu0lvU66hqy$c9150dd91b63165ba5214831fcd2003347cc3178fe30f73a6a970845dfcdde09d270291943a1408ac5a249835ec258f6c0d757b409f98423bfa1dcf56648bd45','0999999999','Administrador',NULL),(2,'Carlos','Perez','carlos@pizzeria.com','scrypt:32768:8:1$P6nCOZ8G78NmWuVB$a55d5d952e8c22bf28946df1bc3bf0596a584c54746bf3857161801ed60fa060c96f08ff9fa82b8ad1b2420108ec4aa9d9dfcb3f43260e009206586d301a06ea','0987654321','Mesero',NULL);
-/*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
+LOCK TABLES `categorias` WRITE;
+/*!40000 ALTER TABLE `categorias` DISABLE KEYS */;
+INSERT INTO `categorias` VALUES (1,'pizzas','imagen_uno');
+/*!40000 ALTER TABLE `categorias` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -55,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-26 12:36:51
+-- Dump completed on 2026-05-26 12:36:52

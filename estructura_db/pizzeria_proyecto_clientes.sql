@@ -29,6 +29,7 @@ CREATE TABLE `clientes` (
   `correo_cl` varchar(50) DEFAULT NULL,
   `contraseña_cl` varchar(255) DEFAULT NULL,
   `telefono_cl` varchar(10) DEFAULT NULL,
+  `direccion` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id_cliente`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -51,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-19 12:10:14
+-- Dump completed on 2026-05-26 12:36:51

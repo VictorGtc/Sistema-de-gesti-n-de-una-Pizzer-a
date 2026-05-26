@@ -21,6 +21,7 @@ def registrar_usuarios(nombre, apellido, correo, password, telefono, rol):
     db.commit()
 
     cursor.close()
+    db.close()
 
     return True
 
@@ -33,7 +34,7 @@ def validar_usuarios(correo, password):
     
     cursor = db.cursor()
     
-    consulta_sql ='SELECT nombre, apellido, correo, password, telefono, rol FROM usuarios WHERE correo = %s '
+    consulta_sql ='SELECT nombre_u, apellido_u, correo_u, contraseña_u, telefono_u, rol FROM usuarios WHERE correo_u = %s'
     valores=(correo,)
     cursor.execute(consulta_sql,valores)
 

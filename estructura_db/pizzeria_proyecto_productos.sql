@@ -27,8 +27,11 @@ CREATE TABLE `productos` (
   `nombre_pr` varchar(100) DEFAULT NULL,
   `precio_pr` decimal(10,2) DEFAULT NULL,
   `imagen_pr` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id_producto`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `id_categoria` int DEFAULT NULL,
+  PRIMARY KEY (`id_producto`),
+  KEY `id_categoria` (`id_categoria`),
+  CONSTRAINT `id_categoria` FOREIGN KEY (`id_categoria`) REFERENCES `categorias` (`id_categoria`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -37,6 +40,7 @@ CREATE TABLE `productos` (
 
 LOCK TABLES `productos` WRITE;
 /*!40000 ALTER TABLE `productos` DISABLE KEYS */;
+INSERT INTO `productos` VALUES (1,'Pizza Cuatro Quesos',15.50,'c:\\Users\\Victor\\Desktop\\codigo_pizzeria\\static\\uploads\\images.jpg',1),(2,'Pizza Cuatro Quesos',15.50,'c:\\Users\\Victor\\Desktop\\codigo_pizzeria\\static\\uploads\\productos\\images.jpg',1),(3,'Pizza Cuatro Quesos',NULL,'c:\\Users\\Victor\\Desktop\\codigo_pizzeria\\static\\uploads\\productos\\descarga.jpg',NULL);
 /*!40000 ALTER TABLE `productos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -49,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-19 12:10:14
+-- Dump completed on 2026-05-26 12:36:51
