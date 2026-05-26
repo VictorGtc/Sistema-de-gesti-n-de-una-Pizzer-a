@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzería El Ing - Sistema de Gestión Integral</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- BARRA LATERAL (SIDEBAR) -->
+        <aside class="sidebar">
+            <div class="brand-section">
+                <div class="brand-logo">PI</div>
+                <div class="brand-name">
+                    <h1>El Ing</h1>
+                    <span>Pizzería Gourmet</span>
+                </div>
+            </div>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li class="active" id="tab-dashboard-link">
+                        <a href="#" onclick="switchTab('dashboard')">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li id="tab-pedidos-link">
+                        <a href="#" onclick="switchTab('pedidos')">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                            <span>Pedidos POS</span>
+                        </a>
+                    </li>
+                    <li id="tab-inventario-link">
+                        <a href="#" onclick="switchTab('inventario')">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                            <span>Inventario</span>
+                        </a>
+                    </li>
+                    <li id="tab-asistencias-link">
+                        <a href="#" onclick="switchTab('asistencias')">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <span>Asistencias</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-avatar">GR</div>
+                <div class="user-info">
+                    <h4>Gabriel Ramos</h4>
+                    <p>Administrador</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <!-- CABECERA ACCIONES -->
+            <div class="header-actions">
+                <div class="page-title">
+                    <h2 id="view-title">Dashboard General</h2>
+                    <p id="view-subtitle">Resumen ejecutivo y control en tiempo real.</p>
+                </div>
+                <div class="header-buttons">
+                    <button class="btn btn-secondary" onclick="simulateManualAdjustment()">Ajustar Inventario</button>
+                    <button class="btn btn-primary" onclick="switchTab('pedidos')">Nuevo Pedido</button>
+                </div>
+            </div>
+
+            <!-- TABS DEL SISTEMA -->
+            
+            <!-- 1. TAB: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-content">
+                <!-- Indicadores -->
+                <div class="stats-grid">
+                    <div class="stat-card gold-card">
+                        <div class="stat-info">
+                            <h3>Ventas de Hoy</h3>
+                            <p class="gold-text" id="stat-ventas">$145.00</p>
+                        </div>
+                        <div class="stat-icon">💵</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Pedidos Activos</h3>
+                            <p id="stat-pedidos">2</p>
+                        </div>
+                        <div class="stat-icon">🍕</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Alertas de Stock</h3>
+                            <p id="stat-alertas" class="danger-text">1</p>
+                        </div>
+                        <div class="stat-icon" style="color: var(--danger)">⚠️</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>Asistencias Hoy</h3>
+                            <p id="stat-asistencia">4 / 6</p>
+                        </div>
+                        <div class="stat-icon">⏱️</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Izquierda: Pedidos Recientes -->
+                    <div class="panel-left">
+                        <div class="content-card">
+                            <div class="card-header">
+                                <h3>Pedidos en Curso (Salón y Cocina)</h3>
+                                <span class="badge badge-preparacion" style="cursor: pointer;" onclick="switchTab('pedidos')">Ver POS</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table-custom" id="orders-summary-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pedido</th>
+                                            <th>Mesa / Tipo</th>
+                                            <th>Cliente</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Cargado por JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Derecha: Timbradora Express y Auditoría -->
+                    <div class="panel-right">
+                        <div class="content-card">
+                            <div class="card-header">
+                                <h3>Timbrada Digital</h3>
+                            </div>
+                            <div class="timbradora-container">
+                                <div class="clock-display" id="live-clock">12:34:56</div>
+                                <div class="date-display" id="live-date">martes, 26 de mayo</div>
+                                
+                                <div class="form-group" style="text-align: left;">
+                                    <label for="timbrada-empleado">Selecciona Empleado</label>
+                                    <select class="form-control" id="timbrada-empleado">
+                                        <option value="1">Gabriel Ramos (Admin)</option>
+                                        <option value="2">Peter Parker (Mesero)</option>
+                                        <option value="3">Victor Toasa (Cocinero)</option>
+                                    </select>
+                                </div>
+                                <div class="timbradora-buttons">
+                                    <button class="btn btn-primary" onclick="registerPunch('entrada')">Entrada</button>
+                                    <button class="btn btn-secondary" onclick="registerPunch('salida')">Salida</button>
+                                </div>
+                                <div style="display: flex; gap: 0.50rem;">
+                                    <button class="btn btn-secondary" style="flex:1; padding: 0.5rem;" onclick="registerPunch('inicio_almuerzo')">In. Almuerzo</button>
+                                    <button class="btn btn-secondary" style="flex:1; padding: 0.5rem;" onclick="registerPunch('fin_almuerzo')">Fin Almuerzo</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="content-card">
+                            <div class="card-header">
+                                <h3>Logs de Auditoría Inmutables</h3>
+                                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size:0.75rem;" onclick="triggerImmutableAlert()">Borrar Logs</button>
+                            </div>
+                            <ul class="log-list" id="audit-log-list">
+                                <!-- Cargados dinámicamente -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. TAB: PEDIDOS (POS MÓVIL) -->
+            <section id="tab-pedidos" class="tab-content" style="display: none;">
+                <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+                    <!-- Crear Pedido -->
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>Generar Nuevo Pedido</h3>
+                        </div>
+                        <form id="new-order-form" onsubmit="createNewOrder(event)">
+                            <div class="form-group">
+                                <label>Tipo de Pedido</label>
+                                <select class="form-control" id="order-type" onchange="toggleMesaField()">
+                                    <option value="Mesa">Mesa (Local)</option>
+                                    <option value="Domicilio">A Domicilio</option>
+                                    <option value="Llevar">Para Llevar</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="mesa-field">
+                                <label>Número de Mesa</label>
+                                <input type="number" class="form-control" id="order-mesa" min="1" max="30" value="1">
+                            </div>
+                            <div class="form-group" id="domicilio-fields" style="display: none;">
+                                <label>Dirección de Entrega</label>
+                                <input type="text" class="form-control" id="order-direccion" placeholder="Av. Amazonas N21-12">
+                            </div>
+                            <div class="form-group">
+                                <label>Cliente (Nombre)</label>
+                                <input type="text" class="form-control" id="order-cliente" placeholder="Juan Pérez" required>
+                            </div>
+                            
+                            <h4 style="margin: 1.5rem 0 0.75rem 0; color: var(--gold); font-family: var(--font-head);">Selección de Productos</h4>
+                            <div class="form-group">
+                                <label>Producto</label>
+                                <select class="form-control" id="order-product-select">
+                                    <!-- Cargado por JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Cantidad</label>
+                                <input type="number" class="form-control" id="order-product-qty" min="1" value="1">
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="addProductToDetail()" style="width: 100%; margin-bottom: 1.5rem;">Agregar al Pedido</button>
+                            
+                            <h4 style="margin: 1rem 0; color: var(--white); font-size: 0.95rem;">Detalle del Pedido Actual</h4>
+                            <div class="table-responsive" style="margin-bottom: 1.5rem;">
+                                <table class="table-custom" id="current-detail-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Cant</th>
+                                            <th>Subtotal</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Sin productos agregados</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                <span style="font-weight: bold; color: var(--text-muted);">Total de Pedido:</span>
+                                <span style="font-size: 1.5rem; font-weight: bold; color: var(--gold);" id="order-total-display">$0.00</span>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Enviar a Cocina</button>
+                        </form>
+                    </div>
+
+                    <!-- KDS / Tablero de Estados -->
+                    <div class="content-card">
+                        <div class="card-header">
+                            <h3>Kitchen Display (KDS) & Despacho</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table-custom" id="kds-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Detalles</th>
+                                        <th>Estado</th>
+                                        <th>Acciones de Cocina/Caja</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Cargado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. TAB: INVENTARIO -->
+            <section id="tab-inventario" class="tab-content" style="display: none;">
+                <!-- Imagen Destacada de Pizzería -->
+                <div class="hero-image-container">
+                    <img src="../static/images/gourmet_pizza.png" alt="Pizzería El Ing" class="hero-image">
+                    <div class="hero-text">
+                        <p>Ingredientes Premium</p>
+                        <h3>Control Físico y Trazabilidad de Insumos</h3>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Inventario Insumos -->
+                    <div class="content-card" style="margin-bottom: 0;">
+                        <div class="card-header">
+                            <h3>Ingredientes en Stock</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table-custom" id="inventory-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ingrediente</th>
+                                        <th>Stock Actual</th>
+                                        <th>Stock Mínimo</th>
+                                        <th>Unidad</th>
+                                        <th>Costo Unit.</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Cargado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Panel de Recetas / Escandallos -->
+                    <div class="content-card" style="margin-bottom: 0;">
+                        <div class="card-header">
+                            <h3>Receta Maestra (Escandallo)</h3>
+                        </div>
+                        <div class="form-group">
+                            <label>Selecciona Producto para ver Receta</label>
+                            <select class="form-control" id="receta-product-select" onchange="showRecipeDetails()">
+                                <!-- Cargado por JS -->
+                            </select>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table-custom" id="recipe-table">
+                                <thead>
+                                    <tr>
+                                        <th>Insumo</th>
+                                        <th>Req. por Unidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Cargado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. TAB: ASISTENCIAS -->
+            <section id="tab-asistencias" class="tab-content" style="display: none;">
+                <div class="content-card">
+                    <div class="card-header">
+                        <h3>Historial de Asistencia Mensual</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table-custom" id="attendance-table">
+                            <thead>
+                                <tr>
+                                    <th>Empleado</th>
+                                    <th>Cargo</th>
+                                    <th>Entrada</th>
+                                    <th>Almuerzo (Inicio/Fin)</th>
+                                    <th>Salida</th>
+                                    <th>Horas Netas</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Cargado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JAVASCRIPT DE CONTROL CLIENT-SIDE INTERACTIVO -->
+    <script>
+        // DATOS EN MEMORIA (SIMULACIÓN DE BASE DE DATOS)
+        let insumos = [
+            { id: 1, nombre: 'Queso Mozzarella', stock: 10.000, minimo: 2.000, unidad: 'kg', costo: 5.00 },
+            { id: 2, nombre: 'Pepperoni', stock: 5.000, minimo: 1.000, unidad: 'kg', costo: 10.00 },
+            { id: 3, nombre: 'Salsa de Tomate', stock: 8.000, minimo: 1.500, unidad: 'kg', costo: 2.50 },
+            { id: 4, nombre: 'Masa de Harina', stock: 20.000, minimo: 5.000, unidad: 'unidades', costo: 1.00 }
+        ];
+
+        const productos = [
+            { id: 1, nombre: 'Pizza Pepperoni Familiar', precio: 15.00, categoria: 'Pizzas', receta: [
+                { insumo_id: 1, cantidad: 0.300 },
+                { insumo_id: 2, cantidad: 0.150 },
+                { insumo_id: 3, cantidad: 0.200 },
+                { insumo_id: 4, cantidad: 1.000 }
+            ]},
+            { id: 2, nombre: 'Pizza Margarita Familiar', precio: 13.50, categoria: 'Pizzas', receta: [
+                { insumo_id: 1, cantidad: 0.350 },
+                { insumo_id: 3, cantidad: 0.250 },
+                { insumo_id: 4, cantidad: 1.000 }
+            ]},
+            { id: 3, nombre: 'Bebida 1.5L', precio: 3.00, categoria: 'Bebidas', receta: [] } // No requiere insumos de cocina
+        ];
+
+        let pedidos = [
+            { id: 101, tipo: 'Mesa', mesa: 3, cliente: 'Carlos Andrade', total: 30.00, estado: 'Pagado', descontado: 1, detalles: [{ prod_id: 1, cant: 2, precio: 15.00 }], fecha: '2026-05-26 10:15:30' },
+            { id: 102, tipo: 'Domicilio', mesa: null, cliente: 'Ana María Flores', total: 18.00, estado: 'En preparacion', descontado: 0, detalles: [{ prod_id: 1, cant: 1, precio: 15.00 }, { prod_id: 3, cant: 1, precio: 3.00 }], fecha: '2026-05-26 11:20:45' }
+        ];
+
+        let asistencias = [
+            { id: 1, empleado: 'Gabriel Ramos', cargo: 'Administrador', entrada: '2026-05-26 08:02:15', almuerzo_in: '13:05:00', almuerzo_out: '14:02:10', salida: '17:00:15', horas: 7.95, obs: 'Entrada puntual' },
+            { id: 2, empleado: 'Peter Parker', cargo: 'Mesero', entrada: '2026-05-26 08:30:11', almuerzo_in: null, almuerzo_out: null, salida: null, horas: null, obs: 'Timbrado de entrada' },
+            { id: 3, empleado: 'Victor Toasa', cargo: 'Cocinero', entrada: '2026-05-26 07:55:00', almuerzo_in: '13:00:00', almuerzo_out: '13:58:00', salida: null, horas: null, obs: 'Ingreso anticipado' }
+        ];
+
+        let logs = [
+            { id: 1, usuario: 'gabriel_admin', accion: 'INSERT', tabla: 'insumos', registro: 1, valor_ant: null, valor_nue: 'Mozzarella Stock 10kg', ip: '192.168.1.10', fecha: '2026-05-26 08:05:10' },
+            { id: 2, usuario: 'system_trigger', accion: 'UPDATE', tabla: 'pedidos', registro: 101, valor_ant: 'Estado: Pendiente', valor_nue: 'Estado: Pagado | Descontado', ip: '127.0.0.1', fecha: '2026-05-26 10:30:00' },
+            { id: 3, usuario: 'system_trigger', accion: 'UPDATE', tabla: 'insumos', registro: 1, valor_ant: 'Stock 10.0', valor_nue: 'Stock 9.4 (Descuento Pedido #101)', ip: '127.0.0.1', fecha: '2026-05-26 10:30:00' }
+        ];
+
+        let currentDetail = [];
+
+        // RELOJ EN TIEMPO REAL
+        setInterval(() => {
+            const clockEl = document.getElementById('live-clock');
+            if (clockEl) {
+                const now = new Date();
+                clockEl.textContent = now.toTimeString().split(' ')[0];
+            }
+        }, 1000);
+
+        // CONFIGURACIÓN DE PANTALLAS Y CARGA INICIAL
+        window.onload = function() {
+            populateProductSelects();
+            renderDashboard();
+            renderInventory();
+            renderAttendance();
+            renderLogs();
+            showRecipeDetails();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).style.display = 'block';
+            document.getElementById(`tab-${tabId}-link`).classList.add('active');
+
+            const titleMap = {
+                'dashboard': ['Dashboard General', 'Resumen ejecutivo y control en tiempo real.'],
+                'pedidos': ['Pedidos POS Móvil', 'Gestión de comandas, KDS de cocina y facturación.'],
+                'inventario': ['Inventario e Insumos', 'Ingredientes, recetas de cocina y Kardex.'],
+                'asistencias': ['Registro de Asistencia', 'Historial inmutable de timbradas y jornadas laborales.']
+            };
+
+            document.getElementById('view-title').textContent = titleMap[tabId][0];
+            document.getElementById('view-subtitle').textContent = titleMap[tabId][1];
+        }
+
+        // CARGA DE SELECTORES
+        function populateProductSelects() {
+            const selectOrder = document.getElementById('order-product-select');
+            const selectRecipe = document.getElementById('receta-product-select');
+            
+            selectOrder.innerHTML = '';
+            selectRecipe.innerHTML = '';
+
+            productos.forEach(p => {
+                selectOrder.innerHTML += `<option value="${p.id}">${p.nombre} - $${p.precio.toFixed(2)}</option>`;
+                selectRecipe.innerHTML += `<option value="${p.id}">${p.nombre}</option>`;
+            });
+        }
+
+        // 1. RENDER DASHBOARD
+        function renderDashboard() {
+            // Stats
+            const totalVentas = pedidos.filter(p => p.estado === 'Pagado').reduce((sum, p) => sum + p.total, 0);
+            document.getElementById('stat-ventas').textContent = `$${totalVentas.toFixed(2)}`;
+            
+            const activos = pedidos.filter(p => p.estado !== 'Pagado' && p.estado !== 'Cancelado').length;
+            document.getElementById('stat-pedidos').textContent = activos;
+
+            const alertas = insumos.filter(i => i.stock <= i.minimo).length;
+            document.getElementById('stat-alertas').textContent = alertas;
+            
+            // Tabla de pedidos dashboard
+            const tbody = document.querySelector('#orders-summary-table tbody');
+            tbody.innerHTML = '';
+            
+            pedidos.forEach(p => {
+                const badgeClass = `badge-${p.estado.toLowerCase().replace(' ', '')}`;
+                let actionBtn = '';
+                
+                if (p.estado === 'Pendiente') {
+                    actionBtn = `<button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="advanceOrderState(${p.id}, 'En preparacion')">Cocinar</button>`;
+                } else if (p.estado === 'En preparacion') {
+                    actionBtn = `<button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-color: var(--gold); color: var(--gold);" onclick="advanceOrderState(${p.id}, 'Despachado')">Despachar</button>`;
+                } else if (p.estado === 'Despachado') {
+                    actionBtn = `<button class="btn btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background-color: var(--success); color: var(--bg-dark);" onclick="advanceOrderState(${p.id}, 'Pagado')">Cobrar</button>`;
+                } else {
+                    actionBtn = `<span style="font-size: 0.75rem; color: var(--text-muted)">Completado</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>#${p.id}</strong></td>
+                        <td>${p.tipo} ${p.mesa ? '(Mesa ' + p.mesa + ')' : ''}</td>
+                        <td>${p.cliente}</td>
+                        <td><strong>$${p.total.toFixed(2)}</strong></td>
+                        <td><span class="badge ${badgeClass}">${p.estado}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+
+            // KDS Table
+            renderKDS();
+        }
+
+        // 2. RENDER KDS
+        function renderKDS() {
+            const tbody = document.querySelector('#kds-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            pedidos.forEach(p => {
+                const badgeClass = `badge-${p.estado.toLowerCase().replace(' ', '')}`;
+                let actionBtn = '';
+                
+                if (p.estado === 'Pendiente') {
+                    actionBtn = `<button class="btn btn-primary" onclick="advanceOrderState(${p.id}, 'En preparacion')">Cocinar</button>`;
+                } else if (p.estado === 'En preparacion') {
+                    actionBtn = `<button class="btn btn-secondary" style="border-color: var(--gold); color: var(--gold);" onclick="advanceOrderState(${p.id}, 'Despachado')">Despachar</button>`;
+                } else if (p.estado === 'Despachado') {
+                    actionBtn = `<button class="btn btn-primary" style="background-color: var(--success); color: var(--bg-dark);" onclick="advanceOrderState(${p.id}, 'Pagado')">Pagar</button>`;
+                } else {
+                    actionBtn = `<span style="font-size: 0.85rem; color: var(--text-muted);">Completado</span>`;
+                }
+
+                let detailsText = p.detalles.map(d => {
+                    const prod = productos.find(pr => pr.id === d.prod_id);
+                    return `${d.cant}x ${prod.nombre}`;
+                }).join('<br>');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>#${p.id}</strong><br><span style="font-size:0.75rem; color: var(--text-muted)">${p.tipo}</span></td>
+                        <td>${detailsText}</td>
+                        <td><span class="badge ${badgeClass}">${p.estado}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 3. RENDER INVENTARIO
+        function renderInventory() {
+            const tbody = document.querySelector('#inventory-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            insumos.forEach(i => {
+                const stateClass = i.stock <= i.minimo ? 'danger-text' : '';
+                const stateLabel = i.stock <= i.minimo ? '<span class="badge badge-cancelado">Bajo Stock</span>' : '<span class="badge badge-despachado">Suficiente</span>';
+                
+                tbody.innerHTML += `
+                    <tr class="${stateClass}">
+                        <td><strong>${i.nombre}</strong></td>
+                        <td><strong>${i.stock.toFixed(3)}</strong></td>
+                        <td>${i.minimo.toFixed(3)}</td>
+                        <td>${i.unidad}</td>
+                        <td>$${i.costo.toFixed(2)}</td>
+                        <td>${stateLabel}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 4. RENDER ASISTENCIA
+        function renderAttendance() {
+            const tbody = document.querySelector('#attendance-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            asistencias.forEach(a => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${a.empleado}</strong></td>
+                        <td>${a.cargo}</td>
+                        <td>${a.entrada || '-'}</td>
+                        <td>${a.almuerzo_in || '-'}<br>${a.almuerzo_out || '-'}</td>
+                        <td>${a.salida || '-'}</td>
+                        <td><strong>${a.horas ? a.horas.toFixed(2) + ' hrs' : '-'}</strong></td>
+                        <td><span style="font-style: italic; font-size:0.8rem">${a.obs}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 5. RENDER LOGS AUDITORÍA
+        function renderLogs() {
+            const list = document.getElementById('audit-log-list');
+            if (!list) return;
+            list.innerHTML = '';
+
+            // Mostrar últimos logs arriba
+            [...logs].reverse().forEach(l => {
+                let borderClass = '';
+                if (l.accion === 'INSERT') borderClass = 'info-border';
+                if (l.accion === 'DELETE' || l.tabla === 'ERROR') borderClass = 'danger-border';
+                
+                list.innerHTML += `
+                    <li class="log-item ${borderClass}">
+                        <div class="log-meta">
+                            <span>${l.usuario} (${l.ip})</span>
+                            <span class="log-time">${l.fecha.split(' ')[1]}</span>
+                        </div>
+                        <div class="log-desc">
+                            <strong>${l.accion}</strong> en <strong>${l.tabla}</strong>: ${l.valor_nue}
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        // 6. RENDER RECETA INDIVIDUAL
+        function showRecipeDetails() {
+            const pId = parseInt(document.getElementById('receta-product-select').value);
+            const prod = productos.find(p => p.id === pId);
+            const tbody = document.querySelector('#recipe-table tbody');
+            
+            tbody.innerHTML = '';
+            
+            if (!prod.receta || prod.receta.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color: var(--text-muted)">Producto sin ingredientes de cocina (Bebida)</td></tr>`;
+                return;
+            }
+
+            prod.receta.forEach(r => {
+                const ins = insumos.find(i => i.id === r.insumo_id);
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${ins.nombre}</td>
+                        <td><strong>${r.cantidad.toFixed(3)} ${ins.unidad}</strong></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- FUNCIONES INTERACTIVAS ---
+
+        // Alternar campos en el formulario de Pedidos
+        function toggleMesaField() {
+            const type = document.getElementById('order-type').value;
+            const mesaField = document.getElementById('mesa-field');
+            const domicilioFields = document.getElementById('domicilio-fields');
+
+            if (type === 'Mesa') {
+                mesaField.style.display = 'block';
+                domicilioFields.style.display = 'none';
+            } else if (type === 'Domicilio') {
+                mesaField.style.display = 'none';
+                domicilioFields.style.display = 'block';
+            } else {
+                mesaField.style.display = 'none';
+                domicilioFields.style.display = 'none';
+            }
+        }
+
+        // Agregar Producto a la lista actual del formulario
+        function addProductToDetail() {
+            const pId = parseInt(document.getElementById('order-product-select').value);
+            const qty = parseInt(document.getElementById('order-product-qty').value);
+            const prod = productos.find(p => p.id === pId);
+
+            const existing = currentDetail.find(d => d.prod_id === pId);
+            if (existing) {
+                existing.cant += qty;
+            } else {
+                currentDetail.push({ prod_id: pId, cant: qty, precio: prod.precio });
+            }
+
+            renderCurrentDetailTable();
+        }
+
+        // Pintar la tabla temporal del formulario
+        function renderCurrentDetailTable() {
+            const tbody = document.querySelector('#current-detail-table tbody');
+            tbody.innerHTML = '';
+
+            if (currentDetail.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Sin productos agregados</td></tr>`;
+                document.getElementById('order-total-display').textContent = '$0.00';
+                return;
+            }
+
+            let total = 0;
+            currentDetail.forEach((d, idx) => {
+                const prod = productos.find(p => p.id === d.prod_id);
+                const sub = d.cant * d.precio;
+                total += sub;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${prod.nombre}</td>
+                        <td>${d.cant}</td>
+                        <td>$${sub.toFixed(2)}</td>
+                        <td><button type="button" class="btn btn-danger" style="padding: 0.15rem 0.4rem; font-size: 0.75rem;" onclick="removeProductFromDetail(${idx})">x</button></td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('order-total-display').textContent = `$${total.toFixed(2)}`;
+        }
+
+        function removeProductFromDetail(idx) {
+            currentDetail.splice(idx, 1);
+            renderCurrentDetailTable();
+        }
+
+        // CREAR PEDIDO (Equivale a INSERT INTO pedidos)
+        function createNewOrder(event) {
+            event.preventDefault();
+            
+            // Validar restricción del trigger: No enviar comandas vacías a cocina
+            if (currentDetail.length === 0) {
+                alert('Fallo de integridad (Trigger): No se puede enviar un pedido sin productos.');
+                // Guardar en log de auditoría el error de validación
+                logs.push({
+                    id: logs.length + 1,
+                    usuario: 'gabriel_admin',
+                    accion: 'ERROR_TRIGGER',
+                    tabla: 'pedidos',
+                    registro: 0,
+                    valor_ant: null,
+                    valor_nue: 'Intento fallido de insertar pedido vacío (tg_pedidos_validar_antes_de_cocina)',
+                    ip: '192.168.1.10',
+                    fecha: getTimestampStr()
+                });
+                renderLogs();
+                return;
+            }
+
+            const type = document.getElementById('order-type').value;
+            const mesa = type === 'Mesa' ? parseInt(document.getElementById('order-mesa').value) : null;
+            const cliente = document.getElementById('order-cliente').value;
+            const total = currentDetail.reduce((sum, d) => sum + (d.cant * d.precio), 0);
+
+            const newOrder = {
+                id: pedidos.length + 101,
+                tipo: type,
+                mesa: mesa,
+                cliente: cliente,
+                total: total,
+                estado: 'Pendiente',
+                descontado: 0,
+                detalles: [...currentDetail],
+                fecha: getTimestampStr()
+            };
+
+            pedidos.push(newOrder);
+
+            // Log Auditoria
+            logs.push({
+                id: logs.length + 1,
+                usuario: 'gabriel_admin',
+                accion: 'INSERT',
+                tabla: 'pedidos',
+                registro: newOrder.id,
+                valor_ant: null,
+                valor_nue: `Pedido #${newOrder.id} creado - Total $${total.toFixed(2)}`,
+                ip: '192.168.1.10',
+                fecha: getTimestampStr()
+            });
+
+            // Limpiar formulario
+            currentDetail = [];
+            document.getElementById('order-cliente').value = '';
+            renderCurrentDetailTable();
+            renderDashboard();
+            renderLogs();
+            alert(`Pedido #${newOrder.id} registrado con éxito y enviado a visualización.`);
+        }
+
+        // AVANZAR ESTADO DEL PEDIDO (Equivale a UPDATE pedidos SET estado_pedido = ...)
+        function advanceOrderState(orderId, newState) {
+            const p = pedidos.find(o => o.id === orderId);
+            const oldState = p.estado;
+            p.estado = newState;
+
+            // LÓGICA DE DESCUENTO AUTOMÁTICO DE INVENTARIO (Simula Trigger tg_pedidos_descuento_inventario)
+            if ((newState === 'Despachado' || newState === 'Pagado') && p.descontado === 0) {
+                p.descontado = 1;
+                
+                // Recorrer detalles
+                p.detalles.forEach(d => {
+                    const prod = productos.find(pr => pr.id === d.prod_id);
+                    if (prod.receta) {
+                        prod.receta.forEach(r => {
+                            const ins = insumos.find(i => i.id === r.insumo_id);
+                            const totalReq = r.cantidad * d.cant;
+                            
+                            // Descontar
+                            const oldStock = ins.stock;
+                            ins.stock = Math.max(0, ins.stock - totalReq);
+
+                            // Registrar Kardex
+                            logs.push({
+                                id: logs.length + 1,
+                                usuario: 'system_trigger',
+                                accion: 'UPDATE',
+                                tabla: 'insumos',
+                                registro: ins.id,
+                                valor_ant: `Stock: ${oldStock.toFixed(3)}`,
+                                valor_nue: `Stock: ${ins.stock.toFixed(3)} (Descuento automático Pedido #${p.id})`,
+                                ip: '127.0.0.1',
+                                fecha: getTimestampStr()
+                            });
+
+                            // Simular Alerta de Stock Mínimo (Trigger tg_insumos_alertas_stock)
+                            if (ins.stock <= ins.minimo && oldStock > ins.minimo) {
+                                logs.push({
+                                    id: logs.length + 1,
+                                    usuario: 'system_trigger',
+                                    accion: 'ALERT',
+                                    tabla: 'alertas_inventario',
+                                    registro: ins.id,
+                                    valor_ant: null,
+                                    valor_nue: `ALERTA CRÍTICA: Stock de ${ins.nombre} por debajo del mínimo.`,
+                                    ip: '127.0.0.1',
+                                    fecha: getTimestampStr()
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Log Auditoria del Pedido
+            logs.push({
+                id: logs.length + 1,
+                usuario: 'gabriel_admin',
+                accion: 'UPDATE',
+                tabla: 'pedidos',
+                registro: p.id,
+                valor_ant: `Estado: ${oldState}`,
+                valor_nue: `Estado: ${newState} | Descontado: ${p.descontado}`,
+                ip: '192.168.1.10',
+                fecha: getTimestampStr()
+            });
+
+            renderDashboard();
+            renderInventory();
+            renderLogs();
+        }
+
+        // REGISTRAR TIMBRADA (Simula Procedimiento sp_registrar_timbrada)
+        function registerPunch(type) {
+            const empId = parseInt(document.getElementById('timbrada-empleado').value);
+            const employeeName = document.getElementById('timbrada-empleado').options[document.getElementById('timbrada-empleado').selectedIndex].text.split(' (')[0];
+            const nowStr = getTimestampStr();
+
+            let assistRecord = asistencias.find(a => a.empleado === employeeName);
+
+            if (type === 'entrada') {
+                if (assistRecord && assistRecord.entrada) {
+                    alert('Error: Ya se registró la entrada para este empleado hoy.');
+                    return;
+                }
+                asistencias.push({
+                    id: asistencias.length + 1,
+                    empleado: employeeName,
+                    cargo: empId === 1 ? 'Administrador' : (empId === 2 ? 'Mesero' : 'Cocinero'),
+                    entrada: nowStr,
+                    almuerzo_in: null,
+                    almuerzo_out: null,
+                    salida: null,
+                    horas: null,
+                    obs: 'Marca Entrada'
+                });
+            } else {
+                if (!assistRecord) {
+                    alert('Error: Debe marcar primero la entrada del día.');
+                    return;
+                }
+                if (type === 'inicio_almuerzo') {
+                    if (assistRecord.almuerzo_in) {
+                        alert('Error: Ya inició almuerzo.');
+                        return;
+                    }
+                    assistRecord.almuerzo_in = nowStr.split(' ')[1];
+                    assistRecord.obs = 'Inició Almuerzo';
+                } else if (type === 'fin_almuerzo') {
+                    if (assistRecord.almuerzo_out) {
+                        alert('Error: Ya retornó de almuerzo.');
+                        return;
+                    }
+                    if (!assistRecord.almuerzo_in) {
+                        alert('Error: No puede marcar fin de almuerzo sin haber iniciado.');
+                        return;
+                    }
+                    assistRecord.almuerzo_out = nowStr.split(' ')[1];
+                    assistRecord.obs = 'Retornó Almuerzo';
+                } else if (type === 'salida') {
+                    if (assistRecord.salida) {
+                        alert('Error: Ya registró salida hoy.');
+                        return;
+                    }
+                    assistRecord.salida = nowStr;
+                    assistRecord.obs = 'Marca Salida';
+                    // Calcular horas
+                    assistRecord.horas = 8.2; // Simulado
+                }
+            }
+
+            // Log Auditoria de Timbrada
+            logs.push({
+                id: logs.length + 1,
+                usuario: 'system_punch',
+                accion: 'INSERT',
+                tabla: 'asistencias',
+                registro: empId,
+                valor_ant: null,
+                valor_nue: `Timbrada de ${type} para ${employeeName} registrada.`,
+                ip: '192.168.1.10',
+                fecha: nowStr
+            });
+
+            renderDashboard();
+            renderAttendance();
+            renderLogs();
+            alert(`Timbrada de ${type.replace('_', ' ')} registrada para ${employeeName}.`);
+        }
+
+        // SIMULAR AJUSTE DE INVENTARIO MANUAL (Kardex)
+        function simulateManualAdjustment() {
+            const val = prompt('Ajuste de inventario manual. Ingresa el nombre del insumo a aumentar (Queso Mozzarella, Pepperoni, Salsa de Tomate):', 'Pepperoni');
+            if (!val) return;
+            const ins = insumos.find(i => i.nombre.toLowerCase() === val.toLowerCase());
+            if (!ins) {
+                alert('Insumo no encontrado.');
+                return;
+            }
+            const qty = parseFloat(prompt(`Ingresa la cantidad a ingresar al stock en ${ins.unidad}:`, '5.000'));
+            if (isNaN(qty) || qty <= 0) {
+                alert('Cantidad no válida.');
+                return;
+            }
+
+            const oldStock = ins.stock;
+            ins.stock += qty;
+
+            // Agregar a log de movimientos
+            logs.push({
+                id: logs.length + 1,
+                usuario: 'gabriel_admin',
+                accion: 'AJUSTE_KARDEX',
+                tabla: 'insumos',
+                registro: ins.id,
+                valor_ant: `Stock: ${oldStock.toFixed(3)}`,
+                valor_nue: `Ajuste manual de Entrada (+${qty.toFixed(3)} ${ins.unidad}) por compra de insumos. Stock final: ${ins.stock.toFixed(3)}`,
+                ip: '192.168.1.10',
+                fecha: getTimestampStr()
+            });
+
+            renderInventory();
+            renderDashboard();
+            renderLogs();
+            alert(`Stock de ${ins.nombre} incrementado en ${qty} ${ins.unidad} exitosamente.`);
+        }
+
+        // Alerta de Inmutabilidad de Logs de Auditoría
+        function triggerImmutableAlert() {
+            alert('Fallo de seguridad (Restricción de Integridad): El trigger tg_logs_auditoria_no_delete bloqueó el borrado. Los logs de auditoría son inmutables y no se pueden eliminar en MySQL.');
+            
+            // Añadir log de intento fallido en la lista visual
+            logs.push({
+                id: logs.length + 1,
+                usuario: 'gabriel_admin',
+                accion: 'ERROR_RESTRICT',
+                tabla: 'logs_auditoria',
+                registro: 0,
+                valor_ant: null,
+                valor_nue: 'Intento fallido de eliminar logs bloqueado por trigger inmutable.',
+                ip: '192.168.1.10',
+                fecha: getTimestampStr()
+            });
+            renderLogs();
+        }
+
+        // HELPERS
+        function getTimestampStr() {
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().split(' ')[0];
+            return `${dateStr} ${timeStr}`;
+        }
+    </script>
+</body>
+</html>
