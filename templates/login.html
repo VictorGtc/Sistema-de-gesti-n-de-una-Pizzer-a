@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzería Premium - Iniciar Sesión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center font-sans">
+
+    <div class="bg-slate-900 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-800 transition-all duration-300 hover:border-amber-600/30">
+        
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
+                Pizzería El Inge
+            </h1>
+            <p class="text-slate-400 text-sm mt-2">Auténtica pizza artesanal a tu mesa</p>
+        </div>
+
+        <form id="formLogin" class="space-y-6">
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Correo Electrónico</label>
+                <input type="email" id="correo" required 
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition duration-200"
+                    placeholder="tu@correo.com">
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Contraseña</label>
+                <input type="password" id="password" required 
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition duration-200"
+                    placeholder="••••••••">
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg shadow-amber-600/20 transform active:scale-[0.98] transition-all duration-150">
+                Ingresar a la Pizzería
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <p class="text-sm text-slate-500">
+                ¿Primera vez que pides? 
+                <a href="registro.html" class="text-amber-500 hover:text-amber-400 font-medium transition duration-150 ml-1">Regístrate aquí</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('formLogin').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+
+            const correo = document.getElementById('correo').value;
+            const password = document.getElementById('password').value;
+
+            try {
+
+                const respuesta = await fetch('http://127.0.0.1:5000/api/login_cliente', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ correo: correo, password: password })
+                });
+
+                const data = await respuesta.json();
+
+                if (respuesta.ok) { 
+                    alert(`¡Bienvenido de vuelta, ${data.cliente.Nombre}!`);
+
+                    localStorage.setItem('id_cliente', data.cliente.id_cliente);
+                    localStorage.setItem('nombre_cliente', data.cliente.Nombre);
+                    localStorage.setItem('direccion_cliente', data.cliente.Direccion);
+
+                    window.location.href = '/index';
+                } else {
+
+                    alert(data.error || 'Error en las credenciales');
+                }
+
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                alert('No se pudo conectar con el servidor de Flask. ¿Está encendido?');
+            }
+        });
+    </script>
+</body>
+</html>
