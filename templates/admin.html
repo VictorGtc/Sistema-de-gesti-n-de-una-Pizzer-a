@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzería - Panel de Administración</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+    <nav class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-user-shield text-amber-400 text-xl"></i>
+            <h1 class="text-xl font-extrabold tracking-wide text-slate-200">
+                PANEL ADMINISTRATIVO <span class="text-amber-400 font-medium text-sm ml-2">| Control de Menú</span>
+            </h1>
+        </div>
+        <a href="/index" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-xl transition-all">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Volver al Inicio
+        </a>
+    </nav>
+
+    <div class="max-w-7xl mx-auto p-6">
+        
+        <div class="flex gap-4 border-b border-slate-800 mb-8">
+            <button onclick="cambiarPestana('productos')" id="tab-productos" 
+                class="px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-pizza-slice"></i> Gestión de Productos
+            </button>
+            <button onclick="cambiarPestana('categorias')" id="tab-categorias" 
+                class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-list"></i> Gestión de Categorías
+            </button>
+            <button onclick="cambiarPestana('recetas')" id="tab-recetas" 
+                class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-mortar-pestle"></i> Recetas por Producto
+            </button>
+        </div>
+
+        <div id="seccion-productos" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
+                <h2 id="titulo-form-producto" class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nuevo Producto
+                </h2>
+                <form id="form-producto" onsubmit="guardarProducto(event)" enctype="multipart/form-data" class="space-y-4">
+                    <input type="hidden" id="prod-id">
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre del Producto</label>
+                        <input type="text" id="prod-nombre" required 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Precio ($)</label>
+                        <input type="number" id="prod-precio" step="0.01" required 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Categoría</label>
+                        <select id="prod-categoria" required 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                            </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Imagen del Producto</label>
+                        <input type="file" id="prod-imagen" name="imagen_route" accept="image/*"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700 transition-all">
+                        <p id="info-imagen-prod" class="text-xs text-slate-500 mt-1">Formatos permitidos: .png, .jpg, .jpeg</p>
+                    </div>
+
+                    <div class="pt-4 flex gap-3">
+                        <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
+                            Confirmar Registro
+                        </button>
+                        <button type="button" id="btn-cancelar-prod" onclick="limpiarFormProducto()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition-all">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-6 border-b border-slate-800 bg-slate-900/50">
+                    <h3 class="font-bold text-slate-200">Productos Registrados</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                <th class="py-4 px-6">Imagen</th>
+                                <th class="py-4 px-6">Nombre</th>
+                                <th class="py-4 px-6">Precio</th>
+                                <th class="py-4 px-6 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-productos" class="divide-y divide-slate-800/50 text-sm">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="seccion-categorias" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
+                <h2 id="titulo-form-categoria" class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nueva Categoría
+                </h2>
+                <form id="form-categoria" onsubmit="guardarCategoria(event)" enctype="multipart/form-data" class="space-y-4">
+                    <input type="hidden" id="cat-id">
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre de la Categoría</label>
+                        <input type="text" id="cat-nombre" required 
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Imagen de la Categoría</label>
+                        <input type="file" id="cat-imagen" name="image_route" accept="image/*"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700 transition-all">
+                    </div>
+
+                    <div class="pt-4 flex gap-3">
+                        <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
+                            Confirmar Registro
+                        </button>
+                        <button type="button" id="btn-cancelar-cat" onclick="limpiarFormCategoria()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition-all">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-6 border-b border-slate-800 bg-slate-900/50">
+                    <h3 class="font-bold text-slate-200">Categorías Registradas</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                <th class="py-4 px-6">Imagen</th>
+                                <th class="py-4 px-6">Nombre de Categoría</th>
+                                <th class="py-4 px-6 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-categorias" class="divide-y divide-slate-800/50 text-sm">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <div id="seccion-recetas" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
+                    <h2 class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-basket-shopping text-amber-400"></i> Asignar Ingrediente
+                    </h2>
+                    <form id="form-receta" onsubmit="guardarIngredienteReceta(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">1. Selecciona el Producto</label>
+                            <select id="receta-producto" required onchange="cargarRecetaEspecifica()"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                                </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">2. Insumo / Ingrediente</label>
+                            <select id="receta-inventario" required
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                                </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">3. Cantidad Requerida</label>
+                            <div class="relative">
+                                <input type="number" id="receta-cantidad" step="0.01" required placeholder="Ej: 0.150 o 1"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                                <span class="absolute right-4 top-3 text-sm text-slate-500">Unidades/Kg</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1">Usa decimales para el peso (ej. 0.200 para 200 gramos).</p>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
+                                Añadir a la Receta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-200">Componentes de la Receta</h3>
+                        <span id="nombre-producto-seleccionado" class="text-xs bg-slate-800 text-amber-400 font-semibold px-3 py-1 rounded-full border border-slate-700">Selecciona un producto primero</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                    <th class="py-4 px-6">Ingrediente</th>
+                                    <th class="py-4 px-6">Cantidad Necesaria</th>
+                                    <th class="py-4 px-6 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-recetas" class="divide-y divide-slate-800/50 text-sm">
+                                <tr>
+                                    <td colspan="3" class="py-8 text-center text-slate-500 italic">No se ha seleccionado ningún producto para ver su receta.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+
+            
+        </div>
+
+    </div>
+
+    <script>
+        // Variables globales para almacenar lo obtenido de las APIs
+        let listaCategoriasGlobal = [];
+
+        // Ejecutar funciones al cargar la pantalla por primera vez
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarCategorias();
+            cargarProductos();
+        });
+
+        // CONTROL DE PESTAÑAS (TABS)
+        function cambiarPestana(pestana) {
+            const secProd = document.getElementById('seccion-productos');
+            const secCat = document.getElementById('seccion-categorias');
+            const tabProd = document.getElementById('tab-productos');
+            const tabCat = document.getElementById('tab-categorias');
+
+            if (pestana === 'productos') {
+                secProd.classList.remove('hidden');
+                secCat.classList.add('hidden');
+                tabProd.className = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
+                tabCat.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+            } else {
+                secProd.classList.add('hidden');
+                secCat.classList.remove('hidden');
+                tabCat.className = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
+                tabProd.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+            }
+        }
+
+        // ==========================================
+        // 📁 CONTROLADORES DE CATEGORÍAS
+        // ==========================================
+
+        async function cargarCategorias() {
+            try {
+                const respuesta = await fetch('/api/obtener_categorias');
+                const categorias = await respuesta.json();
+                listaCategoriasGlobal = categorias; // Guardamos para el select de productos
+
+                // 1. Llenar la Tabla de Categorías
+                const tbody = document.getElementById('tabla-categorias');
+                tbody.innerHTML = '';
+                
+                categorias.forEach(cat => {
+                    tbody.innerHTML += `
+                        <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
+                            <td class="py-4 px-6">
+                                <img src="/static/uploads/categorias/${cat.imagen_c}" alt="${cat.nombre_c}" class="w-12 h-12 object-cover rounded-xl border border-slate-800">
+                            </td>
+                            <td class="py-4 px-6 font-medium text-slate-200">${cat.nombre_c}</td>
+                            <td class="py-4 px-6 text-center">
+                                <div class="flex justify-center gap-2">
+                                    <button onclick="prepararEditarCategoria(${cat.id_categoria}, '${cat.nombre_c}')" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-2 px-3 rounded-lg transition-all">
+                                        <i class="fa-solid fa-pen mr-1"></i> Editar
+                                    </button>
+                                    <button onclick="eliminarCategoriaJs(${cat.id_categoria})" class="text-xs bg-red-950/40 hover:bg-red-900/60 text-red-400 font-bold py-2 px-3 rounded-lg transition-all border border-red-900/30">
+                                        <i class="fa-solid fa-trash mr-1"></i> Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // 2. Llenar el Select de Categorías en el Formulario de Productos
+                const selectProdCat = document.getElementById('prod-categoria');
+                selectProdCat.innerHTML = '<option value="" disabled selected>Selecciona una categoría</option>';
+                categorias.forEach(cat => {
+                    selectProdCat.innerHTML += `<option value="${cat.id_categoria}">${cat.nombre_c}</option>`;
+                });
+
+            } catch (error) {
+                console.error("Error al cargar categorías:", error);
+            }
+        }
+
+        async function guardarCategoria(event) {
+            event.preventDefault(); // ¡CRÍTICO! Evita que la página haga el GET rústico y se recargue
+            
+            const idCat = document.getElementById('cat-id').value;
+            const nombre = document.getElementById('cat-nombre').value;
+            const archivoInput = document.getElementById('cat-imagen');
+
+            // Usamos FormData porque enviamos un archivo binario (imagen)
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+            if (archivoInput.files[0]) {
+                formData.append('image_route', archivoInput.files[0]); // Mismo nombre que lee Flask
+            }
+
+            let url = '/api/categorias';
+            // Si el campo oculto tiene ID, significa que estamos editando
+            if (idCat) {
+                url = `/api/categorias/actualizar/${idCat}`;
+            }
+
+            try {
+                const respuesta = await fetch(url, {
+                    method: 'POST', // Tus dos rutas de Flask usan POST
+                    body: formData
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    alert(resultado.mensaje);
+                    limpiarFormCategoria();
+                    cargarCategorias(); // Refresca la tabla y el select automáticamente
+                } else {
+                    alert("Error: " + (resultado.mensaje || resultado.error));
+                }
+            } catch (error) {
+                console.error("Error al guardar categoría:", error);
+                alert("Error de conexión con el servidor");
+            }
+        }
+
+        function prepararEditarCategoria(id, nombre) {
+            document.getElementById('cat-id').value = id;
+            document.getElementById('cat-nombre').value = nombre;
+            
+            // Cambiamos textos visuales para que el usuario sepa que está editando
+            document.getElementById('titulo-form-categoria').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Categoría';
+            document.getElementById('btn-cancelar-cat').classList.remove('hidden');
+        }
+
+        function limpiarFormCategoria() {
+            document.getElementById('form-categoria').reset();
+            document.getElementById('cat-id').value = '';
+            document.getElementById('titulo-form-categoria').innerHTML = '<i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nueva Categoría';
+            document.getElementById('btn-cancelar-cat').classList.add('hidden');
+        }
+
+        async function eliminarCategoriaJs(id) {
+            if (!confirm("¿Estás seguro de eliminar esta categoría? Se borrará permanentemente.")) return;
+
+            try {
+                const respuesta = await fetch(`/api/categorias/eliminar/${id}`, {
+                    method: 'DELETE'
+                });
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    alert(resultado.mensaje);
+                    cargarCategorias();
+                } else {
+                    alert("Error: " + resultado.mensaje);
+                }
+            } catch (error) {
+                console.error("Error al eliminar categoría:", error);
+            }
+        }
+
+
+        // ==========================================
+        // 🍕 CONTROLADORES DE PRODUCTOS
+        // ==========================================
+
+        async function cargarProductos() {
+            try {
+                const respuesta = await fetch('/api/obtener_productos');
+                const productos = await respuesta.json();
+
+                const tbody = document.getElementById('tabla-productos');
+                tbody.innerHTML = '';
+
+                productos.forEach(prod => {
+                    tbody.innerHTML += `
+                        <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
+                            <td class="py-4 px-6">
+                                <img src="/static/uploads/productos/${prod.imagen_pr}" alt="${prod.nombre_pr}" class="w-12 h-12 object-cover rounded-xl border border-slate-800">
+                            </td>
+                            <td class="py-4 px-6 font-medium text-slate-200">${prod.nombre_pr}</td>
+                            <td class="py-4 px-6 font-semibold text-amber-400">$${parseFloat(prod.precio_pr).toFixed(2)}</td>
+                            <td class="py-4 px-6 text-center">
+                                <div class="flex justify-center gap-2">
+                                    <button onclick="prepararEditarProducto(${prod.id_producto}, '${prod.nombre_pr}', ${prod.precio_pr}, ${prod.id_categoria})" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-2 px-3 rounded-lg transition-all">
+                                        <i class="fa-solid fa-pen mr-1"></i> Editar
+                                    </button>
+                                    <button onclick="eliminarProductoJs(${prod.id_producto})" class="text-xs bg-red-950/40 hover:bg-red-900/60 text-red-400 font-bold py-2 px-3 rounded-lg transition-all border border-red-900/30">
+                                        <i class="fa-solid fa-trash mr-1"></i> Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar productos:", error);
+            }
+        }
+
+        async function guardarProducto(event) {
+            event.preventDefault();
+
+            const idProd = document.getElementById('prod-id').value;
+            const nombre = document.getElementById('prod-nombre').value;
+            const precio = document.getElementById('prod-precio').value;
+            const idCategoria = document.getElementById('prod-categoria').value;
+            const archivoInput = document.getElementById('prod-imagen');
+
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+            formData.append('precio', precio);
+            formData.append('id_categoria', idCategoria);
+            if (archivoInput.files[0]) {
+                formData.append('imagen_route', archivoInput.files[0]); // Mismo nombre que lee tu Flask
+            }
+
+            let url = '/api/productos';
+            if (idProd) {
+                url = `/api/productos/actualizar/${idProd}`;
+            }
+
+            try {
+                const respuesta = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    alert(resultado.mensaje);
+                    limpiarFormProducto();
+                    cargarProductos();
+                } else {
+                    alert("Error: " + resultado.mensaje);
+                }
+            } catch (error) {
+                console.error("Error al guardar producto:", error);
+                alert("Error de conexión");
+            }
+        }
+
+        function perderEditarProducto(id, nombre, precio, idCategoria) {
+            // Función auxiliar por si acaso
+        }
+
+        function prepararEditarProducto(id, nombre, precio, idCategoria) {
+            document.getElementById('prod-id').value = id;
+            document.getElementById('prod-nombre').value = nombre;
+            document.getElementById('prod-precio').value = precio;
+            document.getElementById('prod-categoria').value = idCategoria;
+
+            document.getElementById('titulo-form-producto').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Producto';
+            document.getElementById('btn-cancelar-prod').classList.remove('hidden');
+        }
+
+        function limpiarFormProducto() {
+            document.getElementById('form-producto').reset();
+            document.getElementById('prod-id').value = '';
+            document.getElementById('titulo-form-producto').innerHTML = '<i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nuevo Producto';
+            document.getElementById('btn-cancelar-prod').classList.add('hidden');
+        }
+
+        async function eliminarProductoJs(id) {
+            if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
+
+            try {
+                const respuesta = await fetch(`/api/productos/eliminar/${id}`, {
+                    method: 'DELETE'
+                });
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    alert(resultado.mensaje);
+                    cargarProductos();
+                } else {
+                    alert("Error: " + resultado.mensaje);
+                }
+            } catch (error) {
+                console.error("Error al eliminar producto:", error);
+            }
+        }
+    </script>

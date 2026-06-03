@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from src.usuarios import registrar_usuarios, validar_usuarios
-from src.productos import registrar_producto, obtener_productos
-from src.categorias import registrar_categoria, obtener_categorias
+from src.productos import registrar_producto, obtener_productos, actualizar_producto, eliminar_producto
+from src.categorias import registrar_categoria, obtener_categorias, actualizar_categoria, eliminar_categoria
 from src.recetas import registrar_recetas, obtener_receta
 from src.inventario import registrar_inventario, obtener_inventario
 from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos
@@ -32,10 +32,6 @@ def validacion_imagen(imagen_insertada):
     else:
         return False
 
-@app.route('/')
-
-def home ():
-    return 'Bienvenidos a la pagina principal de la pizzeria'   
 
 @app.route('/registrar', methods=['POST'])
 
@@ -277,29 +273,50 @@ def api_actualizar_estado_pedido():
         return jsonify({"Mensaje":f"El pedido #{id_pedido} no pudo actualizarse su estado"}), 500
     
 
-@app.route('/api/productos/actualizar/<int:id_producto>',methods=['POST'])
-def api_actualizar_producto():
-    nombre=request.form.get('nombre')
-    precio=request.form.get('precio')
-    id_categoria=request.form.get('id_categoria')
-    archivo_foto=request.files.get('imagen_route')
 
-    nombre_limpio=None
+@app.route('/api/productos/actualizar/<int:id_producto>', methods=['POST'])
+def api_actualizar_producto(id_producto):
+    nombre = request.form.get('nombre')
+    precio = request.form.get('precio')
+    id_categoria = request.form.get('id_categoria')
+    archivo_foto = request.files.get('imagen_route') 
+    nombre_limpio = None
 
     if archivo_foto and archivo_foto.filename != '':
-        if not validacion_imagen(archivo_foto.filename):
-            return jsonify({"Mensaje":"Formato de imagen no permitida"}), 400
-        nombre_limpio=secure_filename(archivo_foto.filename)
-        ruta_segura= os.path.join(app.config['CARPETA PRODUCTOS'],nombre_limpio)
+        if not validacion_imagen(archivo_foto.filename): 
+            return jsonify({"mensaje": "Formato de imagen no permitido"}), 400
+        
+        nombre_limpio = secure_filename(archivo_foto.filename)
+        ruta_segura = os.path.join(app.config['CARPETA_PRODUCTOS'], nombre_limpio)
         archivo_foto.save(ruta_segura)
-
     resultado = actualizar_producto(id_producto, nombre, precio, nombre_limpio, id_categoria)
 
     if resultado is True:
         return jsonify({"mensaje": "El producto ha sido actualizado exitosamente"}), 200
     else:
         return jsonify({"mensaje": "El producto no pudo ser actualizado"}), 500
+    
 
+@app.route('/api/categorias/actualizar/<int:id_categoria>', methods=['POST'])
+def api_actualizar_categoria(id_categoria):
+    nombre = request.form.get('nombre')
+    foto_categoria = request.files.get('image_route') # Mismo nombre de tu registrar_categoria
+
+    nombre_limpio = None
+    if foto_categoria and foto_categoria.filename != '':
+        if not validacion_imagen(foto_categoria.filename):
+            return jsonify({"mensaje": "Formato de imagen no permitido"}), 400
+        
+        nombre_limpio = secure_filename(foto_categoria.filename)
+        ruta_segura = os.path.join(app.config['CARPETA_CATEGORIAS'], nombre_limpio)
+        foto_categoria.save(ruta_segura)
+
+    resultado = actualizar_categoria(id_categoria, nombre, nombre_limpio)
+
+    if resultado is True:
+        return jsonify({"mensaje": "La categoría ha sido actualizada exitosamente"}), 200
+    else:
+        return jsonify({"mensaje": "La categoría no pudo ser actualizada"}), 500
 
 
 
@@ -317,10 +334,33 @@ def vista_index():
 def vista_cocina():
     return render_template('cocina.html')
 
+@app.route('/registro', methods=['GET'])
+def vista_registro():
+    return render_template('registro.html')
 
+@app.route('/admin', methods=['GET'])
+def vista_admin():
+    return render_template('admin.html')
 
+# ============== funciones de eliminaciones 
 
+@app.route('/api/productos/eliminar/<int:id_producto>', methods=['DELETE'])
+def api_eliminar_producto(id_producto):
+    resultado = eliminar_producto(id_producto)
+    
+    if resultado is True:
+        return jsonify({"mensaje": "El producto ha sido eliminado exitosamente"}), 200
+    else:
+        return jsonify({"mensaje": "No se pudo eliminar el producto (Verifica si está en un pedido activo)"}), 500
 
+@app.route('/api/categorias/eliminar/<int:id_categoria>', methods=['DELETE'])
+def api_eliminar_categoria(id_categoria):
+    resultado = eliminar_categoria(id_categoria)
+    
+    if resultado is True:
+        return jsonify({"mensaje": "La categoría ha sido eliminada exitosamente"}), 200
+    else:
+        return jsonify({"mensaje": "No se pudo eliminar la categoría"}), 500
 
 if __name__== '__main__':
     app.run(debug=True)

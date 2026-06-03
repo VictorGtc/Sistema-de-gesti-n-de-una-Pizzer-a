@@ -66,7 +66,7 @@
         <div class="text-center mt-6">
             <p class="text-sm text-slate-500">
                 ¿Ya tienes una cuenta? 
-                <a href="login.html" class="text-amber-500 hover:text-amber-400 font-medium transition duration-150 ml-1">Inicia sesión aquí</a>
+                <a href="/login" class="text-amber-500 hover:text-amber-400 font-medium transition duration-150 ml-1">Inicia sesión aquí</a>
             </p>
         </div>
     </div>
@@ -102,7 +102,7 @@
 
                 if (respuesta.ok) {
                     alert(data.mensaje);
-                    window.location.href = 'login.html';
+                    window.location.href = '/login';
                 } else {
                     alert(data.error || 'Error al registrar el cliente');
                 }
