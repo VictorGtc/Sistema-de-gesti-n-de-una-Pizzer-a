@@ -322,7 +322,7 @@ def api_actualizar_categoria(id_categoria):
 
 # ===== rutas de las vistas 
 
-@app.route('/login', methods=['GET'])
+@app.route('/', methods=['GET'])
 def vista_login():
     return render_template('login.html')
 

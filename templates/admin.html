@@ -38,6 +38,7 @@
             </button>
         </div>
 
+
         <div id="seccion-productos" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
                 <h2 id="titulo-form-producto" class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
@@ -62,7 +63,7 @@
                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Categoría</label>
                         <select id="prod-categoria" required 
                             class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
-                            </select>
+                        </select>
                     </div>
                     
                     <div>
@@ -98,7 +99,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabla-productos" class="divide-y divide-slate-800/50 text-sm">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -149,81 +150,73 @@
                             </tr>
                         </thead>
                         <tbody id="tabla-categorias" class="divide-y divide-slate-800/50 text-sm">
-                            </tbody>
+                        </tbody>
                     </table>
                 </div>
             </div>
-
-
-            <div id="seccion-recetas" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
-                    <h2 class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-basket-shopping text-amber-400"></i> Asignar Ingrediente
-                    </h2>
-                    <form id="form-receta" onsubmit="guardarIngredienteReceta(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">1. Selecciona el Producto</label>
-                            <select id="receta-producto" required onchange="cargarRecetaEspecifica()"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
-                                </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">2. Insumo / Ingrediente</label>
-                            <select id="receta-inventario" required
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
-                                </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">3. Cantidad Requerida</label>
-                            <div class="relative">
-                                <input type="number" id="receta-cantidad" step="0.01" required placeholder="Ej: 0.150 o 1"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
-                                <span class="absolute right-4 top-3 text-sm text-slate-500">Unidades/Kg</span>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-1">Usa decimales para el peso (ej. 0.200 para 200 gramos).</p>
-                        </div>
-
-                        <div class="pt-4">
-                            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
-                                Añadir a la Receta
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                    <div class="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
-                        <h3 class="font-bold text-slate-200">Componentes de la Receta</h3>
-                        <span id="nombre-producto-seleccionado" class="text-xs bg-slate-800 text-amber-400 font-semibold px-3 py-1 rounded-full border border-slate-700">Selecciona un producto primero</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                    <th class="py-4 px-6">Ingrediente</th>
-                                    <th class="py-4 px-6">Cantidad Necesaria</th>
-                                    <th class="py-4 px-6 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-recetas" class="divide-y divide-slate-800/50 text-sm">
-                                <tr>
-                                    <td colspan="3" class="py-8 text-center text-slate-500 italic">No se ha seleccionado ningún producto para ver su receta.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-
-
-            
         </div>
 
-    </div>
+        <div id="seccion-recetas" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
+                <h2 class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-basket-shopping text-amber-400"></i> Asignar Insumo
+                </h2>
+                <form id="form-receta" onsubmit="guardarIngredienteReceta(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">1. Selecciona el Producto</label>
+                        <select id="receta-producto" required onchange="cargarRecetaEspecifica()"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">2. Insumo / Ingrediente</label>
+                        <select id="receta-inventario" required
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">3. Cantidad Requerida</label>
+                        <div class="relative">
+                            <input type="number" id="receta-cantidad" step="0.001" required placeholder="Ej: 0.150 o 1"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                            <span class="absolute right-4 top-3 text-sm text-slate-500">Unidades/Kg</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-1">Usa decimales para el peso (ej. 0.200 para 200 gramos).</p>
+                    </div>
 
+                    <div class="pt-4">
+                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
+                            Añadir a la Receta
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                <div class="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-200">Componentes de la Receta</h3>
+                    <span id="nombre-producto-seleccionado" class="text-xs bg-slate-800 text-amber-400 font-semibold px-3 py-1 rounded-full border border-slate-700">Selecciona un producto primero</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                <th class="py-4 px-6">Ingrediente</th>
+                                <th class="py-4 px-6">Cantidad Necesaria</th>
+                                <th class="py-4 px-6 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-recetas" class="divide-y divide-slate-800/50 text-sm">
+                            <tr>
+                                <td colspan="3" class="py-8 text-center text-slate-500 italic">No se ha seleccionado ningún producto para ver su receta.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     <script>
         // Variables globales para almacenar lo obtenido de las APIs
         let listaCategoriasGlobal = [];
@@ -238,19 +231,46 @@
         function cambiarPestana(pestana) {
             const secProd = document.getElementById('seccion-productos');
             const secCat = document.getElementById('seccion-categorias');
+            const secRec = document.getElementById('seccion-recetas'); // Extraemos la nueva sección
+            
             const tabProd = document.getElementById('tab-productos');
             const tabCat = document.getElementById('tab-categorias');
+            const tabRec = document.getElementById('tab-recetas'); // Extraemos el nuevo botón
 
             if (pestana === 'productos') {
+                // Mostramos productos, ocultamos los demás
                 secProd.classList.remove('hidden');
                 secCat.classList.add('hidden');
+                if (secRec) secRec.classList.add('hidden');
+                
                 tabProd.className = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
                 tabCat.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-            } else {
+                if (tabRec) tabRec.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+                
+            } else if (pestana === 'categorias') {
+                // Mostramos categorías, ocultamos los demás
                 secProd.classList.add('hidden');
                 secCat.classList.remove('hidden');
+                if (secRec) secRec.classList.add('hidden');
+                
                 tabCat.className = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
                 tabProd.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+                if (tabRec) tabRec.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+                
+            } else if (pestana === 'recetas') {
+                // Mostramos recetas, ocultamos los demás
+                secProd.classList.add('hidden');
+                secCat.classList.add('hidden');
+                if (secRec) secRec.classList.remove('hidden');
+                
+                if (tabRec) tabRec.className = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
+                tabProd.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+                tabCat.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+                
+                // Ejecutamos la carga segura de selectores si la función existe
+                if (typeof prepararSelectoresReceta === "function") {
+                    prepararSelectoresReceta();
+                }
             }
         }
 
@@ -500,4 +520,106 @@
                 console.error("Error al eliminar producto:", error);
             }
         }
+
+        // ==========================================
+// 🧪 CONTROLADORES DE RECETAS
+// ==========================================
+
+async function prepararSelectoresReceta() {
+    try {
+        // 1. Llenar select de productos
+        const resProd = await fetch('/api/obtener_productos');
+        const productos = await resProd.json();
+        const selectProd = document.getElementById('receta-producto');
+        
+        selectProd.innerHTML = '<option value="" disabled selected>Selecciona un producto</option>';
+        productos.forEach(p => {
+            selectProd.innerHTML += `<option value="${p.id_producto}">${p.nombre_pr}</option>`;
+        });
+
+        // 2. Llenar select de inventario (insumos)
+        const resInv = await fetch('/api/obtener_inventario');
+        const inventario = await resInv.json();
+        const selectInv = document.getElementById('receta-inventario');
+        
+        selectInv.innerHTML = '<option value="" disabled selected>Selecciona un insumo</option>';
+        inventario.forEach(i => {
+            selectInv.innerHTML += `<option value="${i.id_inventario}">${i.nombre_i}</option>`;
+        });
+
+    } catch (error) {
+        console.error("Error al preparar selectores de recetas:", error);
+    }
+}
+
+async function cargarRecetaEspecifica() {
+    const idProducto = document.getElementById('receta-producto').value;
+    const select = document.getElementById('receta-producto');
+    const nombreProducto = select.options[select.selectedIndex].text;
+    
+    document.getElementById('nombre-producto-seleccionado').innerText = nombreProducto;
+    
+    try {
+        const respuesta = await fetch('/api/obtener_receta');
+        const todasLasRecetas = await respuesta.json();
+        
+        // Filtramos para renderizar solo los insumos que pertenezcan a este producto
+        const recetaFiltrada = todasLasRecetas.filter(r => r.id_producto == idProducto);
+        
+        const tbody = document.getElementById('tabla-recetas');
+        tbody.innerHTML = '';
+        
+        if (recetaFiltrada.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-500 italic">Este producto aún no tiene ingredientes asignados.</td></tr>`;
+            return;
+        }
+        
+        recetaFiltrada.forEach(item => {
+            tbody.innerHTML += `
+                <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
+                    <td class="py-4 px-6 font-medium text-slate-200">${item.nombre_i || ('Insumo #' + item.id_inventario)}</td>
+                    <td class="py-4 px-6 text-slate-400 font-mono">${item.cantidad_requerida}</td>
+                    <td class="py-4 px-6 text-center">
+                        <span class="text-xs text-slate-500 italic">Listo</span>
+                    </td>
+                </tr>
+            `;
+        });
+        
+    } catch (error) {
+        console.error("Error al cargar la receta:", error);
+    }
+}
+
+async function guardarIngredienteReceta(event) {
+    event.preventDefault();
+    
+    const idProducto = document.getElementById('receta-producto').value;
+    const idInventario = document.getElementById('receta-inventario').value;
+    const cantidad = document.getElementById('receta-cantidad').value;
+
+    try {
+        const respuesta = await fetch('/api/recetas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_producto: idProducto,
+                id_inventario: idInventario,
+                cantidad_requerida: cantidad
+            })
+        });
+
+        const resultado = await respuesta.json();
+
+        if (respuesta.ok) {
+            alert(resultado.mensaje || "Ingrediente añadido con éxito");
+            document.getElementById('receta-cantidad').value = '';
+            cargarRecetaEspecifica(); // Recarga la tabla de inmediato
+        } else {
+            alert("Error: " + resultado.mensaje);
+        }
+    } catch (error) {
+        console.error("Error al guardar en la receta:", error);
+    }
+}
     </script>
