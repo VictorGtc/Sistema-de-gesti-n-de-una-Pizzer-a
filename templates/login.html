@@ -47,42 +47,63 @@
     </div>
 
     <script>
-        document.getElementById('formLogin').addEventListener('submit', async (e) => {
-            e.preventDefault(); 
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-            const correo = document.getElementById('correo').value;
-            const password = document.getElementById('password').value;
+        const correo = document.getElementById('correo').value;
+        const password = document.getElementById('password').value;
 
-            try {
+        try {
+            // CORREGIDO: Apunta exactamente a tu única ruta real /login
+            const respuesta = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo: correo, password: password })
+            });
 
-                const respuesta = await fetch('http://127.0.0.1:5000/api/login_cliente', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ correo: correo, password: password })
-                });
+            const data = await respuesta.json();
 
-                const data = await respuesta.json();
+            if (respuesta.ok) { 
+                // Ambos flujos (cliente/empleado) se leen limpiamente desde data.perfil
+                alert(`¡Bienvenido de vuelta, ${data.perfil.Nombre}!`);
 
-                if (respuesta.ok) { 
-                    alert(`¡Bienvenido de vuelta, ${data.cliente.Nombre}!`);
+                // Guardamos los datos de sesión en el almacenamiento local
+                localStorage.setItem('nombre_usuario', data.perfil.Nombre);
+                localStorage.setItem('correo_usuario', data.perfil.Correo);
+                localStorage.setItem('rol_usuario', data.perfil.Rol);
+                localStorage.setItem('tipo_usuario', data.perfil.Tipo);
 
-                    localStorage.setItem('id_cliente', data.cliente.id_cliente);
-                    localStorage.setItem('nombre_cliente', data.cliente.Nombre);
-                    localStorage.setItem('direccion_cliente', data.cliente.Direccion);
-
-                    window.location.href = '/index';
-                } else {
-
-                    alert(data.error || 'Error en las credenciales');
+                // Si es un cliente, guardamos sus datos adicionales de entrega
+                if (data.perfil.Tipo === 'cliente') {
+                    localStorage.setItem('id_cliente', data.perfil.id_cliente);
+                    localStorage.setItem('direccion_cliente', data.perfil.Direccion);
+                    window.location.href = '/index'; // Redirige al catálogo de pizzas
+                    return;
                 }
 
-            } catch (error) {
-                console.error('Error de conexión:', error);
-                alert('No se pudo conectar con el servidor de Flask. ¿Está encendido?');
+                // Si es empleado, manejamos la redirección según su Rol asignado
+                const rol = data.perfil.Rol.toLowerCase();
+
+                if (rol === 'admin' || rol === 'administrador') {
+                    window.location.href = '/admin';
+                } else if (rol === 'cocina' || rol === 'cocinero') {
+                    window.location.href = '/cocina';
+                } else if (rol === 'mesero') {
+                    window.location.href = '/mesero';
+                } else {
+                    window.location.href = '/index';
+                }
+
+            } else {
+                // Muestra el mensaje exacto que configuramos en Flask (p.ej: "El correo o la contraseña son incorrectos")
+                alert(data.mensaje || 'Error en las credenciales');
             }
-        });
-    </script>
+
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            alert('No se pudo conectar con el servidor de Flask. Asegúrate de que la app esté corriendo.');
+        }
+    });
+</script>
 </body>
 </html>

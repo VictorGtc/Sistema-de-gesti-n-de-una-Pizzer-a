@@ -13,17 +13,23 @@ def registrar_usuarios(nombre, apellido, correo, password, telefono, rol):
         return False
     
     cursor=db.cursor()
+    try:
+        consulta_sql="INSERT INTO usuarios (nombre_u, apellido_u, correo_u, contraseña_u, telefono_u, rol) VALUES (%s,%s,%s,%s,%s,%s)"
+        valores=(nombre,apellido,correo,pass_hasheado,telefono,rol)
+        cursor.execute(consulta_sql,valores)
 
-    consulta_sql="INSERT INTO usuarios (nombre_u, apellido_u, correo_u, contraseña_u, telefono_u, rol) VALUES (%s,%s,%s,%s,%s,%s)"
-    valores=(nombre,apellido,correo,pass_hasheado,telefono,rol)
-    cursor.execute(consulta_sql,valores)
+        db.commit()
 
-    db.commit()
+        cursor.close()
+        db.close()
+        return True
+    except Exception as e:
+        print(f"Error al registrar usuario: {e}")
+        cursor.close()
+        db.close()
+        return False
 
-    cursor.close()
-    db.close()
 
-    return True
 
 
 def validar_usuarios(correo, password):
@@ -32,9 +38,9 @@ def validar_usuarios(correo, password):
     if db is None:
         return False
     
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
     
-    consulta_sql ='SELECT nombre_u, apellido_u, correo_u, contraseña_u, telefono_u, rol FROM usuarios WHERE correo_u = %s'
+    consulta_sql ='SELECT nombre_u, apellido_u, correo_u, contraseña_u AS password, telefono_u, rol FROM usuarios WHERE correo_u = %s'
     valores=(correo,)
     cursor.execute(consulta_sql,valores)
 
@@ -42,8 +48,8 @@ def validar_usuarios(correo, password):
 
     if resultado is not None:
 
-        if check_password_hash(resultado[3],password):
-            datos_usuarios = {'Nombre':resultado[0], 'Apellido': resultado[1],'Correo': resultado[2], 'Rol': resultado[5]}
+        if check_password_hash(resultado['password'],password):
+            datos_usuarios = {'Nombre':resultado['nombre_u'], 'Apellido': resultado['apellido_u'],'Correo': resultado['correo_u'], 'Rol': resultado['rol']}
             cursor.close()
             db.close()
             return True, datos_usuarios  
@@ -57,3 +63,23 @@ def validar_usuarios(correo, password):
         db.close()
         return False, "Credenciales incorrectas "
 
+def obtener_usuario():
+    db=conectar_db()
+
+    if db is None:
+        return  []
+    
+    cursor = db.cursor(dictionary=True)
+
+    consulta_sql="SELECT * from usuarios"
+
+    try:
+        cursor.execute(consulta_sql)
+        usuarios=cursor.fetchall()
+        return usuarios
+    except Exception as e:
+        print(f"Error al realizar la consulta {e}")
+        return []
+    finally:
+        db.close()
+        cursor.close()

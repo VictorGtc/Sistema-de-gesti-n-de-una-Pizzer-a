@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizzería - Módulo de Caja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col">
+
+    <nav class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
+        <div class="flex items-center gap-3">
+            <i class="fa-solid fa-cash-register text-emerald-400 text-xl"></i>
+            <h1 class="text-xl font-extrabold tracking-wide text-slate-200">
+                PANEL DE CAJA <span class="text-emerald-400 font-medium text-sm ml-2">| Control de Ventas</span>
+            </h1>
+        </div>
+        <a href="/index" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-xl transition-all">
+            <i class="fa-solid fa-house mr-2"></i>Ir al Menú
+        </a>
+    </nav>
+
+    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <section class="lg:col-span-2 space-y-4">
+            <h2 class="text-lg font-bold text-slate-300 flex items-center gap-2">
+                <i class="fa-solid fa-clock-history text-amber-500"></i> Cuentas Abiertas / Pedidos por Cobrar
+            </h2>
+            
+            <div id="contenedor-pedidos" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+        </section>
+
+        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between sticky top-24 h-[calc(100vh-120px)]">
+            <div>
+                <h2 class="text-lg font-bold text-slate-200 border-b border-slate-800 pb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-receipt text-emerald-400"></i> Detalle de la Cuenta
+                </h2>
+                
+                <div id="detalle-pedido-seleccionado" class="mt-4 space-y-3 overflow-y-auto max-h-[350px] pr-2">
+                    <p class="text-slate-500 text-sm text-center py-8">Selecciona un pedido de la izquierda para ver el detalle y proceder al cobro.</p>
+                </div>
+            </div>
+
+            <div id="panel-acciones-pago" class="border-t border-slate-800 pt-4 hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-slate-400 font-medium">Total a Cobrar:</span>
+                    <span id="total-pago" class="text-2xl font-black text-emerald-400">$0.00</span>
+                </div>
+                
+                <button id="btn-confirmar-pago" onclick="procesarCobro()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 text-lg">
+                    <i class="fa-solid fa-money-bill-wave"></i> Confirmar Pago
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let idPedidoSeleccionado = null;
+
+        // Cargar los pedidos activos automáticamente al iniciar la vista
+        document.addEventListener("DOMContentLoaded", cargarPedidosActivos);
+
+        // 1. Obtener de las rutas API los pedidos que no están pagados
+        async function cargarPedidosActivos() {
+            try {
+                const respuesta = await fetch('/api/pedidos/activos');
+                const pedidos = await respuesta.json();
+                
+                const contenedor = document.getElementById('contenedor-pedidos');
+                contenedor.innerHTML = '';
+
+                if (pedidos.length === 0) {
+                    contenedor.innerHTML = `
+                        <div class="text-center py-12 col-span-2 bg-slate-900/50 border border-dashed border-slate-800 rounded-xl w-full">
+                            <i class="fa-solid fa-circle-check text-slate-600 text-3xl mb-2"></i>
+                            <p class="text-slate-500 text-sm">No hay cuentas pendientes por cobrar en este momento.</p>
+                        </div>`;
+                    return;
+                }
+
+                pedidos.forEach(pedido => {
+                    const esMesa = pedido.numero_mesa ? `Mesa N° ${pedido.numero_mesa}` : 'Domicilio';
+                    const iconType = pedido.numero_mesa ? 'fa-chair text-sky-400' : 'fa-motorcycle text-orange-400';
+                    
+                    // Manejo dinámico de estilos según el ENUM original de tu cocina
+                    let badgeColor = 'bg-slate-800 text-slate-400 border border-slate-700/50';
+                    if (pedido.estado_p === 'Listo') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                    if (pedido.estado_p === 'Entregado') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                    if (pedido.estado_p === 'Pendiente') badgeColor = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
+
+                    const card = document.createElement('div');
+                    card.className = "bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-sm";
+                    card.onclick = () => verDetallePedido(pedido.id_pedido, pedido.total_p);
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-slate-950 rounded-lg border border-slate-800">
+                                    <i class="fa-solid ${iconType}"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-200">${esMesa}</h3>
+                                    <span class="text-xs text-slate-500">ID Pedido: #${pedido.id_pedido}</span>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${badgeColor}">
+                                ${pedido.estado_p}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-800/60">
+                            <span class="text-xs text-slate-500">
+                                <i class="fa-regular fa-clock mr-1"></i>${new Date(pedido.fecha_p).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </span>
+                            <span class="font-extrabold text-lg text-emerald-400">$${pedido.total_p.toFixed(2)}</span>
+                        </div>
+                    `;
+                    contenedor.appendChild(card);
+                });
+            } catch (error) {
+                console.error("Error al cargar pedidos activos:", error);
+            }
+        }
+
+        // 2. Cargar los detalles del pedido seleccionado llamando a tu ruta dinámica existente
+        async function verDetallePedido(idPedido, total) {
+            idPedidoSeleccionado = idPedido;
+            const detalleContenedor = document.getElementById('detalle-pedido-seleccionado');
+            const panelAcciones = document.getElementById('panel-acciones-pago');
+            const totalPagoTxt = document.getElementById('total-pago');
+
+            detalleContenedor.innerHTML = '<p class="text-slate-500 text-sm text-center py-6"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando productos...</p>';
+            
+            try {
+                // LLAMADA A TU ENDPOINT EXISTENTE: Asegúrate de que esta URL coincida exactamente con tu endpoint en app.py
+                const respuesta = await fetch(`/api/pedidos/obtener/${idPedido}`);
+                const data = await respuesta.json();
+
+                detalleContenedor.innerHTML = '';
+                
+                // Mapeo dinámico de los productos del pedido
+                data.productos.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = "flex justify-between items-center text-sm bg-slate-950 p-3 rounded-xl border border-slate-800/60";
+                    itemDiv.innerHTML = `
+                        <div>
+                            <p class="font-semibold text-slate-200">${item.nombre_producto}</p>
+                            <p class="text-xs text-slate-500">Cant: ${item.cantidad_p} x $${item.precio_unitario.toFixed(2)}</p>
+                        </div>
+                        <span class="font-bold text-slate-300">$${(item.cantidad_p * item.precio_unitario).toFixed(2)}</span>
+                    `;
+                    detalleContenedor.appendChild(itemDiv);
+                });
+
+                totalPagoTxt.innerText = `$${total.toFixed(2)}`;
+                panelAcciones.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error al obtener el detalle:", error);
+                detalleContenedor.innerHTML = '<p class="text-red-400 text-sm text-center py-6"><i class="fa-solid fa-circle-exclamation mr-2"></i>Error al cargar detalles de la orden.</p>';
+            }
+        }
+
+        // 3. Confirmar pago y enviar la actualización por método PUT hacia el servidor
+        async function procesarCobro() {
+            if (!idPedidoSeleccionado) return;
+
+            if (!confirm(`¿Confirmar cobro y cierre de cuenta para el Pedido #${idPedidoSeleccionado}?`)) return;
+
+            try {
+                // LLAMADA A LA RUTA API NUEVA QUE CONECTA CON pagos.py
+                const respuesta = await fetch(`/api/pedidos/pagar/${idPedidoSeleccionado}`, {
+                    method: 'PUT'
+                });
+
+                if (respuesta.ok) {
+                    alert("¡Venta registrada con éxito! La cuenta ha sido cerrada.");
+                    document.getElementById('panel-acciones-pago').classList.add('hidden');
+                    document.getElementById('detalle-pedido-seleccionado').innerHTML = `
+                        <p class="text-slate-500 text-sm text-center py-8">Selecciona un pedido de la izquierda para ver el detalle y proceder al cobro.</p>
+                    `;
+                    idPedidoSeleccionado = null;
+                    
+                    // Recargar de forma armoniosa asíncronamente las cuentas activas
+                    cargarPedidosActivos(); 
+                } else {
+                    alert("No se pudo procesar el cobro en el sistema.");
+                }
+            } catch (error) {
+                console.error("Error de conexión al cobrar:", error);
+            }
+        }
+    </script>
+</body>
+</html>

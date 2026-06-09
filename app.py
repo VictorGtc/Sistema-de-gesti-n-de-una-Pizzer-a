@@ -1,13 +1,13 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from src.usuarios import registrar_usuarios, validar_usuarios
+from src.usuarios import registrar_usuarios, validar_usuarios,obtener_usuario
 from src.productos import registrar_producto, obtener_productos, actualizar_producto, eliminar_producto
 from src.categorias import registrar_categoria, obtener_categorias, actualizar_categoria, eliminar_categoria
 from src.recetas import registrar_recetas, obtener_receta
-from src.inventario import registrar_inventario, obtener_inventario
+from src.inventario import registrar_inventario, obtener_inventario,cambiar_estado_ingrediente
 from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos
 from src.clientes import registrar_clientes, validar_clientes
-
+from src.pagos import obtener_pagopendiente,registrar_pago_pedido
 
 import os
 from werkzeug.utils import secure_filename
@@ -51,20 +51,45 @@ def api_usuarios():
     else:
         return jsonify({"mensaje": "Error del servidor"}), 500
 
-@app.route('/login',methods=['POST'])
-
+@app.route('/login', methods=['POST'])
 def api_login():
-    datos=request.get_json()
-    correo=datos.get('correo')
-    contraseña=datos.get('contraseña')
+    datos = request.get_json()
+    correo = datos.get('correo')
+    password = datos.get('password') # CORREGIDO: Ahora coincide exactamente con el HTML
 
-    resultado, info =validar_usuarios(correo,contraseña)
+    if not correo or not password:
+        return jsonify({"mensaje": "Faltan datos requeridos"}), 400
 
-    if resultado is True:
-        return jsonify({"mensaje" : "Inicio exitoso","Usuario": info}), 200
-    else:
-        return jsonify({"mensaje" :info}), 401
-    
+    # 1. Intentamos validar primero si es un Empleado (Usuario interno)
+    es_usuario, info_usuario = validar_usuarios(correo, password)
+    if es_usuario:
+        return jsonify({
+            "mensaje": "Inicio exitoso",
+            "perfil": {
+                "Nombre": info_usuario.get('Nombre'),
+                "Correo": info_usuario.get('Correo'),
+                "Rol": info_usuario.get('Rol'),  # admin, cocina, mesero
+                "Tipo": "empleado"
+            }
+        }), 200
+
+    # 2. Si no es empleado, buscamos en la tabla de Clientes
+    es_cliente, info_cliente = validar_clientes(correo, password)
+    if es_cliente:
+        return jsonify({
+            "mensaje": "Inicio exitoso",
+            "perfil": {
+                "Nombre": info_cliente.get('Nombre'),
+                "Correo": info_cliente.get('Correo'),
+                "Rol": "cliente",  # Rol asignado por defecto para el frontend
+                "Tipo": "cliente",
+                "id_cliente": info_cliente.get('id_cliente'),
+                "Direccion": info_cliente.get('Direccion')
+            }
+        }), 200
+
+    # 3. Si no coincide en ninguna de las dos tablas
+    return jsonify({"mensaje": "El correo o la contraseña son incorrectos"}), 401
 
 @app.route('/api/productos', methods=['POST'])
 
@@ -135,16 +160,18 @@ def api_registrar_recetas():
 def api_registrar_inventario():
     datos=request.get_json()
     nombre_i=datos.get("nombre_i")
-    cantidad_i=datos.get("cantidad_i")
-
-
-    resultado=registrar_inventario(nombre_i,cantidad_i)
-
-    if resultado is True:
-        return jsonify({"mensaje" : "Ingrediente registrada"}), 200
-    else:
-        return jsonify({"mensaje" : "Ingrediente no registrada"}), 401
     
+    stock_inicial=float(datos.get('stock_actual',0))
+    stock_minimo=float(datos.get('stock_minimo',0))
+    unidad_registrada=datos.get('unidad_registrada')
+    
+    resultado=registrar_inventario(nombre_i,stock_inicial,stock_minimo,unidad_registrada)
+
+    if resultado == True:
+        return jsonify({"mensaje" : "Inventario registrado"}), 200
+    else:
+        return jsonify({"mensaje" : "Inventario no registrada"}), 500
+
 
 
 @app.route('/api/pedido_local', methods=['POST'])
@@ -186,18 +213,6 @@ def api_registrar_cliente():
         return jsonify({"error": "No se pudo registrar al cliente"}), 500
 
 
-@app.route('/api/login_cliente', methods=['POST'])
-def api_login_cliente():
-    datos = request.get_json()
-    correo = datos.get('correo')
-    password = datos.get('password')
-
-    exito, resultado = validar_clientes(correo, password)
-    
-    if exito:
-        return jsonify({"mensaje": "Login correcto", "cliente": resultado}), 200
-    else:
-        return jsonify({"error": resultado}), 401
 
 
 
@@ -222,56 +237,27 @@ def api_pedido_domicilio():
 
 
 
+@app.route('/api/usuarios/registrar_empleado', methods=['POST'])
+def api_registrar_empleado():
+    datos = request.get_json()
+    nombre = datos.get('nombre')
+    apellido = datos.get('apellido')
+    correo = datos.get('correo')
+    password = datos.get('password')
+    telefono = datos.get('telefono')
+    rol = datos.get('rol') # Capturamos el rol elegido por el admin
 
-    
-@app.route('/api/obtener_categorias', methods=['GET'])
-def api_obtener_categorias():
-    lista_categorias= obtener_categorias()
-    return jsonify(lista_categorias),200
+    if not all([nombre,apellido, correo, password, telefono, rol]):
+        return jsonify({"mensaje": "Todos los campos son obligatorios"}), 400
 
-@app.route('/api/obtener_productos', methods=['GET'])
-def api_obtener_productos():
-    lista_productos= obtener_productos()
-    return jsonify(lista_productos),200
+    # Llamamos a la función de tu módulo con el nuevo parámetro 'rol'
+    exito = registrar_usuarios(nombre,apellido, correo, password, telefono, rol)
 
-@app.route('/api/obtener_receta', methods=['GET'])
-def api_obtener_receta():
-    lista_productos= obtener_receta()
-    return jsonify(lista_productos),200
-
-@app.route('/api/obtener_inventario', methods=['GET'])
-def api_obtener_ingrediente():
-    lista_productos= obtener_inventario()
-    return jsonify(lista_productos),200
-
-@app.route('/api/obtener_pedido', methods=['GET'])
-def api_obtener_pedidos():
-    lista_pedidos=obtener_pedido()
-    if not lista_pedidos:
-        return jsonify({"mensaje":"No hay pedidos para hoy"}),200
+    if exito:
+        return jsonify({"mensaje": "Empleado registrado exitosamente"}), 200
     else:
-        return jsonify(lista_pedidos),200
-    
+        return jsonify({"mensaje": "El correo ya está registrado o hubo un error"}), 500
 
-
-
-#=========== ACTUALIZACIONES ====================
-
-@app.route('/api/actualizar_estado', methods=['PUT'])
-def api_actualizar_estado_pedido():
-    datos=request.get_json()
-    id_pedido=datos.get('id_pedido')
-    nuevo_estado=datos.get('nuevo_estado')
-
-    if not id_pedido or not nuevo_estado:
-        return jsonify({"Error": "Faltan datos obligatorios (id o el estado)"} ), 400
-    resultado=actualizar_pedidos(id_pedido,nuevo_estado)
-
-    if resultado:
-        return jsonify({"Mensaje":f"El pedido #{id_pedido} se actualizo al estado {nuevo_estado}"}), 200
-    else: 
-        return jsonify({"Mensaje":f"El pedido #{id_pedido} no pudo actualizarse su estado"}), 500
-    
 
 
 @app.route('/api/productos/actualizar/<int:id_producto>', methods=['POST'])
@@ -320,6 +306,100 @@ def api_actualizar_categoria(id_categoria):
 
 
 
+
+    
+@app.route('/api/obtener_categorias', methods=['GET'])
+def api_obtener_categorias():
+    lista_categorias= obtener_categorias()
+    return jsonify(lista_categorias),200
+
+@app.route('/api/obtener_productos', methods=['GET'])
+def api_obtener_productos():
+    lista_productos= obtener_productos()
+    return jsonify(lista_productos),200
+
+@app.route('/api/obtener_receta', methods=['GET'])
+def api_obtener_receta():
+    lista_productos= obtener_receta()
+    return jsonify(lista_productos),200
+
+@app.route('/api/obtener_inventario', methods=['GET'])
+def api_obtener_ingrediente():
+    lista_productos= obtener_inventario()
+    return jsonify(lista_productos),200
+
+@app.route('/api/obtener_pedido', methods=['GET'])
+def api_obtener_pedidos():
+    lista_pedidos=obtener_pedido()
+    if not lista_pedidos:
+        return jsonify({"mensaje":"No hay pedidos para hoy"}),200
+    else:
+        return jsonify(lista_pedidos),200
+
+@app.route('/api/obtener_usuario', methods=['GET'])
+def api_obtener_usuario():
+    lista_usuarios=obtener_usuario()
+    if not lista_usuarios:
+        return jsonify({"mensaje":"No hay usuarios existentes"}),200
+    else:
+        return jsonify(lista_usuarios),200
+    
+
+@app.route('/api/pedidos/activos', methods=['GET'])
+def api_obtener_pedidos_activos():
+    return obtener_pagopendiente()
+
+
+
+
+
+
+
+#=========== ACTUALIZACIONES ====================
+
+
+
+@app.route('/api/pedidos/pagar/<int:id_pedido>', methods=['PUT'])
+def api_pagar_pedido(id_pedido):
+    return registrar_pago_pedido(id_pedido)
+
+@app.route('/api/actualizar_estado', methods=['PUT'])
+def api_actualizar_estado_pedido():
+    datos=request.get_json()
+    id_pedido=datos.get('id_pedido')
+    nuevo_estado=datos.get('nuevo_estado')
+
+    if not id_pedido or not nuevo_estado:
+        return jsonify({"Error": "Faltan datos obligatorios (id o el estado)"} ), 400
+    resultado=actualizar_pedidos(id_pedido,nuevo_estado)
+
+    if resultado:
+        return jsonify({"Mensaje":f"El pedido #{id_pedido} se actualizo al estado {nuevo_estado}"}), 200
+    else: 
+        return jsonify({"Mensaje":f"El pedido #{id_pedido} no pudo actualizarse su estado"}), 500
+    
+
+@app.route('/api/inventario/estado', methods=['PUT'])
+def api_cambiar_estado_inventario():
+    datos = request.get_json()
+    id_inventario = datos.get('id_inventario')
+    nuevo_estado = datos.get('activo') 
+    
+    if id_inventario is None or nuevo_estado is None:
+        return jsonify({"mensaje": "Datos incompletos"}), 400
+        
+    exito = cambiar_estado_ingrediente(id_inventario, nuevo_estado)
+    
+    if exito:
+        mensaje = "Ingrediente deshabilitado" if nuevo_estado == 0 else "Ingrediente habilitado"
+        return jsonify({"mensaje": mensaje}), 200
+    else:
+        return jsonify({"mensaje": "No se pudo cambiar el estado"}), 500
+
+
+
+
+
 # ===== rutas de las vistas 
 
 @app.route('/', methods=['GET'])
@@ -341,6 +421,10 @@ def vista_registro():
 @app.route('/admin', methods=['GET'])
 def vista_admin():
     return render_template('admin.html')
+
+@app.route('/cajero', methods=['GET'])
+def vista_cajero():
+    return render_template('cajero.html')
 
 # ============== funciones de eliminaciones 
 

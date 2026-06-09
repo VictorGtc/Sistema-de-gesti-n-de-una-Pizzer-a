@@ -36,7 +36,18 @@
                 class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
                 <i class="fa-solid fa-mortar-pestle"></i> Recetas por Producto
             </button>
+            <button onclick="cambiarPestana('inventario')" id="tab-inventario" 
+                class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-mortar-pestle"></i> Control de inventario 
+            </button>
+            <button onclick="cambiarPestana('usuarios')" id="tab-usuarios" 
+                class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-users-gear"></i> Gestión de Empleados
+            </button>
         </div>
+
+
+        
 
 
         <div id="seccion-productos" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -159,9 +170,9 @@
         <div id="seccion-recetas" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
                 <h2 class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-basket-shopping text-amber-400"></i> Asignar Insumo
+                    <i class="fa-solid fa-basket-shopping text-amber-400"></i> Configurar Receta masiva
                 </h2>
-                <form id="form-receta" onsubmit="guardarIngredienteReceta(event)" class="space-y-4">
+                <form id="form-receta" onsubmit="guardarRecetaCompleta(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">1. Selecciona el Producto</label>
                         <select id="receta-producto" required onchange="cargarRecetaEspecifica()"
@@ -170,30 +181,38 @@
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">2. Insumo / Ingrediente</label>
-                        <select id="receta-inventario" required
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">3. Cantidad Requerida</label>
-                        <div class="relative">
-                            <input type="number" id="receta-cantidad" step="0.001" required placeholder="Ej: 0.150 o 1"
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
-                            <span class="absolute right-4 top-3 text-sm text-slate-500">Unidades/Kg</span>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">2. Insumos y Cantidades</label>
+                            <button type="button" onclick="agregarFilaIngrediente()" 
+                                class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1 px-2.5 rounded-lg border border-slate-700 transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Añadir Fila
+                            </button>
                         </div>
-                        <p class="text-[10px] text-slate-500 mt-1">Usa decimales para el peso (ej. 0.200 para 200 gramos).</p>
+
+                        <div id="contenedor-filas-ingredientes" class="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                            <div class="fila-ingrediente flex gap-2 items-center">
+                                <select required name="insumo_id"
+                                    class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all select-insumo-dinamico">
+                                </select>
+                                <div class="relative w-32">
+                                    <input type="number" required name="insumo_cantidad" step="0.001" placeholder="Cant."
+                                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                                </div>
+                                <button type="button" class="text-slate-600 cursor-not-allowed p-2 text-sm" disabled>
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-2">Usa decimales para el peso (ej. 0.200 para 200g).</p>
                     </div>
 
                     <div class="pt-4">
                         <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
-                            Añadir a la Receta
+                            Guardar Receta Completa
                         </button>
                     </div>
                 </form>
             </div>
-
             <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
                 <div class="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
                     <h3 class="font-bold text-slate-200">Componentes de la Receta</h3>
@@ -215,76 +234,243 @@
                         </tbody>
                     </table>
                 </div>
+
+
+                
+
             </div>
         </div>
-    <script>
-        // Variables globales para almacenar lo obtenido de las APIs
-        let listaCategoriasGlobal = [];
+            
+        <div id="seccion-inventario" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
+                    <h2 class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-amber-400"></i> Nuevo Ingrediente
+                    </h2>
+                    <form id="form-inventario" onsubmit="guardarIngrediente(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre del Ingrediente</label>
+                            <input type="text" id="inv-nombre" required placeholder="Ej. Queso Mozzarella, Pepperoni" 
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Stock Inicial</label>
+                                <input type="number" id="inv-stock" required min="0" step="0.01" placeholder="0.00"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Stock Mínimo</label>
+                                <input type="number" id="inv-stock-min" required min="0" step="0.01" placeholder="Ej. 2.00"
+                                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                            </div>
+                        </div>
 
-        // Ejecutar funciones al cargar la pantalla por primera vez
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Unidad de Medida</label>
+                            <select id="inv-unidad" required 
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                                <option value="Kg">Kilogramos (Kg)</option>
+                                <option value="G">Gramos (g)</option>
+                                <option value="Litros">Litros (L)</option>
+                                <option value="Unidades">Unidades</option>
+                            </select>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" 
+                                class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
+                                Registrar Ingrediente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="p-6 border-b border-slate-800 bg-slate-900/50">
+                        <h3 class="font-bold text-slate-200">Ingredientes en Inventario</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                    <th class="py-4 px-6">Ingrediente</th>
+                                    <th class="py-4 px-6 text-center">Stock Actual</th>
+                                    <th class="py-4 px-6 text-center">Stock Mínimo</th>
+                                    <th class="py-4 px-6 text-center">Estado</th>
+                                    <th class="py-4 px-6 text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-inventario-body" class="divide-y divide-slate-800/50 text-sm">
+                                <tr>
+                                    <td colspan="4" class="py-8 text-center text-slate-500 italic">
+                                        <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando inventario...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="seccion-usuarios" class="pestana-contenido hidden p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit">
+                        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus text-amber-400"></i> Registrar Nuevo Empleado
+                        </h2>
+                        <form id="form-empleados" onsubmit="guardarEmpleado(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Nombres</label>
+                                <input type="text" id="emp-nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Apellidos</label>
+                                <input type="text" id="emp-apellido" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Correo Electrónico</label>
+                                <input type="email" id="emp-correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Contraseña de Acceso</label>
+                                <input type="password" id="emp-password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Telefono</label>
+                                <input type="text" id="emp-telefono" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Rol del Sistema</label>
+                                <select id="emp-rol" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
+                                    <option value="Administrador">Administrador (Acceso Total)</option>
+                                    <option value="Cocina">Cocinero (Panel de Pedidos)</option>
+                                    <option value="Mesero">Mesero (Toma de Ordenes)</option>
+                                    <option value="Cajero">Cajero (Realiza el cobro)</option>
+
+  
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-amber-500/10">
+                                Registrar Empleado
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                        <div class="p-6 border-b border-slate-800 bg-slate-900/50">
+                            <h3 class="font-bold text-slate-200">Personal Registrado</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                        <th class="py-4 px-6">Empleado</th>
+                                        <th class="py-4 px-6">Contacto</th>
+                                        <th class="py-4 px-6">Rol</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-usuarios-body" class="divide-y divide-slate-800/50 text-sm">
+                                    <tr>
+                                        <td colspan="3" class="py-8 text-center text-slate-500 italic">
+                                            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando personal...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+    
+
+    <script>
+        // Variables globales
+        let listaCategoriasGlobal = [];
+        let listaInsumosGlobal = [];
+
         document.addEventListener("DOMContentLoaded", () => {
             cargarCategorias();
             cargarProductos();
+            cargarInventario();
+            cargarUsuarios();
         });
 
         // CONTROL DE PESTAÑAS (TABS)
+        // CONTROL DE PESTAÑAS (TABS)
         function cambiarPestana(pestana) {
+            // 1. CAPTURAMOS LAS CUATRO SECCIONES DEL HTML
             const secProd = document.getElementById('seccion-productos');
             const secCat = document.getElementById('seccion-categorias');
-            const secRec = document.getElementById('seccion-recetas'); // Extraemos la nueva sección
+            const secRec = document.getElementById('seccion-recetas');
+            const secInv = document.getElementById('seccion-inventario');
+            const secUser = document.getElementById('seccion-usuarios'); // <-- La sección nueva
+
             
+            // 2. CAPTURAMOS LOS CUATRO BOTONES de la barra superior
             const tabProd = document.getElementById('tab-productos');
             const tabCat = document.getElementById('tab-categorias');
-            const tabRec = document.getElementById('tab-recetas'); // Extraemos el nuevo botón
+            const tabRec = document.getElementById('tab-recetas');
+            const tabInv = document.getElementById('tab-inventario');
+            const tabUser = document.getElementById('tab-usuarios'); // <-- El botón nuevo
 
+            // 3. OCULTAMOS TODAS LAS SECCIONES (les ponemos 'hidden') por seguridad
+            if(secProd) secProd.classList.add('hidden');
+            if(secCat) secCat.classList.add('hidden');
+            if(secRec) secRec.classList.add('hidden');
+            if(secInv) secInv.classList.add('hidden');
+            if(secUser) secUser.classList.add('hidden');
+
+            // 4. RESETEAMOS LOS BOTONES: Les quitamos el color amarillo y los dejamos opacos
+            const claseTabInactiva = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+            if(tabProd) tabProd.className = claseTabInactiva;
+            if(tabCat) tabCat.className = claseTabInactiva;
+            if(tabRec) tabRec.className = claseTabInactiva;
+            if(tabInv) tabInv.className = claseTabInactiva;
+            if(tabUser) tabUser.className = claseTabInactiva;
+            // Esta es la clase de Tailwind que pinta el botón de amarillo brillante
+            const claseTabActiva = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
+
+            // 5. EVALUAMOS QUÉ PESTAÑA SE TOCÓ Y LA ENCENDEMOS
             if (pestana === 'productos') {
-                // Mostramos productos, ocultamos los demás
-                secProd.classList.remove('hidden');
-                secCat.classList.add('hidden');
-                if (secRec) secRec.classList.add('hidden');
-                
-                tabProd.className = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
-                tabCat.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-                if (tabRec) tabRec.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-                
-            } else if (pestana === 'categorias') {
-                // Mostramos categorías, ocultamos los demás
-                secProd.classList.add('hidden');
+                secProd.classList.remove('hidden'); // Muestra la sección
+                tabProd.className = claseTabActiva; // Enciende el botón
+            } 
+            else if (pestana === 'categorias') {
                 secCat.classList.remove('hidden');
-                if (secRec) secRec.classList.add('hidden');
+                tabCat.className = claseTabActiva;
+            } 
+            else if (pestana === 'recetas') {
+                secRec.classList.remove('hidden');
+                tabRec.className = claseTabActiva;
+                // Si la función para preparar los selects existe, la ejecuta
+                if (typeof prepararSelectoresReceta === "function") prepararSelectoresReceta();
+            } 
+            else if (pestana === 'inventario') {
+                secInv.classList.remove('hidden'); // Muestra el inventario
+                tabInv.className = claseTabActiva; // Enciende el botón de inventario
                 
-                tabCat.className = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
-                tabProd.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-                if (tabRec) tabRec.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-                
-            } else if (pestana === 'recetas') {
-                // Mostramos recetas, ocultamos los demás
-                secProd.classList.add('hidden');
-                secCat.classList.add('hidden');
-                if (secRec) secRec.classList.remove('hidden');
-                
-                if (tabRec) tabRec.className = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
-                tabProd.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-                tabCat.className = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-                
-                // Ejecutamos la carga segura de selectores si la función existe
-                if (typeof prepararSelectoresReceta === "function") {
-                    prepararSelectoresReceta();
-                }
+                // ¡IMPORTANTE!: Cada vez que abras esta pestaña, llamará a la API automáticamente 
+                // para traer los ingredientes actualizados sin tener que recargar la página.
+                if (typeof cargarInventario === "function") cargarInventario();
+            }else if (pestana === 'usuarios') {
+                if(secUser) secUser.classList.remove('hidden'); // Muestra la sección de empleados
+                if(tabUser) tabUser.className = claseTabActiva; // Enciende su botón de amarillo
+            }else if (pestana === 'usuarios') {
+                if(secUser) secUser.classList.remove('hidden');
+                if(tabUser) tabUser.className = claseTabActiva;
+                cargarUsuarios(); // <--- ¡AQUÍ! Llama a la función al dar clic al botón de la barra
             }
         }
 
         // ==========================================
         // 📁 CONTROLADORES DE CATEGORÍAS
         // ==========================================
-
         async function cargarCategorias() {
             try {
                 const respuesta = await fetch('/api/obtener_categorias');
                 const categorias = await respuesta.json();
-                listaCategoriasGlobal = categorias; // Guardamos para el select de productos
+                listaCategoriasGlobal = categorias;
 
-                // 1. Llenar la Tabla de Categorías
                 const tbody = document.getElementById('tabla-categorias');
                 tbody.innerHTML = '';
                 
@@ -309,64 +495,49 @@
                     `;
                 });
 
-                // 2. Llenar el Select de Categorías en el Formulario de Productos
                 const selectProdCat = document.getElementById('prod-categoria');
                 selectProdCat.innerHTML = '<option value="" disabled selected>Selecciona una categoría</option>';
                 categorias.forEach(cat => {
                     selectProdCat.innerHTML += `<option value="${cat.id_categoria}">${cat.nombre_c}</option>`;
                 });
-
             } catch (error) {
                 console.error("Error al cargar categorías:", error);
             }
         }
 
         async function guardarCategoria(event) {
-            event.preventDefault(); // ¡CRÍTICO! Evita que la página haga el GET rústico y se recargue
-            
+            event.preventDefault();
             const idCat = document.getElementById('cat-id').value;
             const nombre = document.getElementById('cat-nombre').value;
             const archivoInput = document.getElementById('cat-imagen');
 
-            // Usamos FormData porque enviamos un archivo binario (imagen)
             const formData = new FormData();
             formData.append('nombre', nombre);
             if (archivoInput.files[0]) {
-                formData.append('image_route', archivoInput.files[0]); // Mismo nombre que lee Flask
+                formData.append('image_route', archivoInput.files[0]);
             }
 
             let url = '/api/categorias';
-            // Si el campo oculto tiene ID, significa que estamos editando
-            if (idCat) {
-                url = `/api/categorias/actualizar/${idCat}`;
-            }
+            if (idCat) url = `/api/categorias/actualizar/${idCat}`;
 
             try {
-                const respuesta = await fetch(url, {
-                    method: 'POST', // Tus dos rutas de Flask usan POST
-                    body: formData
-                });
-
+                const respuesta = await fetch(url, { method: 'POST', body: formData });
                 const resultado = await respuesta.json();
-
                 if (respuesta.ok) {
                     alert(resultado.mensaje);
                     limpiarFormCategoria();
-                    cargarCategorias(); // Refresca la tabla y el select automáticamente
+                    cargarCategorias();
                 } else {
                     alert("Error: " + (resultado.mensaje || resultado.error));
                 }
             } catch (error) {
                 console.error("Error al guardar categoría:", error);
-                alert("Error de conexión con el servidor");
             }
         }
 
         function prepararEditarCategoria(id, nombre) {
             document.getElementById('cat-id').value = id;
             document.getElementById('cat-nombre').value = nombre;
-            
-            // Cambiamos textos visuales para que el usuario sepa que está editando
             document.getElementById('titulo-form-categoria').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Categoría';
             document.getElementById('btn-cancelar-cat').classList.remove('hidden');
         }
@@ -379,35 +550,26 @@
         }
 
         async function eliminarCategoriaJs(id) {
-            if (!confirm("¿Estás seguro de eliminar esta categoría? Se borrará permanentemente.")) return;
-
+            if (!confirm("¿Estás seguro?")) return;
             try {
-                const respuesta = await fetch(`/api/categorias/eliminar/${id}`, {
-                    method: 'DELETE'
-                });
+                const respuesta = await fetch(`/api/categorias/eliminar/${id}`, { method: 'DELETE' });
                 const resultado = await respuesta.json();
-
                 if (respuesta.ok) {
                     alert(resultado.mensaje);
                     cargarCategorias();
-                } else {
-                    alert("Error: " + resultado.mensaje);
                 }
             } catch (error) {
-                console.error("Error al eliminar categoría:", error);
+                console.error(error);
             }
         }
-
 
         // ==========================================
         // 🍕 CONTROLADORES DE PRODUCTOS
         // ==========================================
-
         async function cargarProductos() {
             try {
                 const respuesta = await fetch('/api/obtener_productos');
                 const productos = await respuesta.json();
-
                 const tbody = document.getElementById('tabla-productos');
                 tbody.innerHTML = '';
 
@@ -433,13 +595,12 @@
                     `;
                 });
             } catch (error) {
-                console.error("Error al cargar productos:", error);
+                console.error(error);
             }
         }
 
         async function guardarProducto(event) {
             event.preventDefault();
-
             const idProd = document.getElementById('prod-id').value;
             const nombre = document.getElementById('prod-nombre').value;
             const precio = document.getElementById('prod-precio').value;
@@ -451,37 +612,23 @@
             formData.append('precio', precio);
             formData.append('id_categoria', idCategoria);
             if (archivoInput.files[0]) {
-                formData.append('imagen_route', archivoInput.files[0]); // Mismo nombre que lee tu Flask
+                formData.append('imagen_route', archivoInput.files[0]);
             }
 
             let url = '/api/productos';
-            if (idProd) {
-                url = `/api/productos/actualizar/${idProd}`;
-            }
+            if (idProd) url = `/api/productos/actualizar/${idProd}`;
 
             try {
-                const respuesta = await fetch(url, {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const respuesta = await fetch(url, { method: 'POST', body: formData });
                 const resultado = await respuesta.json();
-
                 if (respuesta.ok) {
                     alert(resultado.mensaje);
                     limpiarFormProducto();
                     cargarProductos();
-                } else {
-                    alert("Error: " + resultado.mensaje);
                 }
             } catch (error) {
-                console.error("Error al guardar producto:", error);
-                alert("Error de conexión");
+                console.error(error);
             }
-        }
-
-        function perderEditarProducto(id, nombre, precio, idCategoria) {
-            // Función auxiliar por si acaso
         }
 
         function prepararEditarProducto(id, nombre, precio, idCategoria) {
@@ -489,7 +636,6 @@
             document.getElementById('prod-nombre').value = nombre;
             document.getElementById('prod-precio').value = precio;
             document.getElementById('prod-categoria').value = idCategoria;
-
             document.getElementById('titulo-form-producto').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Producto';
             document.getElementById('btn-cancelar-prod').classList.remove('hidden');
         }
@@ -502,124 +648,377 @@
         }
 
         async function eliminarProductoJs(id) {
-            if (!confirm("¿Seguro que deseas eliminar este producto?")) return;
-
+            if (!confirm("¿Seguro?")) return;
             try {
-                const respuesta = await fetch(`/api/productos/eliminar/${id}`, {
-                    method: 'DELETE'
-                });
-                const resultado = await respuesta.json();
-
-                if (respuesta.ok) {
-                    alert(resultado.mensaje);
-                    cargarProductos();
-                } else {
-                    alert("Error: " + resultado.mensaje);
-                }
+                const respuesta = await fetch(`/api/productos/eliminar/${id}`, { method: 'DELETE' });
+                if (respuesta.ok) cargarProductos();
             } catch (error) {
-                console.error("Error al eliminar producto:", error);
+                console.error(error);
             }
         }
 
         // ==========================================
-// 🧪 CONTROLADORES DE RECETAS
-// ==========================================
+        // 🧪 CONTROLADORES DE RECETAS (DINÁMICO)
+        // ==========================================
+        async function prepararSelectoresReceta() {
+            try {
+                const resProd = await fetch('/api/obtener_productos');
+                const productos = await resProd.json();
+                const selectProd = document.getElementById('receta-producto');
+                
+                selectProd.innerHTML = '<option value="" disabled selected>Selecciona un producto</option>';
+                productos.forEach(p => {
+                    selectProd.innerHTML += `<option value="${p.id_producto}">${p.nombre_pr}</option>`;
+                });
 
-async function prepararSelectoresReceta() {
-    try {
-        // 1. Llenar select de productos
-        const resProd = await fetch('/api/obtener_productos');
-        const productos = await resProd.json();
-        const selectProd = document.getElementById('receta-producto');
-        
-        selectProd.innerHTML = '<option value="" disabled selected>Selecciona un producto</option>';
-        productos.forEach(p => {
-            selectProd.innerHTML += `<option value="${p.id_producto}">${p.nombre_pr}</option>`;
-        });
-
-        // 2. Llenar select de inventario (insumos)
-        const resInv = await fetch('/api/obtener_inventario');
-        const inventario = await resInv.json();
-        const selectInv = document.getElementById('receta-inventario');
-        
-        selectInv.innerHTML = '<option value="" disabled selected>Selecciona un insumo</option>';
-        inventario.forEach(i => {
-            selectInv.innerHTML += `<option value="${i.id_inventario}">${i.nombre_i}</option>`;
-        });
-
-    } catch (error) {
-        console.error("Error al preparar selectores de recetas:", error);
-    }
-}
-
-async function cargarRecetaEspecifica() {
-    const idProducto = document.getElementById('receta-producto').value;
-    const select = document.getElementById('receta-producto');
-    const nombreProducto = select.options[select.selectedIndex].text;
-    
-    document.getElementById('nombre-producto-seleccionado').innerText = nombreProducto;
-    
-    try {
-        const respuesta = await fetch('/api/obtener_receta');
-        const todasLasRecetas = await respuesta.json();
-        
-        // Filtramos para renderizar solo los insumos que pertenezcan a este producto
-        const recetaFiltrada = todasLasRecetas.filter(r => r.id_producto == idProducto);
-        
-        const tbody = document.getElementById('tabla-recetas');
-        tbody.innerHTML = '';
-        
-        if (recetaFiltrada.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-500 italic">Este producto aún no tiene ingredientes asignados.</td></tr>`;
-            return;
+                const resInv = await fetch('/api/obtener_inventario');
+                listaInsumosGlobal = await resInv.json();
+                
+                reconstruirOpcionesSelectInsumo(document.querySelector('.select-insumo-dinamico'));
+            } catch (error) {
+                console.error(error);
+            }
         }
-        
-        recetaFiltrada.forEach(item => {
-            tbody.innerHTML += `
-                <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
-                    <td class="py-4 px-6 font-medium text-slate-200">${item.nombre_i || ('Insumo #' + item.id_inventario)}</td>
-                    <td class="py-4 px-6 text-slate-400 font-mono">${item.cantidad_requerida}</td>
-                    <td class="py-4 px-6 text-center">
-                        <span class="text-xs text-slate-500 italic">Listo</span>
-                    </td>
-                </tr>
+
+        function reconstruirOpcionesSelectInsumo(selectElement) {
+            if (!selectElement) return;
+            selectElement.innerHTML = '<option value="" disabled selected>Insumo...</option>';
+            listaInsumosGlobal.forEach(i => {
+                selectElement.innerHTML += `<option value="${i.id_inventario}">${i.nombre_i}</option>`;
+            });
+        }
+
+        function agregarFilaIngrediente() {
+            const contenedor = document.getElementById('contenedor-filas-ingredientes');
+            const nuevaFila = document.createElement('div');
+            nuevaFila.className = "fila-ingrediente flex gap-2 items-center";
+            
+            nuevaFila.innerHTML = `
+                <select required name="insumo_id" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all"></select>
+                <div class="relative w-32">
+                    <input type="number" required name="insumo_cantidad" step="0.001" placeholder="Cant." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-500 p-2 text-sm transition-all">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             `;
-        });
-        
-    } catch (error) {
-        console.error("Error al cargar la receta:", error);
-    }
-}
-
-async function guardarIngredienteReceta(event) {
-    event.preventDefault();
-    
-    const idProducto = document.getElementById('receta-producto').value;
-    const idInventario = document.getElementById('receta-inventario').value;
-    const cantidad = document.getElementById('receta-cantidad').value;
-
-    try {
-        const respuesta = await fetch('/api/recetas', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id_producto: idProducto,
-                id_inventario: idInventario,
-                cantidad_requerida: cantidad
-            })
-        });
-
-        const resultado = await respuesta.json();
-
-        if (respuesta.ok) {
-            alert(resultado.mensaje || "Ingrediente añadido con éxito");
-            document.getElementById('receta-cantidad').value = '';
-            cargarRecetaEspecifica(); // Recarga la tabla de inmediato
-        } else {
-            alert("Error: " + resultado.mensaje);
+            contenedor.appendChild(nuevaFila);
+            reconstruirOpcionesSelectInsumo(nuevaFila.querySelector('select'));
         }
-    } catch (error) {
-        console.error("Error al guardar en la receta:", error);
+
+        async function cargarRecetaEspecifica() {
+            const idProducto = document.getElementById('receta-producto').value;
+            const select = document.getElementById('receta-producto');
+            const nombreProducto = select.options[select.selectedIndex].text;
+            document.getElementById('nombre-producto-seleccionado').innerText = nombreProducto;
+            
+            try {
+                const respuesta = await fetch('/api/obtener_receta');
+                const todasLasRecetas = await respuesta.json();
+                const recetaFiltrada = todasLasRecetas.filter(r => r.id_producto == idProducto);
+                const tbody = document.getElementById('tabla-recetas');
+                tbody.innerHTML = '';
+                
+                if (recetaFiltrada.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-500 italic">Sin ingredientes asignados.</td></tr>`;
+                    return;
+                }
+                
+                recetaFiltrada.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
+                            <td class="py-4 px-6 font-medium text-slate-200">${item.nombre_i || ('Insumo #' + item.id_inventario)}</td>
+                            <td class="py-4 px-6 text-slate-400 font-mono">${item.cantidad_requerida}</td>
+                            <td class="py-4 px-6 text-center">
+                                <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">Asignado</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function guardarRecetaCompleta(event) {
+            event.preventDefault();
+            const idProducto = document.getElementById('receta-producto').value;
+            if (!idProducto) return alert("Selecciona un producto.");
+
+            const filas = document.querySelectorAll('.fila-ingrediente');
+            let ingredientesBatch = [];
+
+            filas.forEach(fila => {
+                const idInsumo = fila.querySelector('select[name="insumo_id"]').value;
+                const cantidad = fila.querySelector('input[name="insumo_cantidad"]').value;
+                if (idInsumo && cantidad) {
+                    ingredientesBatch.push({ id_inventario: idInsumo, cantidad_requerida: cantidad });
+                }
+            });
+
+            try {
+                const respuesta = await fetch('/api/recetas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_producto: idProducto, ingredientes: ingredientesBatch })
+                });
+                const resultado = await respuesta.json();
+                if (respuesta.ok) {
+                    alert("Receta guardada con éxito");
+                    const contenedor = document.getElementById('contenedor-filas-ingredientes');
+                    contenedor.innerHTML = `
+                        <div class="fila-ingrediente flex gap-2 items-center">
+                            <select required name="insumo_id" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all select-insumo-dinamico"></select>
+                            <div class="relative w-32"><input type="number" required name="insumo_cantidad" step="0.001" placeholder="Cant." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all"></div>
+                            <button type="button" class="text-slate-600 cursor-not-allowed p-2 text-sm" disabled><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    reconstruirOpcionesSelectInsumo(contenedor.querySelector('.select-insumo-dinamico'));
+                    cargarRecetaEspecifica();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+        async function cargarInventario() {
+            try {
+                const respuesta = await fetch('/api/obtener_inventario'); // Asegúrate de que coincida con tu ruta backend
+                const ingredientes = await respuesta.json();
+                
+                const tbody = document.getElementById('tabla-inventario-body');
+                tbody.innerHTML = ''; // Limpiar indicador de carga
+                
+                if (ingredientes.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="py-8 px-4 text-center text-sm text-slate-500 italic">No hay ingredientes registrados.</td>
+                        </tr>`;
+                    return;
+                }
+
+                ingredientes.forEach(item => {
+                    // Validación visual si el stock está por debajo del mínimo
+                    const nombreIngrediente = item.nombre_i || item.nombre;
+                    let stockActual = parseFloat(item.stock_inicial || item.stock_actual || 0);
+                    let stockMinimo = parseFloat(item.stock_minimo || 0);
+                    let unidadMedida = item.unidad_registrada || item.unidad_medida || 'g';
+                    const estaActivo = item.activo !== 0;
+                    if (unidadMedida === 'g' && stockActual >= 1000) {
+                        stockActual = (stockActual / 1000).toFixed(2);
+                        stockMinimo = (stockMinimo / 1000).toFixed(2);
+                        unidadMedida = 'Kg';
+                    } else if (unidadMedida === 'ml' && stockActual >= 1000) {
+                        stockActual = (stockActual / 1000).toFixed(2);
+                        stockMinimo = (stockMinimo / 1000).toFixed(2);
+                        unidadMedida = 'L';
+                    }
+
+                    const esBajo = parseFloat(item.stock_inicial || item.stock_actual) <= parseFloat(item.stock_minimo);
+                    
+                    const badgeEstado = estaActivo 
+                        ? (esBajo ? `<span class="bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Stock Bajo</span>`
+                                : `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`)
+                        : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
+
+                    // Creamos el botón dinámico: si está activo muestra icono de "Desactivar" (ojo/basura), si no, de "Activar"
+                    const botonAccion = estaActivo
+                        ? `<button onclick="alternarEstadoIngrediente(${item.id_inventario}, 0)" class="text-slate-400 hover:text-red-400 p-1 transition-colors" title="Deshabilitar">
+                            <i class="fa-solid fa-eye-slash"></i>
+                        </button>`
+                        : `<button onclick="alternarEstadoIngrediente(${item.id_inventario}, 1)" class="text-slate-500 hover:text-emerald-400 p-1 transition-colors" title="Habilitar">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>`;
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-900/30 transition-colors border-b border-slate-800/40">
+                            <td class="py-3 px-4 text-sm font-medium text-slate-200">${nombreIngrediente}</td>
+                            <td class="py-3 px-4 text-sm text-center font-mono ${esBajo ? 'text-red-400 font-bold' : 'text-slate-300'}">
+                                ${stockActual} <span class="text-xs text-slate-500">${unidadMedida}</span>
+                            </td>
+                            <td class="py-3 px-4 text-sm text-center text-slate-400 font-mono">
+                                ${stockMinimo} <span class="text-xs text-slate-500">${unidadMedida}</span>
+                            </td>
+                            <td class="py-4 px-6 text-center">
+                                ${badgeEstado}
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                ${botonAccion}
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+            } catch (error) {
+                console.error("Error al cargar el inventario:", error);
+                document.getElementById('tabla-inventario-body').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="py-8 px-4 text-center text-sm text-red-400 font-medium">Error al conectar con el servidor.</td>
+                    </tr>`;
+            }
+        }
+
+        // 2. Guardar un nuevo ingrediente en la base de datos
+        async function guardarIngrediente(event) {
+            event.preventDefault();
+            
+            const nombre = document.getElementById('inv-nombre').value;
+            const stock = document.getElementById('inv-stock').value;
+            const stockMin = document.getElementById('inv-stock-min').value;
+            const unidad = document.getElementById('inv-unidad').value;
+
+            try {
+                const respuesta = await fetch('/api/inventario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nombre_i: nombre,
+                        stock_actual: stock,
+                        stock_minimo: stockMin,
+                        unidad_registrada: unidad
+                    })
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    alert(resultado.mensaje || "Ingrediente registrado con éxito");
+                    document.getElementById('form-inventario').reset(); // Limpia el formulario completo
+                    cargarInventario(); 
+                    if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
+                    
+                } else {
+                    alert("Error del servidor: " + resultado.mensaje);
+                }
+            } catch (error) {
+                console.error("Error en la peticion fetch:", error);
+                alert("Ocurrió un error de red al intentar registrar el ingrediente.");
+            }
+        }
+        async function alternarEstadoIngrediente(id, nuevoEstado) {
+            const accion = nuevoEstado === 0 ? "¿Seguro que deseas deshabilitar este ingrediente?" : "¿Deseas volver a habilitar este ingrediente?";
+            if (!confirm(accion)) return;
+
+            try {
+                const respuesta = await fetch('/api/inventario/estado', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_inventario: id, activo: nuevoEstado })
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    cargarInventario(); // Refresca la tabla automáticamente sin F5
+                    if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
+                } else {
+                    alert("Error: " + resultado.mensaje);
+                }
+            } catch (error) {
+                console.error("Error al cambiar estado:", error);
+                alert("Error de red al intentar cambiar el estado.");
+            }
+        }
+
+        async function guardarEmpleado(event) {
+        event.preventDefault();
+        
+        const nombre = document.getElementById('emp-nombre').value;
+        const apellido = document.getElementById('emp-apellido').value; // Nuevo
+        const correo = document.getElementById('emp-correo').value;
+        const password = document.getElementById('emp-password').value;
+        const telefono = document.getElementById('emp-telefono').value; // Nuevo
+        const rol = document.getElementById('emp-rol').value;
+
+        try {
+            const respuesta = await fetch('/api/usuarios/registrar_empleado', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    apellido: apellido,
+                    correo: correo,
+                    password: password,
+                    telefono: telefono,
+                    rol: rol
+                })
+            });
+
+            const resultado = await respuesta.json();
+
+            if (respuesta.ok) {
+                alert(resultado.mensaje || "Empleado registrado con éxito");
+                document.getElementById('form-empleados').reset(); // Limpia el formulario
+            } else {
+                alert("Error: " + resultado.mensaje);
+            }
+        } catch (error) {
+            console.error("Error en la petición:", error);
+            alert("Ocurrió un error de red al intentar registrar al empleado.");
+        }
     }
-}
+
+    async function cargarUsuarios() {
+        const tbody = document.getElementById('tabla-usuarios-body');
+        if (!tbody) return;
+
+        try {
+            const respuesta = await fetch('/api/obtener_usuario');
+            if (!respuesta.ok) throw new Error("No se pudieron cargar los usuarios");
+
+            const usuarios = await respuesta.json();
+            tbody.innerHTML = '';
+
+            if (usuarios.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="py-8 text-center text-slate-500">No hay empleados registrados.</td>
+                    </tr>`;
+                return;
+            }
+
+            usuarios.forEach(user => {
+                // Definimos colores para los roles
+                let badgeColor = "bg-slate-950 text-slate-400 border border-slate-800";
+                if(user.rol === 'admin') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                if(user.rol === 'cocina') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                if(user.rol === 'mesero') badgeColor = "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+
+                const fila = document.createElement('tr');
+                fila.className = "hover:bg-slate-850/30 transition-colors group";
+                
+                // CORREGIDO: Leemos en minúsculas las llaves exactas que vienen del SELECT de MySQL
+                fila.innerHTML = `
+                    <td class="py-3.5 px-4">
+                        <div class="font-semibold text-slate-200 group-hover:text-amber-400 transition-colors">
+                            ${user.nombre_u} ${user.apellido_u}
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4 text-xs">
+                        <div class="text-slate-300 flex items-center gap-1.5 mb-0.5">
+                            <i class="fa-solid fa-envelope text-slate-500 w-4 text-center"></i> ${user.correo_u}
+                        </div>
+                        <div class="text-slate-500 flex items-center gap-1.5">
+                            <i class="fa-solid fa-phone text-slate-600 w-4 text-center"></i> ${user.telefono_u}
+                        </div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <span class="px-2.5 py-1 rounded-md text-xs font-bold capitalize inline-block ${badgeColor}">
+                            ${user.rol}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(fila);
+            });
+
+        } catch (error) {
+            console.error("Error al cargar los usuarios en el HTML:", error);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="py-8 text-center text-red-400">
+                        <i class="fa-solid fa-circle-exclamation mr-2"></i> Error al cargar el listado del personal.
+                    </td>
+                </tr>`;
+        }
+    }
     </script>
+</body>
+</html>
