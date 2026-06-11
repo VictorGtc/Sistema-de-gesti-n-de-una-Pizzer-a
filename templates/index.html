@@ -66,11 +66,53 @@
                     <span id="totalCarrito" class="text-amber-400 font-extrabold text-2xl animate-pulse">$0.00</span>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Dirección de Entrega</label>
-                    <textarea id="direccionEntrega" rows="2" required
-                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all duration-200 resize-none"></textarea>
-                </div>
+                {% if mesa %}
+                    <div class="bg-emerald-950/30 border border-emerald-800/50 p-3 rounded-xl text-center">
+                        <p class="text-sm text-emerald-400 font-semibold">
+                            <i class="fa-solid fa-chair mr-1"></i> Confirmando para la Mesa {{ mesa }}
+                        </p>
+                        <p class="text-xs text-slate-400 mt-1">Tu orden irá directo a la cocina. Pagas en caja física al finalizar de comer.</p>
+                    </div>
+                {% else %}
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 text-slate-400">Dirección de Entrega</label>
+                        <textarea id="direccionEntrega" rows="2" placeholder="Ej: Av. de las Américas y Tarqui, frente al parque..."
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all duration-200 resize-none"></textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider text-slate-400">Método de Pago</label>
+                        <select id="metodoPago" onchange="cambiarMetodoPago()"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 cursor-pointer">
+                            <option value="efectivo">💵 Efectivo (Pagas al recibir)</option>
+                            <option value="transferencia">🏦 Transferencia Bancaria</option>
+                            <option value="tarjeta">💳 Tarjeta de Crédito / Débito</option>
+                        </select>
+                    </div>
+
+                    <div id="bloqueTarjeta" class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-3 hidden transition-all duration-300">
+                        <p class="text-[11px] text-amber-500 bg-amber-950/20 p-2 rounded border border-amber-900/50">
+                            💡 <b>Modo Prototipo:</b> Usa la tarjeta de pruebas de Stripe para simular un éxito: <code class="bg-slate-900 px-1 rounded text-white font-mono">4242 4242 4242 4242</code>
+                        </p>
+                        <input type="text" id="tarjetaNumero" placeholder="Número de Tarjeta (16 dígitos)" maxlength="16"
+                            class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="tarjetaFecha" placeholder="MM/AA" maxlength="5"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white text-center focus:outline-none focus:border-amber-500">
+                            <input type="password" id="tarjetaCvv" placeholder="CVV" maxlength="3"
+                                class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white text-center focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+
+                    <div id="bloqueTransferencia" class="bg-slate-950 border border-slate-800 p-4 rounded-xl text-xs space-y-1 text-slate-400 hidden transition-all duration-300">
+                        <p class="font-bold text-slate-200 mb-1">Datos para Transferencia:</p>
+                        <p><b>Banco:</b> Banco del Austro</p>
+                        <p><b>Tipo:</b> Cuenta Ahorros</p>
+                        <p><b>Número:</b> 0987654321</p>
+                        <p><b>CI/RUC:</b> 0102030405001</p>
+                        <p class="text-amber-500 mt-2 font-medium">⚠️ Recuerda mostrar el comprobante digital al motorizado al recibir tu pizza.</p>
+                    </div>
+                {% endif %}
 
                 <button id="btnFinalizar" onclick="enviarPedido()" disabled
                     class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg opacity-50 cursor-not-allowed transform active:scale-95 transition-all duration-150 shadow-amber-500/10">
@@ -82,32 +124,32 @@
     </main>
 
     <script>
-        let carrito = [];
-        let listaCategorias = [];
-        let listaProductos = [];
-        let categoriaSeleccionada = null;
-        
-        const idCliente = localStorage.getItem('id_cliente')    ;
 
+    const numeroMesaActual = "{{ mesa if mesa else '' }}";
+    let carrito = [];
+    let listaCategorias = [];
+    let listaProductos = [];
+    let categoriaSeleccionada = null;
+    
+    const idCliente = localStorage.getItem('id_cliente');
 
-        if (!idCliente) {
-            window.location.href = '/login';
-        }
+    if (!numeroMesaActual && !idCliente) {
+        window.location.href = '/';
+    }
 
-
+    if (numeroMesaActual) {
+        document.getElementById('nombreUsuario').innerText = `Comensal - Mesa ${numeroMesaActual}`;
+    } else {
         document.getElementById('nombreUsuario').innerText = `Hola, ${localStorage.getItem('nombre_cliente') || 'Cliente'}`;
-        document.getElementById('direccionEntrega').value = localStorage.getItem('direccion_cliente') || '';
+        const campoDireccion = document.getElementById('direccionEntrega');
+        if (campoDireccion) {
+            campoDireccion.value = localStorage.getItem('direccion_cliente') || '';
+        }
+    }
+    const RUTA_IMG_CATEGORIAS = '/static/uploads/categorias/';
+    const RUTA_IMG_PRODUCTOS = '/static/uploads/productos/';
 
-        // ==========================================
-        // CONSTANTES PARA SERVIDORES DE IMÁGENES LOCALES
-        // ==========================================
-        const RUTA_IMG_CATEGORIAS = '/static/uploads/categorias/';
-        const RUTA_IMG_PRODUCTOS = '/static/uploads/productos/';
 
-        // ==========================================
-        // LLAMADAS AL BACKEND (FETCH DINÁMICOS)
-        // ==========================================
-        
         async function cargarDatosIniciales() {
             try {
 
@@ -272,52 +314,109 @@
         // ENVÍO DE PEDIDOS Y CIERRE DE SESIÓN
         // ==========================================
 
+        
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
         async function enviarPedido() {
-            const direccion = document.getElementById('direccionEntrega').value;
-            if (!direccion.trim()) {
-                alert('Por favor introduce una dirección válida de entrega.');
-                return;
-            }
+            if (carrito.length === 0) return;
 
             const productosPayload = carrito.map(item => ({
                 id_producto: item.id_producto,
                 cantidad: item.cantidad,
                 precio_unitario: item.precio
             }));
-            const idSesion = localStorage.getItem('id_cliente');
+
+            let urlTarget = '';
+            let bodyPayload = {};
+
+            if (numeroMesaActual) {
+                urlTarget = 'http://127.0.0.1:5000/api/pedido_local'; 
+                bodyPayload = {
+                    numero_mesa: parseInt(numeroMesaActual),
+                    id_usuario: 1, 
+                    lista_producto: productosPayload
+                };
+            } else {
+                urlTarget = 'http://127.0.0.1:5000/api/pedido_domicilio';
+                
+                const direccion = document.getElementById('direccionEntrega').value;
+                const metodoPago = document.getElementById('metodoPago').value;
+                const idSesion = localStorage.getItem('id_cliente');
+
+                if (!direccion.trim()) {
+                    alert('Por favor, ingresa una dirección de entrega para llevar tu pedido.');
+                    return;
+                }
+
+                let numeroTarjeta = '';
+                if (metodoPago === 'tarjeta') {
+                    numeroTarjeta = document.getElementById('tarjetaNumero').value.replace(/\s+/g, '');
+                    const fecha = document.getElementById('tarjetaFecha').value;
+                    const cvv = document.getElementById('tarjetaCvv').value;
+
+                    if (numeroTarjeta.length < 16 || !fecha || cvv.length < 3) {
+                        alert('Por favor complete los datos de su tarjeta de crédito simulada.');
+                        return;
+                    }
+                }
+
+                bodyPayload = {
+                    id_cliente: idSesion ? parseInt(idSesion) : null,
+                    productos: productosPayload,
+                    metodo_pago: metodoPago,
+                    numero_tarjeta: numeroTarjeta,
+                    direccion: direccion
+                };
+            }
+
             try {
-                const respuesta = await fetch('http://127.0.0.1:5000/api/pedido_domicilio', {
+                const respuesta = await fetch(urlTarget, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        id_cliente: idSesion ? parseInt(idSesion) : null,
-                        id_usuario: null,
-                        productos: productosPayload
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bodyPayload)
                 });
 
                 const data = await respuesta.json();
 
                 if (respuesta.ok) {
-                    alert('¡Pedido realizado con éxito! Tu pizza va en camino.');
+                    if (numeroMesaActual) {
+                        alert('¡Pedido enviado a la cocina! Tu orden se registrará en la Mesa ' + numeroMesaActual);
+                    } else {
+                        if (data.estado_pago === 'Pagado') {
+                            alert('¡Excelente! Pago con tarjeta aprobado con éxito. Tu pizza va en camino.');
+                        } else {
+                            alert('¡Pedido a domicilio registrado! Prepare su método de pago para cuando llegue el motorizado.');
+                        }
+                    }
                     carrito = [];
                     renderizarCarrito();
                 } else {
                     alert(data.error || 'Hubo un problema al procesar tu orden.');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('No se pudo establecer conexión con el servidor.');
+                console.error('Error de conexión:', error);
+                alert('No se pudo establecer conexión con el servidor de la pizzería.');
             }
         }
+        function cambiarMetodoPago() {
+            const metodoSelect = document.getElementById('metodoPago');
+            if (!metodoSelect) return;
 
-        function cerrarSesion() {
-            localStorage.clear();
-            window.location.href = '/login';
+            const metodo = metodoSelect.value;
+            const bloqueTarjeta = document.getElementById('bloqueTarjeta');
+            const bloqueTransferencia = document.getElementById('bloqueTransferencia');
+
+            bloqueTarjeta.classList.add('hidden');
+            bloqueTransferencia.classList.add('hidden');
+
+            if (metodo === 'tarjeta') {
+                bloqueTarjeta.classList.remove('hidden');
+            } else if (metodo === 'transferencia') {
+                bloqueTransferencia.classList.remove('hidden');
+            }
         }
-
         renderizarCarrito();
         cargarDatosIniciales();
     </script>

@@ -58,15 +58,16 @@
 
     <script>
         let idPedidoSeleccionado = null;
+        let pedidosLocales = []; // Almacén en memoria de los pedidos cargados
 
-        // Cargar los pedidos activos automáticamente al iniciar la vista
         document.addEventListener("DOMContentLoaded", cargarPedidosActivos);
 
-        // 1. Obtener de las rutas API los pedidos que no están pagados
+        // 1. Cargar los pedidos activos desde el endpoint que creamos en app.py
         async function cargarPedidosActivos() {
             try {
                 const respuesta = await fetch('/api/pedidos/activos');
                 const pedidos = await respuesta.json();
+                pedidosLocales = pedidos; // Guardamos para leer los productos sin hacer otro fetch
                 
                 const contenedor = document.getElementById('contenedor-pedidos');
                 contenedor.innerHTML = '';
@@ -81,18 +82,20 @@
                 }
 
                 pedidos.forEach(pedido => {
-                    const esMesa = pedido.numero_mesa ? `Mesa N° ${pedido.numero_mesa}` : 'Domicilio';
-                    const iconType = pedido.numero_mesa ? 'fa-chair text-sky-400' : 'fa-motorcycle text-orange-400';
-                    
-                    // Manejo dinámico de estilos según el ENUM original de tu cocina
+                    if (!pedido.estado) pedido.estado = 'Pendiente';
                     let badgeColor = 'bg-slate-800 text-slate-400 border border-slate-700/50';
-                    if (pedido.estado_p === 'Listo') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
-                    if (pedido.estado_p === 'Entregado') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-                    if (pedido.estado_p === 'Pendiente') badgeColor = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
+                    if (pedido.estado === 'Listo') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                    if (pedido.estado === 'Entregado') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                    if (pedido.estado === 'Pendiente') badgeColor = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
+                    if (pedido.estado === 'Cocinado') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+
+                    const iconType = pedido.numero_mesa ? 'fa-chair text-sky-400' : 'fa-motorcycle text-orange-400';
 
                     const card = document.createElement('div');
                     card.className = "bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-sm";
-                    card.onclick = () => verDetallePedido(pedido.id_pedido, pedido.total_p);
+                    
+                    // Al hacer click, pasamos el objeto pedido completo para desglosarlo
+                    card.onclick = () => verDetallePedido(pedido);
                     
                     card.innerHTML = `
                         <div class="flex justify-between items-start">
@@ -101,12 +104,12 @@
                                     <i class="fa-solid ${iconType}"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-slate-200">${esMesa}</h3>
+                                    <h3 class="font-bold text-slate-200">${pedido.origen_pedido}</h3>
                                     <span class="text-xs text-slate-500">ID Pedido: #${pedido.id_pedido}</span>
                                 </div>
                             </div>
                             <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${badgeColor}">
-                                ${pedido.estado_p}
+                                ${pedido.estado}
                             </span>
                         </div>
                         <div class="flex justify-between items-center pt-3 border-t border-slate-800/60">
@@ -123,69 +126,57 @@
             }
         }
 
-        // 2. Cargar los detalles del pedido seleccionado llamando a tu ruta dinámica existente
-        async function verDetallePedido(idPedido, total) {
-            idPedidoSeleccionado = idPedido;
+        // 2. Desplegar los productos en la barra lateral utilizando las llaves exactas de tu SQL
+        function verDetallePedido(pedido) {
+            idPedidoSeleccionado = pedido.id_pedido;
             const detalleContenedor = document.getElementById('detalle-pedido-seleccionado');
             const panelAcciones = document.getElementById('panel-acciones-pago');
             const totalPagoTxt = document.getElementById('total-pago');
 
-            detalleContenedor.innerHTML = '<p class="text-slate-500 text-sm text-center py-6"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando productos...</p>';
+            detalleContenedor.innerHTML = '';
             
-            try {
-                // LLAMADA A TU ENDPOINT EXISTENTE: Asegúrate de que esta URL coincida exactamente con tu endpoint en app.py
-                const respuesta = await fetch(`/api/pedidos/obtener/${idPedido}`);
-                const data = await respuesta.json();
+            // Iteramos los productos mapeando las columnas exactas de tu archivo: nombre_pr y cantidad_v
+            pedido.productos.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "flex justify-between items-center text-sm bg-slate-950 p-3 rounded-xl border border-slate-800/60";
+                itemDiv.innerHTML = `
+                    <div>
+                        <p class="font-semibold text-slate-200">${item.nombre_pr}</p>
+                        <p class="text-xs text-slate-500">Cant: ${item.cantidad_v} x $${parseFloat(item.precio_unitario).toFixed(2)}</p>
+                    </div>
+                    <span class="font-bold text-slate-300">$${(item.cantidad_v * item.precio_unitario).toFixed(2)}</span>
+                `;
+                detalleContenedor.appendChild(itemDiv);
+            });
 
-                detalleContenedor.innerHTML = '';
-                
-                // Mapeo dinámico de los productos del pedido
-                data.productos.forEach(item => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = "flex justify-between items-center text-sm bg-slate-950 p-3 rounded-xl border border-slate-800/60";
-                    itemDiv.innerHTML = `
-                        <div>
-                            <p class="font-semibold text-slate-200">${item.nombre_producto}</p>
-                            <p class="text-xs text-slate-500">Cant: ${item.cantidad_p} x $${item.precio_unitario.toFixed(2)}</p>
-                        </div>
-                        <span class="font-bold text-slate-300">$${(item.cantidad_p * item.precio_unitario).toFixed(2)}</span>
-                    `;
-                    detalleContenedor.appendChild(itemDiv);
-                });
-
-                totalPagoTxt.innerText = `$${total.toFixed(2)}`;
-                panelAcciones.classList.remove('hidden');
-
-            } catch (error) {
-                console.error("Error al obtener el detalle:", error);
-                detalleContenedor.innerHTML = '<p class="text-red-400 text-sm text-center py-6"><i class="fa-solid fa-circle-exclamation mr-2"></i>Error al cargar detalles de la orden.</p>';
-            }
+            totalPagoTxt.innerText = `$${pedido.total_p.toFixed(2)}`;
+            panelAcciones.classList.remove('hidden');
         }
 
-        // 3. Confirmar pago y enviar la actualización por método PUT hacia el servidor
+        // 3. Mandar la orden de cobro (Cambio a estado 'Pagado')
         async function procesarCobro() {
             if (!idPedidoSeleccionado) return;
-
             if (!confirm(`¿Confirmar cobro y cierre de cuenta para el Pedido #${idPedidoSeleccionado}?`)) return;
 
             try {
-                // LLAMADA A LA RUTA API NUEVA QUE CONECTA CON pagos.py
                 const respuesta = await fetch(`/api/pedidos/pagar/${idPedidoSeleccionado}`, {
                     method: 'PUT'
                 });
 
                 if (respuesta.ok) {
                     alert("¡Venta registrada con éxito! La cuenta ha sido cerrada.");
+                    
+                    // Limpiamos el panel lateral
                     document.getElementById('panel-acciones-pago').classList.add('hidden');
                     document.getElementById('detalle-pedido-seleccionado').innerHTML = `
                         <p class="text-slate-500 text-sm text-center py-8">Selecciona un pedido de la izquierda para ver el detalle y proceder al cobro.</p>
                     `;
                     idPedidoSeleccionado = null;
                     
-                    // Recargar de forma armoniosa asíncronamente las cuentas activas
+                    // Recargamos asíncronamente las tarjetas del panel izquierdo
                     cargarPedidosActivos(); 
                 } else {
-                    alert("No se pudo procesar el cobro en el sistema.");
+                    alert("No se pudo procesar el cobro en el servidor.");
                 }
             } catch (error) {
                 console.error("Error de conexión al cobrar:", error);

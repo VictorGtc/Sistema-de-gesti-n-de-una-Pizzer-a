@@ -174,3 +174,17 @@ def actualizar_pedidos(id_pedido, nuevo_estado):
         return False
 
 
+def obtener_pedidos_caja():
+    todos_los_pedidos = obtener_pedido()
+    pedidos_para_caja = []
+    
+    for pedido in todos_los_pedidos:
+        if pedido['estado'] != 'Pagado' and pedido['numero_mesa'] is not None:
+            if pedido['total_p'] is not None:
+                pedido['total_p'] = float(pedido['total_p'])
+            for prod in pedido['productos']:
+                if prod['precio_unitario'] is not None:
+                    prod['precio_unitario'] = float(prod['precio_unitario'])
+            pedidos_para_caja.append(pedido)
+            
+    return pedidos_para_caja

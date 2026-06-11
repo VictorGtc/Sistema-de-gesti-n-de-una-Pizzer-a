@@ -5,7 +5,7 @@ from src.productos import registrar_producto, obtener_productos, actualizar_prod
 from src.categorias import registrar_categoria, obtener_categorias, actualizar_categoria, eliminar_categoria
 from src.recetas import registrar_recetas, obtener_receta
 from src.inventario import registrar_inventario, obtener_inventario,cambiar_estado_ingrediente
-from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos
+from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos,obtener_pedidos_caja
 from src.clientes import registrar_clientes, validar_clientes
 from src.pagos import obtener_pagopendiente,registrar_pago_pedido
 
@@ -146,8 +146,8 @@ def api_registrar_categoria():
 def api_registrar_recetas():
     datos=request.get_json()
     id_producto=datos.get('id_producto')
-    id_inventario=datos.get('id_inventario')
-    cantidad=datos.get('cantidad_requerida')
+    id_inventario=datos.get('id_insumo')
+    cantidad=datos.get('cantidad')
 
     resultado=registrar_recetas(id_producto,id_inventario,cantidad)
 
@@ -179,7 +179,7 @@ def api_registrar_pedido_local():
     datos=request.get_json()
     numero_mesa=datos.get('numero_mesa')
     id_usuario=datos.get('id_usuario')
-    lita_productos= datos.get('productos')
+    lita_productos= datos.get('lista_producto')
 
     if not numero_mesa or not id_usuario or not lita_productos:
         return jsonify({"mensaje": "Faltan compos obligatorios para este procedimiento"})
@@ -225,16 +225,32 @@ def api_pedido_domicilio():
     
     id_cliente = datos.get('id_cliente')
     productos = datos.get('productos') 
+    metodo_pago = datos.get('metodo_pago', 'efectivo')
+    numero_tarjeta = datos.get('numero_tarjeta', '')
+
     if not id_cliente or not productos:
         return jsonify({"error": "Faltan datos obligatorios (cliente o productos)"}), 400
+    estado_pago_simulado = 'Pendiente'
+
+    if metodo_pago == 'tarjeta':
+        tarjeta_limpia = numero_tarjeta.replace(" ", "")
+        
+        if tarjeta_limpia == '4242424242424242':
+            estado_pago_simulado = 'Pagado'
+        else:
+            return jsonify({
+                "error": "Transacción rechazada: La tarjeta simulada no cuenta con fondos suficientes o es inválida. Usa la tarjeta de pruebas."
+            }), 402
 
     exito = registrar_pedido_domicilio(id_cliente, None, productos)
     
     if exito:
-        return jsonify({"mensaje": "Pedido a domicilio guardado con éxito"}), 201
+        return jsonify({
+            "mensaje": "Pedido a domicilio procesado con éxito",
+            "estado_pago": estado_pago_simulado
+        }), 201
     else:
         return jsonify({"error": "No se pudo procesar el pedido a domicilio"}), 500
-
 
 
 @app.route('/api/usuarios/registrar_empleado', methods=['POST'])
@@ -347,7 +363,10 @@ def api_obtener_usuario():
 
 @app.route('/api/pedidos/activos', methods=['GET'])
 def api_obtener_pedidos_activos():
-    return obtener_pagopendiente()
+    pedidos=obtener_pedidos_caja()
+    return jsonify(pedidos),200
+
+
 
 
 
@@ -359,9 +378,6 @@ def api_obtener_pedidos_activos():
 
 
 
-@app.route('/api/pedidos/pagar/<int:id_pedido>', methods=['PUT'])
-def api_pagar_pedido(id_pedido):
-    return registrar_pago_pedido(id_pedido)
 
 @app.route('/api/actualizar_estado', methods=['PUT'])
 def api_actualizar_estado_pedido():
@@ -396,7 +412,15 @@ def api_cambiar_estado_inventario():
     else:
         return jsonify({"mensaje": "No se pudo cambiar el estado"}), 500
 
+@app.route('/api/pedidos/pagar/<int:id_pedido>', methods=['PUT'])
+def api_pagar_pedido(id_pedido):
 
+    resultado = actualizar_pedidos(id_pedido, 'Pagado')
+    
+    if resultado is True:
+        return jsonify({"mensaje": "El pedido ha sido pagado y cerrado exitosamente"}), 200
+    else:
+        return jsonify({"mensaje": "No se pudo registrar el pago del pedido"}), 500
 
 
 
@@ -425,6 +449,13 @@ def vista_admin():
 @app.route('/cajero', methods=['GET'])
 def vista_cajero():
     return render_template('cajero.html')
+
+@app.route('/menu', methods=['GET'])
+def vista_menu_qr():
+    numero_mesa = request.args.get('mesa')
+    return render_template('index.html', mesa=numero_mesa)
+
+
 
 # ============== funciones de eliminaciones 
 

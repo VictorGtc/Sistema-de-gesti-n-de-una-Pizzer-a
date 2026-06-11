@@ -9,9 +9,9 @@ def obtener_pagopendiente():
     try:
         # Traemos los pedidos que no han sido pagados aún
         consulta = """
-            SELECT id_pedido, numero_mesa, tipo_p, total_p, estado_p, fecha_p 
+            SELECT id_pedido, numero_mesa, total_p, estado, fecha_p 
             FROM pedidos 
-            WHERE estado_p != 'Pagado'
+            WHERE estado != 'Pagado'
             ORDER BY fecha_p DESC
         """
         cursor.execute(consulta)
@@ -30,7 +30,7 @@ def registrar_pago_pedido(id_pedido):
         return jsonify({"error": "No se pudo conectar a la base de datos"}), 500
     cursor = db.cursor()
     try:
-        consulta = "UPDATE pedidos SET estado_p = 'Pagado' WHERE id_pedido = %s"
+        consulta = "UPDATE pedidos SET estado = 'Pagado' WHERE id_pedido = %s"
         cursor.execute(consulta, (id_pedido,))
         db.commit()
         

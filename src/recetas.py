@@ -2,7 +2,7 @@ from database.db import conectar_db
 
 def registrar_recetas(id_producto,id_inventario,cantidad_requerida):
 
-    db=conectar_db
+    db=conectar_db()
 
     if db is None:
         return False
