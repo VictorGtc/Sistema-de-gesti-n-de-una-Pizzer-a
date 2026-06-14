@@ -144,17 +144,24 @@ def api_registrar_categoria():
 
 @app.route('/api/recetas', methods=['POST'])
 def api_registrar_recetas():
-    datos=request.get_json()
-    id_producto=datos.get('id_producto')
-    id_inventario=datos.get('id_insumo')
-    cantidad=datos.get('cantidad')
+    datos = request.get_json()
+    id_producto = datos.get('id_producto')
+    lista_ingredientes = datos.get('ingredientes')
 
-    resultado=registrar_recetas(id_producto,id_inventario,cantidad)
+    if not id_producto or not lista_ingredientes:
+        return jsonify({"mensaje": "Faltan datos obligatorios"}), 400
+    hubo_error = False
+    for ing in lista_ingredientes:
+        id_inventario = ing.get('id_inventario')
+        cantidad = ing.get('cantidad_requerida')
+        resultado = registrar_recetas(id_producto, id_inventario, cantidad)
+        if not resultado:
+            hubo_error = True
 
-    if resultado is True:
-        return jsonify({"mensaje" : "Receta registrada"}), 200
+    if not hubo_error:
+        return jsonify({"mensaje": "Receta registrada con éxito"}), 200
     else:
-        return jsonify({"mensaje" : "Receta no registrada"}), 401
+        return jsonify({"mensaje": "Error al registrar algunos ingredientes"}), 500
 
 @app.route('/api/inventario', methods=['POST'])
 def api_registrar_inventario():

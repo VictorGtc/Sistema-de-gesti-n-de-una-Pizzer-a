@@ -760,7 +760,10 @@
                 const respuesta = await fetch('/api/recetas', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id_producto: idProducto, ingredientes: ingredientesBatch })
+                    body: JSON.stringify({ 
+                        id_producto: idProducto, 
+                        ingredientes: ingredientesBatch 
+                    })
                 });
                 const resultado = await respuesta.json();
                 if (respuesta.ok) {
@@ -1019,6 +1022,9 @@
                 </tr>`;
         }
     }
+
+    
+    
     </script>
 </body>
 </html>
