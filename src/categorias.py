@@ -22,21 +22,37 @@ def registrar_categoria(nombre,imagen):
 
 
 def obtener_categorias():
-    db=conectar_db()
-    cursor=db.cursor(dictionary=True)
-
-    consultar_sql="SELECT id_categoria, nombre_c, imagen_c FROM categorias WHERE activo_c = 1"
+    db = conectar_db()
+    cursor = db.cursor(dictionary=True)
+    
+    consultar_sql = "SELECT id_categoria, nombre_c, imagen_c, activo_c FROM categorias"
     try:
         cursor.execute(consultar_sql)
-        categorias=cursor.fetchall()
-        return categorias
+        categorias = cursor.fetchall()
+        return categorias 
     except Exception as e:
-        print(f"Erro al consultar categorias: {e} ")
+        print(f"Error al consultar todas las categorías: {e}")
         return []
     finally:
         cursor.close()
         db.close()
 
+
+def obtener_categorias_publicas():
+    db = conectar_db()
+    cursor = db.cursor(dictionary=True)
+    
+    consultar_sql = "SELECT id_categoria, nombre_c, imagen_c FROM categorias WHERE activo_c = 1"
+    try:
+        cursor.execute(consultar_sql)
+        categorias = cursor.fetchall()
+        return categorias
+    except Exception as e:
+        print(f"Error al consultar categorías públicas: {e}")
+        return []
+    finally:
+        cursor.close()
+        db.close()
 
 def actualizar_categoria(id_categoria, nombre, imagen):
     db = conectar_db()
@@ -61,18 +77,17 @@ def actualizar_categoria(id_categoria, nombre, imagen):
         cursor.close()
         db.close()
 
-def eliminar_categoria(id_categoria):
+def cambiar_estado_categoria(id_categoria, nuevo_estado):
     db = conectar_db()
     if db is None: return False
     cursor = db.cursor()
     try:
-        sql = "DELETE FROM categorias WHERE id_categoria = %s"
-        cursor.execute(sql, (id_categoria,))
+        sql = "UPDATE categorias SET activo_c = %s WHERE id_categoria = %s"
+        cursor.execute(sql, (int(nuevo_estado), int(id_categoria)))
         db.commit()
         return True
     except Exception as e:
-        print(f"Error al eliminar categoría: {e}")
-        db.rollback()
+        print(f"Error al cambiar estado de la categoría en BD: {e}")
         return False
     finally:
         cursor.close()

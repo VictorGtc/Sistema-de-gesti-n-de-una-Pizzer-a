@@ -152,21 +152,21 @@
 
         async function cargarDatosIniciales() {
             try {
-
-                const resCat = await fetch('http://127.0.0.1:5000/api/obtener_categorias');
+                const resCat = await fetch('http://127.0.0.1:5000/api/obtener_categorias_publicas');
                 if (!resCat.ok) throw new Error('Error al obtener categorías');
                 listaCategorias = await resCat.json();
 
-
-                const resProd = await fetch('http://127.0.0.1:5000/api/obtener_productos');
+                const resProd = await fetch('http://127.0.0.1:5000/api/obtener_productos_publicos');
                 if (!resProd.ok) throw new Error('Error al obtener productos');
                 listaProductos = await resProd.json();
 
                 if (listaCategorias.length > 0) {
-
                     categoriaSeleccionada = listaCategorias[0].id_categoria;
                     renderizarCategorias();
                     renderizarProductos();
+                } else {
+                    document.getElementById('contenedorCategorias').innerHTML = `<p class="text-slate-500 text-sm">No hay categorías disponibles.</p>`;
+                    document.getElementById('contenedorMenu').innerHTML = `<p class="text-slate-500 text-sm">No hay productos para mostrar.</p>`;
                 }
 
             } catch (error) {
@@ -174,7 +174,6 @@
                 document.getElementById('contenedorCategorias').innerHTML = `<p class="text-red-400 text-sm">No se pudo conectar con el catálogo.</p>`;
             }
         }
-
         // ==========================================
         // RENDERIZADO DE INTERFAZ GRÁFICA
         // ==========================================

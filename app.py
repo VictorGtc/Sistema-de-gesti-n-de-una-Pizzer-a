@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from src.usuarios import registrar_usuarios, validar_usuarios,obtener_usuario
-from src.productos import registrar_producto, obtener_productos, actualizar_producto, eliminar_producto
-from src.categorias import registrar_categoria, obtener_categorias, actualizar_categoria, eliminar_categoria
+from src.productos import registrar_producto, obtener_productos, actualizar_producto, cambiar_estado_producto,obtener_productos_publicos
+from src.categorias import registrar_categoria, obtener_categorias, actualizar_categoria, obtener_categorias_publicas, cambiar_estado_categoria
 from src.recetas import registrar_recetas, obtener_receta
 from src.inventario import registrar_inventario, obtener_inventario,cambiar_estado_ingrediente
 from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos,obtener_pedidos_caja
@@ -331,15 +331,49 @@ def api_actualizar_categoria(id_categoria):
 
 
     
+
+
+@app.route('/api/obtener_categorias_publicas', methods=['GET'])
+def api_obtener_categorias_publicas():
+    categorias = obtener_categorias_publicas() 
+    return jsonify(categorias)
+
+@app.route('/api/obtener_productos_publicos', methods=['GET'])
+def api_obtener_productos_publicos():
+
+    productos = obtener_productos_publicos()  
+    return jsonify(productos)
+
+@app.route('/api/categoria/estado', methods=['PUT'])
+def api_cambiar_estado_categoria():
+    datos = request.get_json()
+    
+    # OJO: Validamos que las llaves correspondan exactamente a lo enviado por JS
+    id_categoria = datos.get('id_categoria')
+    nuevo_estado = datos.get('activo_c')
+
+    if id_categoria is None or nuevo_estado is None:
+        return jsonify({"mensaje": "Datos incompletos"}), 400
+        
+    exito = cambiar_estado_categoria(id_categoria, nuevo_estado)
+    if exito:
+        mensaje = "Estado de categoría actualizado"
+        return jsonify({"mensaje": mensaje}), 200
+    else:
+        return jsonify({"mensaje": "No se pudo cambiar el estado en la base de datos"}), 500
+
+
 @app.route('/api/obtener_categorias', methods=['GET'])
 def api_obtener_categorias():
     lista_categorias= obtener_categorias()
+    
     return jsonify(lista_categorias),200
 
 @app.route('/api/obtener_productos', methods=['GET'])
 def api_obtener_productos():
     lista_productos= obtener_productos()
     return jsonify(lista_productos),200
+    
 
 @app.route('/api/obtener_receta', methods=['GET'])
 def api_obtener_receta():
@@ -430,6 +464,21 @@ def api_pagar_pedido(id_pedido):
         return jsonify({"mensaje": "No se pudo registrar el pago del pedido"}), 500
 
 
+@app.route('/api/producto/estado', methods=['PUT'])
+def api_cambiar_estado_producto():
+    datos = request.get_json()
+    id_producto = datos.get('id_producto')
+    nuevo_estado = datos.get('activo_p')
+    if id_producto is None or nuevo_estado is None:
+        return jsonify({"mensaje": "Datos incompletos"}), 400
+    exito = cambiar_estado_producto(id_producto,nuevo_estado)
+    if exito:
+        mensaje = "Producto deshabilitado" if nuevo_estado == 0 else "Producto habilitado"
+        return jsonify({"mensaje": mensaje}), 200
+    else:
+        return jsonify({"mensaje": "No se pudo cambiar el estado"}), 500
+
+
 
 # ===== rutas de las vistas 
 
@@ -466,23 +515,8 @@ def vista_menu_qr():
 
 # ============== funciones de eliminaciones 
 
-@app.route('/api/productos/eliminar/<int:id_producto>', methods=['DELETE'])
-def api_eliminar_producto(id_producto):
-    resultado = eliminar_producto(id_producto)
-    
-    if resultado is True:
-        return jsonify({"mensaje": "El producto ha sido eliminado exitosamente"}), 200
-    else:
-        return jsonify({"mensaje": "No se pudo eliminar el producto (Verifica si está en un pedido activo)"}), 500
 
-@app.route('/api/categorias/eliminar/<int:id_categoria>', methods=['DELETE'])
-def api_eliminar_categoria(id_categoria):
-    resultado = eliminar_categoria(id_categoria)
-    
-    if resultado is True:
-        return jsonify({"mensaje": "La categoría ha sido eliminada exitosamente"}), 200
-    else:
-        return jsonify({"mensaje": "No se pudo eliminar la categoría"}), 500
+
 
 if __name__== '__main__':
     app.run(debug=True)

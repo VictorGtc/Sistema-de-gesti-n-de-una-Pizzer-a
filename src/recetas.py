@@ -26,7 +26,14 @@ def obtener_receta():
     db=conectar_db()
     cursor=db.cursor(dictionary=True)
 
-    consultar_sql="SELECT id_producto,id_inventario,cantidad_requerida FROM recetas"
+    consultar_sql="""SELECT 
+            r.id_producto, 
+            r.id_inventario, 
+            r.cantidad_requerida,
+            i.nombre_i,         
+            i.unidad_registrada
+        FROM recetas r
+        INNER JOIN inventario i ON r.id_inventario = i.id_inventario"""
     try:
         cursor.execute(consultar_sql)
         categorias=cursor.fetchall()

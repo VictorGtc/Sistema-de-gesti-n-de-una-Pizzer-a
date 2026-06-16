@@ -25,13 +25,30 @@ def obtener_productos():
     db=conectar_db()
     cursor=db.cursor(dictionary=True)
 
-    consultar_sql="SELECT id_producto, nombre_pr, precio_pr, imagen_pr, id_categoria FROM productos WHERE activo_p=1"
+    consultar_sql="SELECT id_producto, nombre_pr, precio_pr, imagen_pr, id_categoria, activo_p FROM productos "
     try:
         cursor.execute(consultar_sql)
         productos=cursor.fetchall()
         return productos
     except Exception as e:
         print(f"Erro al consultar productos: {e} ")
+        return []
+    finally:
+        cursor.close()
+        db.close()
+
+
+def obtener_productos_publicos():
+    db = conectar_db()
+    cursor = db.cursor(dictionary=True)
+
+    consultar_sql = "SELECT id_producto, nombre_pr, precio_pr, imagen_pr, id_categoria FROM productos WHERE activo_p = 1"
+    try:
+        cursor.execute(consultar_sql)
+        productos = cursor.fetchall()
+        return productos
+    except Exception as e:
+        print(f"Error al consultar productos públicos: {e}")
         return []
     finally:
         cursor.close()
@@ -65,22 +82,23 @@ def actualizar_producto(id_producto, nombre, precio, imagen, id_categoria):
         cursor.close()
         db.close()
 
-def eliminar_producto(id_producto):
+
+
+def cambiar_estado_producto(id_producto,nuevo_estado):
     db = conectar_db()
     if db is None: return False
     cursor = db.cursor()
     try:
-        # NOTA: Asegúrate de que no haya dependencias activas en detalle_pedido o maneja el borrado lógico
-        sql = "DELETE FROM productos WHERE id_producto = %s"
-        cursor.execute(sql, (id_producto,))
+        sql="UPDATE productos SET activo_p = %s WHERE id_producto = %s"
+        cursor.execute(sql,(nuevo_estado,id_producto))
         db.commit()
-        return True
-    except Exception as e:
-        print(f"Error al eliminar producto: {e}")
-        db.rollback()
-        return False
-    finally:
         cursor.close()
         db.close()
+        return True
+    except Exception as e: 
+        print(f"Error al cambiar estado en BD: {e}")
+        cursor.close()
+        db.close()
+        return False
 
 

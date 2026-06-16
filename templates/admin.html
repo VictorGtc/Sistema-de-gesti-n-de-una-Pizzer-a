@@ -106,7 +106,8 @@
                                 <th class="py-4 px-6">Imagen</th>
                                 <th class="py-4 px-6">Nombre</th>
                                 <th class="py-4 px-6">Precio</th>
-                                <th class="py-4 px-6 text-center">Acciones</th>
+                                <th class="py-4 px-6 text-center">Estado</th> <th class="py-4 px-6 text-center">Acciones</th>
+    </tr>
                             </tr>
                         </thead>
                         <tbody id="tabla-productos" class="divide-y divide-slate-800/50 text-sm">
@@ -157,6 +158,7 @@
                             <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
                                 <th class="py-4 px-6">Imagen</th>
                                 <th class="py-4 px-6">Nombre de Categoría</th>
+                                <th class="py-4 px-6 text-center">Estado</th>
                                 <th class="py-4 px-6 text-center">Acciones</th>
                             </tr>
                         </thead>
@@ -475,6 +477,24 @@
                 tbody.innerHTML = '';
                 
                 categorias.forEach(cat => {
+                    // 1. Validamos el estado de la categoría (por defecto activa)
+                    const estaActiva = cat.activo_c !== 0;
+
+                    // 2. Creamos el Badge dinámico para el estado
+                    const badgeEstado = estaActiva 
+                        ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`
+                        : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
+
+                    // 3. Cambiamos el botón de la papelera por el ojo dinámico (sin alterar tus estilos)
+                    const botonAccion = estaActiva
+                        ? `<button onclick="alternarEstadoCategoria(${cat.id_categoria}, 0)" class="text-xs bg-slate-800/40 hover:bg-red-900/40 text-slate-400 hover:text-red-400 font-bold py-2 px-3 rounded-lg transition-all border border-slate-800" title="Deshabilitar">
+                            <i class="fa-solid fa-eye-slash"></i>
+                        </button>`
+                        : `<button onclick="alternarEstadoCategoria(${cat.id_categoria}, 1)" class="text-xs bg-slate-800/40 hover:bg-emerald-900/40 text-slate-500 hover:text-emerald-400 font-bold py-2 px-3 rounded-lg transition-all border border-slate-800" title="Habilitar">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>`;
+
+                    // 4. Renderizamos manteniendo la IMAGEN intacta
                     tbody.innerHTML += `
                         <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
                             <td class="py-4 px-6">
@@ -482,13 +502,14 @@
                             </td>
                             <td class="py-4 px-6 font-medium text-slate-200">${cat.nombre_c}</td>
                             <td class="py-4 px-6 text-center">
+                                ${badgeEstado}
+                            </td>
+                            <td class="py-4 px-6 text-center">
                                 <div class="flex justify-center gap-2">
                                     <button onclick="prepararEditarCategoria(${cat.id_categoria}, '${cat.nombre_c}')" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-2 px-3 rounded-lg transition-all">
                                         <i class="fa-solid fa-pen mr-1"></i> Editar
                                     </button>
-                                    <button onclick="eliminarCategoriaJs(${cat.id_categoria})" class="text-xs bg-red-950/40 hover:bg-red-900/60 text-red-400 font-bold py-2 px-3 rounded-lg transition-all border border-red-900/30">
-                                        <i class="fa-solid fa-trash mr-1"></i> Eliminar
-                                    </button>
+                                    ${botonAccion}
                                 </div>
                             </td>
                         </tr>
@@ -574,6 +595,18 @@
                 tbody.innerHTML = '';
 
                 productos.forEach(prod => {
+                    const estaActivo = prod.activo_p !== 0;
+                    const badgeEstado = estaActivo 
+                        ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`
+                        : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
+                    const botonAccion = estaActivo
+                        ? `<button onclick="alternarEstadoProducto(${prod.id_producto}, 0)" class="text-slate-400 hover:text-red-400 p-1 transition-colors" title="Deshabilitar">
+                            <i class="fa-solid fa-eye-slash"></i>
+                        </button>`
+                        : `<button onclick="alternarEstadoProducto(${prod.id_producto}, 1)" class="text-slate-500 hover:text-emerald-400 p-1 transition-colors" title="Habilitar">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>`;
+
                     tbody.innerHTML += `
                         <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
                             <td class="py-4 px-6">
@@ -582,13 +615,14 @@
                             <td class="py-4 px-6 font-medium text-slate-200">${prod.nombre_pr}</td>
                             <td class="py-4 px-6 font-semibold text-amber-400">$${parseFloat(prod.precio_pr).toFixed(2)}</td>
                             <td class="py-4 px-6 text-center">
-                                <div class="flex justify-center gap-2">
+                                ${badgeEstado}
+                            </td>
+                            <td class="py-4 px-6 text-center">
+                                <div class="flex justify-center items-center gap-3">
                                     <button onclick="prepararEditarProducto(${prod.id_producto}, '${prod.nombre_pr}', ${prod.precio_pr}, ${prod.id_categoria})" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-2 px-3 rounded-lg transition-all">
                                         <i class="fa-solid fa-pen mr-1"></i> Editar
                                     </button>
-                                    <button onclick="eliminarProductoJs(${prod.id_producto})" class="text-xs bg-red-950/40 hover:bg-red-900/60 text-red-400 font-bold py-2 px-3 rounded-lg transition-all border border-red-900/30">
-                                        <i class="fa-solid fa-trash mr-1"></i> Eliminar
-                                    </button>
+                                    ${botonAccion}
                                 </div>
                             </td>
                         </tr>
@@ -647,13 +681,27 @@
             document.getElementById('btn-cancelar-prod').classList.add('hidden');
         }
 
-        async function eliminarProductoJs(id) {
-            if (!confirm("¿Seguro?")) return;
+        async function alternarEstadoProducto(id, nuevoEstado) {
+            const accion = nuevoEstado === 0 ? "¿Seguro que deseas deshabilitar este producto?" : "¿Deseas volver a habilitar este producto?";
+            if (!confirm(accion)) return;
+
             try {
-                const respuesta = await fetch(`/api/productos/eliminar/${id}`, { method: 'DELETE' });
-                if (respuesta.ok) cargarProductos();
+                const respuesta = await fetch('/api/producto/estado', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_producto: id, activo_p: nuevoEstado })
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    cargarProductos(); // Refresca la tabla automáticamente
+                } else {
+                    alert("Error: " + resultado.mensaje);
+                }
             } catch (error) {
-                console.error(error);
+                console.error("Error al cambiar estado del producto:", error);
+                alert("Error de red al intentar cambiar el estado.");
             }
         }
 
@@ -725,10 +773,23 @@
                 }
                 
                 recetaFiltrada.forEach(item => {
+
+                    const nombreIngrediente = item.nombre_i || ('Insumo #' + item.id_inventario);
+                    let cantidad = parseFloat(item.cantidad_requerida || 0);
+                    let unidadMedida = item.unidad_registrada || 'g';
+                    if (unidadMedida === 'g' && cantidad >= 1000) {
+                        cantidad = (cantidad / 1000).toFixed(2);
+                        unidadMedida = 'Kg';
+                    } else if (unidadMedida === 'ml' && cantidad >= 1000) {
+                        cantidad = (cantidad / 1000).toFixed(2);
+                        unidadMedida = 'L';
+                    } else {
+                        cantidad = cantidad % 1 === 0 ? cantidad.toFixed(0) : cantidad.toFixed(2);
+                    }
                     tbody.innerHTML += `
                         <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
-                            <td class="py-4 px-6 font-medium text-slate-200">${item.nombre_i || ('Insumo #' + item.id_inventario)}</td>
-                            <td class="py-4 px-6 text-slate-400 font-mono">${item.cantidad_requerida}</td>
+                            <td class="py-4 px-6 font-medium text-slate-200">${nombreIngrediente}</td>
+                            <td class="py-4 px-6 text-slate-400 font-mono">${cantidad} <span class="text-xs text-slate-500">${unidadMedida}</span></td>
                             <td class="py-4 px-6 text-center">
                                 <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">Asignado</span>
                             </td>
@@ -1023,7 +1084,31 @@
         }
     }
 
-    
+    async function alternarEstadoCategoria(id, nuevoEstado) {
+            const accion = nuevoEstado === 0 ? "¿Seguro que deseas deshabilitar esta categoría?" : "¿Deseas volver a habilitar esta categoría?";
+            if (!confirm(accion)) return;
+
+            try {
+                const respuesta = await fetch('/api/categoria/estado', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_categoria: id, activo_c: nuevoEstado })
+                });
+
+                const resultado = await respuesta.json();
+
+                if (respuesta.ok) {
+                    cargarCategorias(); // Refresca la tabla automáticamente
+                    // Opcional: Si tienes selectores de categorías abiertos en la misma página,
+                    // puedes llamar a prepararSelectoresReceta() o recargar la página para que se actualicen.
+                } else {
+                    alert("Error: " + resultado.mensaje);
+                }
+            } catch (error) {
+                console.error("Error al cambiar estado de la categoría:", error);
+                alert("Error de red al intentar cambiar el estado.");
+            }
+        }
     
     </script>
 </body>
