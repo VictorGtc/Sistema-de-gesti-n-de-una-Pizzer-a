@@ -3,54 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pizzería - Módulo de Caja</title>
+    <title>Pizzería Premium - Módulo de Caja</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col">
+    <style>
+        /* ==========================================================================
+           📷 DISEÑO DE FONDO UNIFICADO (Identidad rústica de la pizzería)
+           ========================================================================== */
+        :root {
+            --url-fondo-pizzeria: url('https://alicante.com.ar/wp-content/uploads/2022/06/iStock-1048461158-Pizza-especial-2000x1333.jpg');
+        }
 
-    <nav class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Capa superpuesta: Mezcla el tono rústico de horno con la foto elegida */
+        .bg-pizza-overlay {
+            background: linear-gradient(to bottom, rgba(28, 15, 10, 0.90), rgba(12, 6, 4, 0.96)), 
+                        var(--url-fondo-pizzeria) no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(251, 191, 36, 0.2);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(251, 191, 36, 0.4);
+        }
+
+        /* Tarjeta de pedido activa con la estética de fuego/oro */
+        .pedido-card-activa {
+            border-color: #f59e0b !important;
+            background-color: rgba(245, 158, 11, 0.08) !important;
+            box-shadow: 0 4px 20px -2px rgba(245, 158, 11, 0.2) !important;
+        }
+    </style>
+</head>
+<body class="bg-pizza-overlay text-amber-50/90 min-h-screen font-sans flex flex-col antialiased">
+
+    <div id="contenedorToasts" class="fixed top-6 right-6 z-50 space-y-4 max-w-sm w-full pointer-events-none"></div>
+
+    <nav class="bg-stone-950/40 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-40 shadow-xl">
         <div class="flex items-center gap-3">
-            <i class="fa-solid fa-cash-register text-emerald-400 text-xl"></i>
-            <h1 class="text-xl font-extrabold tracking-wide text-slate-200">
-                PANEL DE CAJA <span class="text-emerald-400 font-medium text-sm ml-2">| Control de Ventas</span>
+            <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-stone-950 shadow-lg shadow-orange-500/10 text-base font-bold">
+                <i class="fa-solid fa-cash-register"></i>
+            </div>
+            <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent uppercase">
+                Panel de Caja <span class="text-stone-400 font-medium text-xs ml-2 tracking-normal lowercase border-l border-white/20 pl-2">control de cobros</span>
             </h1>
         </div>
-        <a href="/index" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-xl transition-all">
-            <i class="fa-solid fa-house mr-2"></i>Ir al Menú
+        <a href="/index" class="text-xs bg-white/10 hover:bg-white/20 text-amber-100 hover:text-white font-bold py-2.5 px-4 rounded-xl transition-all border border-white/10 shadow-sm flex items-center gap-2 uppercase tracking-wide">
+            <i class="fa-solid fa-house opacity-80"></i> Ir al Menú
         </a>
     </nav>
 
-    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <main class="flex-1 p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1600px] w-full mx-auto">
         
-        <section class="lg:col-span-2 space-y-4">
-            <h2 class="text-lg font-bold text-slate-300 flex items-center gap-2">
-                <i class="fa-solid fa-clock-history text-amber-500"></i> Cuentas Abiertas / Pedidos por Cobrar
-            </h2>
+        <section class="lg:col-span-2 space-y-5">
+            <div class="flex items-center justify-between">
+                <h2 class="text-md font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2.5">
+                    <i class="fa-solid fa-fire-burner text-orange-500"></i> Cuentas Abiertas / Pedidos por Cobrar
+                </h2>
+                <span id="contador-pedidos-badge" class="bg-stone-950/60 text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-white/10 hidden tracking-wide">
+                    0 pendientes
+                </span>
+            </div>
             
             <div id="contenedor-pedidos" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 </div>
         </section>
 
-        <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between sticky top-24 h-[calc(100vh-120px)]">
-            <div>
-                <h2 class="text-lg font-bold text-slate-200 border-b border-slate-800 pb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-receipt text-emerald-400"></i> Detalle de la Cuenta
+        <section class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 flex flex-col justify-between sticky top-24 h-[calc(100vh-130px)] shadow-2xl">
+            <div class="flex flex-col flex-1 min-h-0">
+                <h2 class="text-md font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-4 flex items-center gap-2.5">
+                    <i class="fa-solid fa-receipt text-orange-500"></i> Detalle del Pedido
                 </h2>
                 
-                <div id="detalle-pedido-seleccionado" class="mt-4 space-y-3 overflow-y-auto max-h-[350px] pr-2">
-                    <p class="text-slate-500 text-sm text-center py-8">Selecciona un pedido de la izquierda para ver el detalle y proceder al cobro.</p>
+                <div id="detalle-pedido-seleccionado" class="mt-4 space-y-3 overflow-y-auto flex-1 pr-1 custom-scrollbar">
+                    <div class="flex flex-col items-center justify-center text-center py-20 px-4 fade-in">
+                        <div class="w-16 h-16 bg-stone-950/40 rounded-full flex items-center justify-center border border-white/10 mb-4 shadow-inner text-amber-500/60">
+                            <i class="fa-solid fa-hand-pointer text-xl"></i>
+                        </div>
+                        <p class="text-amber-200/80 font-bold text-sm uppercase tracking-wide">Selecciona una orden</p>
+                        <p class="text-stone-400 text-xs mt-1 max-w-[220px]">Haz clic sobre cualquiera de las tarjetas de la izquierda para desglosar sus consumos y proceder al cobro.</p>
+                    </div>
                 </div>
             </div>
 
-            <div id="panel-acciones-pago" class="border-t border-slate-800 pt-4 hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-slate-400 font-medium">Total a Cobrar:</span>
-                    <span id="total-pago" class="text-2xl font-black text-emerald-400">$0.00</span>
+            <div id="panel-acciones-pago" class="border-t border-white/10 pt-5 mt-4 hidden fade-in">
+                <div class="flex justify-between items-center mb-5 bg-stone-950/50 p-4 rounded-2xl border border-white/10 shadow-inner">
+                    <span class="text-stone-400 font-bold text-xs uppercase tracking-wider">Total a Liquidar:</span>
+                    <span id="total-pago" class="text-3xl font-black text-amber-400 tracking-tight">$0.00</span>
                 </div>
                 
-                <button id="btn-confirmar-pago" onclick="procesarCobro()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2 text-lg">
-                    <i class="fa-solid fa-money-bill-wave"></i> Confirmar Pago
+                <button id="btn-confirmar-pago" onclick="procesarCobro()" class="w-full bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 hover:brightness-110 text-stone-950 font-black py-4 px-4 rounded-xl shadow-xl transform active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-xs uppercase tracking-wider shadow-orange-500/10">
+                    <i class="fa-solid fa-money-bill-wave text-base"></i> Confirmar Pago e Imprimir
                 </button>
             </div>
         </section>
@@ -58,75 +117,118 @@
 
     <script>
         let idPedidoSeleccionado = null;
-        let pedidosLocales = []; // Almacén en memoria de los pedidos cargados
+        let pedidosLocales = []; 
 
         document.addEventListener("DOMContentLoaded", cargarPedidosActivos);
 
-        // 1. Cargar los pedidos activos desde el endpoint que creamos en app.py
+        // Notificaciones Toast Integradas al Estilo del Login
+        function mostrarNotificacion(mensaje, tipo = 'exito') {
+            const contenedor = document.getElementById('contenedorToasts');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-4 rounded-2xl border backdrop-blur-md shadow-xl transition-all duration-300 fade-in pointer-events-auto
+                ${tipo === 'exito' 
+                    ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-200' 
+                    : 'bg-red-500/20 border-red-500/30 text-red-200'}`;
+            
+            const icono = tipo === 'exito' ? 'fa-circle-check' : 'fa-circle-exclamation';
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${icono} text-lg"></i>
+                <p class="text-sm font-semibold tracking-wide">${mensaje}</p>
+            `;
+            
+            contenedor.appendChild(toast);
+
+            // Remoción automática tras 3.5 segundos
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // 1. Cargar los pedidos activos desde el endpoint de app.py
         async function cargarPedidosActivos() {
             try {
                 const respuesta = await fetch('/api/pedidos/activos');
                 const pedidos = await respuesta.json();
-                pedidosLocales = pedidos; // Guardamos para leer los productos sin hacer otro fetch
+                pedidosLocales = pedidos; 
                 
                 const contenedor = document.getElementById('contenedor-pedidos');
+                const contadorBadge = document.getElementById('contador-pedidos-badge');
                 contenedor.innerHTML = '';
 
                 if (pedidos.length === 0) {
+                    contadorBadge.classList.add('hidden');
                     contenedor.innerHTML = `
-                        <div class="text-center py-12 col-span-2 bg-slate-900/50 border border-dashed border-slate-800 rounded-xl w-full">
-                            <i class="fa-solid fa-circle-check text-slate-600 text-3xl mb-2"></i>
-                            <p class="text-slate-500 text-sm">No hay cuentas pendientes por cobrar en este momento.</p>
+                        <div class="text-center py-16 col-span-1 md:col-span-2 bg-white/5 border border-dashed border-white/10 rounded-2xl w-full p-6 shadow-inner fade-in">
+                            <div class="w-14 h-14 bg-stone-950/40 rounded-full flex items-center justify-center border border-white/10 mx-auto mb-3 text-amber-400">
+                                <i class="fa-solid fa-circle-check text-2xl"></i>
+                            </div>
+                            <p class="text-amber-100 font-bold text-sm uppercase tracking-wide">¡Todo cobrado!</p>
+                            <p class="text-stone-400 text-xs mt-1">No quedan cuentas pendientes en el sistema de momento.</p>
                         </div>`;
                     return;
                 }
 
+                // Mostrar cantidad de pedidos pendientes
+                contadorBadge.innerText = `${pedidos.length} ${pedidos.length === 1 ? 'pendiente' : 'pendientes'}`;
+                contadorBadge.classList.remove('hidden');
+
                 pedidos.forEach(pedido => {
                     if (!pedido.estado) pedido.estado = 'Pendiente';
-                    let badgeColor = 'bg-slate-800 text-slate-400 border border-slate-700/50';
-                    if (pedido.estado === 'Listo') badgeColor = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
-                    if (pedido.estado === 'Entregado') badgeColor = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-                    if (pedido.estado === 'Pendiente') badgeColor = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
-                    if (pedido.estado === 'Cocinado') badgeColor = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    let badgeColor = 'bg-stone-950/60 text-stone-400 border-white/10';
+                    if (pedido.estado === 'Listo') badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+                    if (pedido.estado === 'Entregado') badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+                    if (pedido.estado === 'Pendiente') badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+                    if (pedido.estado === 'Cocinado') badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
 
-                    const iconType = pedido.numero_mesa ? 'fa-chair text-sky-400' : 'fa-motorcycle text-orange-400';
+                    const iconType = pedido.numero_mesa ? 'fa-chair text-amber-400' : 'fa-motorcycle text-orange-400';
 
                     const card = document.createElement('div');
-                    card.className = "bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all cursor-pointer flex flex-col justify-between space-y-4 shadow-sm";
+                    card.id = `card-pedido-${pedido.id_pedido}`;
+                    card.className = "bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 hover:bg-white/10 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 shadow-lg group relative overflow-hidden fade-in";
                     
-                    // Al hacer click, pasamos el objeto pedido completo para desglosarlo
-                    card.onclick = () => verDetallePedido(pedido);
+                    card.onclick = () => {
+                        document.querySelectorAll('[id^="card-pedido-"]').forEach(c => c.classList.remove('pedido-card-activa'));
+                        card.classList.add('pedido-card-activa');
+                        verDetallePedido(pedido);
+                    };
                     
                     card.innerHTML = `
                         <div class="flex justify-between items-start">
                             <div class="flex items-center gap-3">
-                                <div class="p-2 bg-slate-950 rounded-lg border border-slate-800">
-                                    <i class="fa-solid ${iconType}"></i>
+                                <div class="p-2.5 bg-stone-950/60 rounded-xl border border-white/10 shadow-inner group-hover:border-white/20 transition-all text-amber-400">
+                                    <i class="fa-solid ${iconType} text-base"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-slate-200">${pedido.origen_pedido}</h3>
-                                    <span class="text-xs text-slate-500">ID Pedido: #${pedido.id_pedido}</span>
+                                    <h3 class="font-bold text-amber-50 group-hover:text-amber-400 transition-colors tracking-wide">${pedido.origen_pedido}</h3>
+                                    <span class="text-[11px] text-stone-400 font-mono tracking-wider">ORDEN: #${pedido.id_pedido}</span>
                                 </div>
                             </div>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${badgeColor}">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider border uppercase shadow-sm ${badgeColor}">
                                 ${pedido.estado}
                             </span>
                         </div>
-                        <div class="flex justify-between items-center pt-3 border-t border-slate-800/60">
-                            <span class="text-xs text-slate-500">
-                                <i class="fa-regular fa-clock mr-1"></i>${new Date(pedido.fecha_p).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        <div class="flex justify-between items-center pt-3.5 border-t border-white/10">
+                            <span class="text-xs text-stone-400 flex items-center gap-1.5 font-medium">
+                                <i class="fa-regular fa-clock text-stone-500"></i>${new Date(pedido.fecha_p).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                             </span>
-                            <span class="font-extrabold text-lg text-emerald-400">$${pedido.total_p.toFixed(2)}</span>
+                            <div class="text-right">
+                                <span class="text-stone-500 block text-[9px] font-bold uppercase tracking-wider">A pagar</span>
+                                <span class="font-black text-xl text-amber-400 tracking-tight">$${pedido.total_p.toFixed(2)}</span>
+                            </div>
                         </div>
                     `;
                     contenedor.appendChild(card);
                 });
             } catch (error) {
                 console.error("Error al cargar pedidos activos:", error);
+                mostrarNotificacion("No se pudieron cargar los pedidos de caja.", "error");
             }
         }
 
-        // 2. Desplegar los productos en la barra lateral utilizando las llaves exactas de tu SQL
+        // 2. Desplegar los productos en la barra lateral
         function verDetallePedido(pedido) {
             idPedidoSeleccionado = pedido.id_pedido;
             const detalleContenedor = document.getElementById('detalle-pedido-seleccionado');
@@ -135,16 +237,20 @@
 
             detalleContenedor.innerHTML = '';
             
-            // Iteramos los productos mapeando las columnas exactas de tu archivo: nombre_pr y cantidad_v
             pedido.productos.forEach(item => {
                 const itemDiv = document.createElement('div');
-                itemDiv.className = "flex justify-between items-center text-sm bg-slate-950 p-3 rounded-xl border border-slate-800/60";
+                itemDiv.className = "flex justify-between items-center text-sm bg-stone-950/40 p-3.5 rounded-xl border border-white/10 shadow-sm fade-in";
                 itemDiv.innerHTML = `
-                    <div>
-                        <p class="font-semibold text-slate-200">${item.nombre_pr}</p>
-                        <p class="text-xs text-slate-500">Cant: ${item.cantidad_v} x $${parseFloat(item.precio_unitario).toFixed(2)}</p>
+                    <div class="space-y-0.5">
+                        <p class="font-bold text-amber-50 tracking-wide">${item.nombre_pr}</p>
+                        <p class="text-xs text-stone-400 font-medium">
+                            <span class="text-stone-950 font-black bg-gradient-to-r from-orange-400 to-amber-400 px-2 py-0.5 rounded-md text-[10px] mr-1.5 uppercase">x${item.cantidad_v}</span> 
+                            $${parseFloat(item.precio_unitario).toFixed(2)} c/u
+                        </p>
                     </div>
-                    <span class="font-bold text-slate-300">$${(item.cantidad_v * item.precio_unitario).toFixed(2)}</span>
+                    <span class="font-extrabold text-amber-100 tracking-tight bg-stone-950/60 px-2.5 py-1.5 rounded-lg border border-white/10 shadow-inner">
+                        $${(item.cantidad_v * item.precio_unitario).toFixed(2)}
+                    </span>
                 `;
                 detalleContenedor.appendChild(itemDiv);
             });
@@ -153,10 +259,20 @@
             panelAcciones.classList.remove('hidden');
         }
 
-        // 3. Mandar la orden de cobro (Cambio a estado 'Pagado')
+        function resetearDetalleDerecho() {
+            document.getElementById('detalle-pedido-seleccionado').innerHTML = `
+                <div class="flex flex-col items-center justify-center text-center py-20 px-4 fade-in">
+                    <div class="w-16 h-16 bg-stone-950/40 rounded-full flex items-center justify-center border border-white/10 mb-4 shadow-inner text-amber-500/60">
+                        <i class="fa-solid fa-hand-pointer text-xl"></i>
+                    </div>
+                    <p class="text-amber-200/80 font-bold text-sm uppercase tracking-wide">Selecciona una orden</p>
+                    <p class="text-stone-400 text-xs mt-1 max-w-[220px]">Haz clic sobre cualquiera de las tarjetas de la izquierda para desglosar sus consumos y proceder al cobro.</p>
+                </div>`;
+        }
+
         async function procesarCobro() {
             if (!idPedidoSeleccionado) return;
-            if (!confirm(`¿Confirmar cobro y cierre de cuenta para el Pedido #${idPedidoSeleccionado}?`)) return;
+            if (!confirm(`¿Confirmar cobro definitivo y cierre de la Cuenta #${idPedidoSeleccionado}?`)) return;
 
             try {
                 const respuesta = await fetch(`/api/pedidos/pagar/${idPedidoSeleccionado}`, {
@@ -164,24 +280,32 @@
                 });
 
                 if (respuesta.ok) {
-                    alert("¡Venta registrada con éxito! La cuenta ha sido cerrada.");
+                    mostrarNotificacion(`¡Venta #${idPedidoSeleccionado} liquidada correctamente!`, 'exito');
                     
-                    // Limpiamos el panel lateral
+                    // Limpiamos el panel lateral de manera elegante con el estado vacío
                     document.getElementById('panel-acciones-pago').classList.add('hidden');
                     document.getElementById('detalle-pedido-seleccionado').innerHTML = `
-                        <p class="text-slate-500 text-sm text-center py-8">Selecciona un pedido de la izquierda para ver el detalle y proceder al cobro.</p>
+                        <div class="flex flex-col items-center justify-center text-center py-20 px-4 fade-in">
+                            <div class="w-16 h-16 bg-stone-950/40 rounded-full flex items-center justify-center border border-white/10 mb-4 shadow-inner text-amber-500/60">
+                                <i class="fa-solid fa-hand-pointer text-xl"></i>
+                            </div>
+                            <p class="text-amber-200/80 font-bold text-sm uppercase tracking-wide">Selecciona una orden</p>
+                            <p class="text-stone-400 text-xs mt-1 max-w-[220px]">Haz clic sobre cualquiera de las tarjetas de la izquierda para desglosar sus consumos y proceder al cobro.</p>
+                        </div>
                     `;
                     idPedidoSeleccionado = null;
                     
                     // Recargamos asíncronamente las tarjetas del panel izquierdo
                     cargarPedidosActivos(); 
                 } else {
-                    alert("No se pudo procesar el cobro en el servidor.");
+                    mostrarNotificacion("Error en el servidor al intentar cerrar la cuenta.", "error");
                 }
             } catch (error) {
                 console.error("Error de conexión al cobrar:", error);
+                mostrarNotificacion("No hay comunicación con el servidor.", "error");
             }
         }
+        setInterval(cargarPedidosActivos, 4000);
     </script>
 </body>
 </html>

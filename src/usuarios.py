@@ -83,3 +83,33 @@ def obtener_usuario():
     finally:
         db.close()
         cursor.close()
+
+
+
+def actualizar_usuario_completo(id_usuario, nombre_u, apellido_u, correo_u, rol, telefono_u):
+    db = conectar_db()
+    if db is None:
+        return False
+    
+    cursor = db.cursor()
+    try:
+        consulta_sql = """
+            UPDATE usuarios 
+            SET nombre_u = %s, 
+                apellido_u = %s, 
+                correo_u = %s, 
+                rol = %s, 
+                telefono_u = %s 
+            WHERE id_usuario = %s
+        """
+        valores = (nombre_u, apellido_u, correo_u, rol, telefono_u, id_usuario)
+        cursor.execute(consulta_sql, valores)
+        db.commit()
+        return True
+    except Exception as e:
+        print(f"Error al actualizar usuario en BD: {str(e)}")
+        db.rollback()
+        return False
+    finally:
+        cursor.close()
+        db.close()

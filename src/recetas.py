@@ -44,3 +44,26 @@ def obtener_receta():
     finally:
         cursor.close()
         db.close()
+
+def borrar_ingrediente_de_receta(id_producto, id_inventario):
+    db = conectar_db()
+    if db is None:
+        return False
+        
+    cursor = db.cursor()
+    consulta_sql = "DELETE FROM recetas WHERE id_producto = %s AND id_inventario = %s"
+    valores = (id_producto, id_inventario)
+    
+    try:
+        cursor.execute(consulta_sql, valores)
+        db.commit()
+        # Si afectó a una o más filas, significa que se eliminó correctamente
+        exito = cursor.rowcount > 0
+        return exito
+    except Exception as e:
+        print(f"Error al eliminar ingrediente de la receta: {e}")
+        db.rollback()
+        return False
+    finally:
+        cursor.close()
+        db.close()

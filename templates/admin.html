@@ -6,111 +6,159 @@
     <title>Pizzería - Panel de Administración</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+    <style>
+        /* Fondo general con la imagen desenfocada de fondo como en el catálogo */
+        body {
+            background-image: linear-gradient(rgba(43, 36, 36, 0.88), rgba(29, 23, 23, 0.90)), url('https://phantom-elmundo.unidadeditorial.es/5cdc8f0c5b7b2ec1cf25506056cd8bec/crop/132x205/2897x2048/resize/920/f/webp/assets/multimedia/imagenes/2025/02/06/17388596752431.jpg'); /* Ajusta la ruta de tu imagen de fondo si es necesario */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
 
-    <nav class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
+        /* Estilo modificado: Tarjetas más claras y con mayor transparencia (rgba de 0.55 a 0.35) */
+        .glass-card {
+            background-color: rgba(107, 95, 91, 0.35);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(107, 95, 91, 0.35);
+        }
+
+        /* Contenedor interno e inputs más claros y translúcidos (rgba de 0.75 a 0.45) */
+        .glass-input-bg {
+            background-color: rgba(107, 95, 91, 0.35);
+            border: 1px solid rgba(107, 95, 91, 0.35);
+        }
+
+        .scrollbar-none::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-none {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-white min-h-screen font-sans antialiased">
+
+    <div id="modal-confirmacion" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-[#362f2d]/90 border border-white/10 backdrop-blur-xl p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-all duration-200">
+            <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-100 mb-2">¿Confirmar Acción?</h3>
+            <p id="modal-confirmacion-mensaje" class="text-xs text-slate-300 leading-relaxed mb-6">¿Estás seguro de realizar esta acción?</p>
+            <div class="flex gap-3 justify-center">
+                <button id="btn-modal-cancelar" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/5 transition-all">
+                    Cancelar
+                </button>
+                <button id="btn-modal-confirmar" class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] text-white shadow-md transition-all active:scale-95">
+                    Sí, continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="contenedor-notificaciones" class="fixed top-24 right-6 z-[9999] flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
+        
+    <nav class="bg-[#362f2d]/70 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
         <div class="flex items-center gap-3">
-            <i class="fa-solid fa-user-shield text-amber-400 text-xl"></i>
-            <h1 class="text-xl font-extrabold tracking-wide text-slate-200">
-                PANEL ADMINISTRATIVO <span class="text-amber-400 font-medium text-sm ml-2">| Control de Menú</span>
+            <h1 class="text-xl font-extrabold tracking-wide text-[#f4ad42]">
+                PIZZERÍA EL INGE <span class="text-gray-300 font-medium text-sm ml-2">| Panel Administrativo</span>
             </h1>
         </div>
-        <a href="/index" class="text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-xl transition-all">
-            <i class="fa-solid fa-arrow-left mr-2"></i> Volver al Inicio
+        <a href="/index" class="text-xs bg-[#4a3f3c] hover:bg-[#5a4e4a] text-gray-200 font-bold py-2 px-4 rounded-xl border border-white/10 transition-all flex items-center gap-2 h-fit">
+            <i class="fa-solid fa-arrow-left text-[#f4ad42]"></i> Volver al Inicio
         </a>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-6">
+
+
+    <div class="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-5 mt-5 pb-12">
+
         
-        <div class="flex gap-4 border-b border-slate-800 mb-8">
+        <div class="flex gap-2 border-b border-white/5 mb-8 overflow-x-auto scrollbar-none pb-3">
             <button onclick="cambiarPestana('productos')" id="tab-productos" 
-                class="px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2">
+                class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#e05c3e] text-white shadow-lg shadow-[#e05c3e]/20 transition-all flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-pizza-slice"></i> Gestión de Productos
             </button>
             <button onclick="cambiarPestana('categorias')" id="tab-categorias" 
-                class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-list"></i> Gestión de Categorías
             </button>
             <button onclick="cambiarPestana('recetas')" id="tab-recetas" 
-                class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-mortar-pestle"></i> Recetas por Producto
             </button>
             <button onclick="cambiarPestana('inventario')" id="tab-inventario" 
-                class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
-                <i class="fa-solid fa-mortar-pestle"></i> Control de inventario 
+                class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-boxes-stacked"></i> Control de Inventario 
             </button>
             <button onclick="cambiarPestana('usuarios')" id="tab-usuarios" 
-                class="px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2">
+                class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-users-gear"></i> Gestión de Empleados
             </button>
         </div>
 
-
-        
-
-
-        <div id="seccion-productos" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
-                <h2 id="titulo-form-producto" class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nuevo Producto
+        <div id="seccion-productos" class="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
+            <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
+                <h2 id="titulo-form-producto" class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                    <i class="fa-solid fa-plus-circle"></i> Agregar Nuevo Producto
                 </h2>
                 <form id="form-producto" onsubmit="guardarProducto(event)" enctype="multipart/form-data" class="space-y-4">
                     <input type="hidden" id="prod-id">
                     
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre del Producto</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre del Producto</label>
                         <input type="text" id="prod-nombre" required 
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Precio ($)</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Precio ($)</label>
                         <input type="number" id="prod-precio" step="0.01" required 
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Categoría</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Categoría</label>
                         <select id="prod-categoria" required 
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                         </select>
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Imagen del Producto</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Imagen del Producto</label>
                         <input type="file" id="prod-imagen" name="imagen_route" accept="image/*"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700 transition-all">
-                        <p id="info-imagen-prod" class="text-xs text-slate-500 mt-1">Formatos permitidos: .png, .jpg, .jpeg</p>
+                            class="w-full glass-input-bg rounded-xl px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#4a3f3c] file:text-white hover:file:bg-[#5a4e4a] transition-all">
                     </div>
 
                     <div class="pt-4 flex gap-3">
-                        <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 uppercase text-xs tracking-wider">
                             Confirmar Registro
                         </button>
-                        <button type="button" id="btn-cancelar-prod" onclick="limpiarFormProducto()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition-all">
+                        <button type="button" id="btn-cancelar-prod" onclick="limpiarFormProducto()" class="hidden bg-[#4a3f3c] text-white font-bold py-3 px-4 rounded-xl text-xs transition-all">
                             Cancelar
                         </button>
                     </div>
                 </form>
             </div>
 
-            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                <div class="p-6 border-b border-slate-800 bg-slate-900/50">
-                    <h3 class="font-bold text-slate-200">Productos Registrados</h3>
+            <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
+                <div class="p-5 border-b border-white/5 bg-black/10">
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Productos Registrados</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                <th class="py-4 px-6">Imagen</th>
-                                <th class="py-4 px-6">Nombre</th>
-                                <th class="py-4 px-6">Precio</th>
-                                <th class="py-4 px-6 text-center">Estado</th> <th class="py-4 px-6 text-center">Acciones</th>
-    </tr>
+                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                                <th class="py-3 px-6">Imagen</th>
+                                <th class="py-3 px-6">Nombre</th>
+                                <th class="py-3 px-6">Precio</th>
+                                <th class="py-3 px-6 text-center">Estado</th> 
+                                <th class="py-4 px-6 text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-productos" class="divide-y divide-slate-800/50 text-sm">
+                        <tbody id="tabla-productos" class="divide-y divide-white/5 text-xs">
                         </tbody>
                     </table>
                 </div>
@@ -118,51 +166,51 @@
         </div>
 
         <div id="seccion-categorias" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
-                <h2 id="titulo-form-categoria" class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nueva Categoría
+            <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
+                <h2 id="titulo-form-categoria" class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                    <i class="fa-solid fa-plus-circle"></i> Agregar Nueva Categoría
                 </h2>
                 <form id="form-categoria" onsubmit="guardarCategoria(event)" enctype="multipart/form-data" class="space-y-4">
                     <input type="hidden" id="cat-id">
                     
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre de la Categoría</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre de la Categoría</label>
                         <input type="text" id="cat-nombre" required 
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Imagen de la Categoría</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Imagen de la Categoría</label>
                         <input type="file" id="cat-imagen" name="image_route" accept="image/*"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700 transition-all">
+                            class="w-full glass-input-bg rounded-xl px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#4a3f3c] file:text-white hover:file:bg-[#5a4e4a] transition-all">
                     </div>
 
                     <div class="pt-4 flex gap-3">
-                        <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
+                        <button type="submit" class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider">
                             Confirmar Registro
                         </button>
-                        <button type="button" id="btn-cancelar-cat" onclick="limpiarFormCategoria()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition-all">
+                        <button type="button" id="btn-cancelar-cat" onclick="limpiarFormCategoria()" class="hidden bg-[#4a3f3c] text-white font-bold py-3 px-4 rounded-xl text-xs transition-all">
                             Cancelar
                         </button>
                     </div>
                 </form>
             </div>
 
-            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                <div class="p-6 border-b border-slate-800 bg-slate-900/50">
-                    <h3 class="font-bold text-slate-200">Categorías Registradas</h3>
+            <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
+                <div class="p-5 border-b border-white/5 bg-black/10">
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-folder-open"></i> Categorías Registradas</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                <th class="py-4 px-6">Imagen</th>
-                                <th class="py-4 px-6">Nombre de Categoría</th>
-                                <th class="py-4 px-6 text-center">Estado</th>
-                                <th class="py-4 px-6 text-center">Acciones</th>
+                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                                <th class="py-3 px-6">Imagen</th>
+                                <th class="py-3 px-6">Nombre de Categoría</th>
+                                <th class="py-3 px-6 text-center">Estado</th>
+                                <th class="py-3 px-6 text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-categorias" class="divide-y divide-slate-800/50 text-sm">
+                        <tbody id="tabla-categorias" class="divide-y divide-white/5 text-xs">
                         </tbody>
                     </table>
                 </div>
@@ -170,225 +218,252 @@
         </div>
 
         <div id="seccion-recetas" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
-                <h2 class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-basket-shopping text-amber-400"></i> Configurar Receta masiva
+            <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
+                <h2 class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                    <i class="fa-solid fa-basket-shopping"></i> Configurar Receta
                 </h2>
                 <form id="form-receta" onsubmit="guardarRecetaCompleta(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">1. Selecciona el Producto</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">1. Selecciona el Producto</label>
                         <select id="receta-producto" required onchange="cargarRecetaEspecifica()"
-                            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                         </select>
                     </div>
                     
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">2. Insumos y Cantidades</label>
+                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider">2. Insumos y Cantidades</label>
                             <button type="button" onclick="agregarFilaIngrediente()" 
-                                class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1 px-2.5 rounded-lg border border-slate-700 transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-plus text-[10px]"></i> Añadir Fila
+                                class="text-[10px] bg-[#4a3f3c] hover:bg-[#5a4e4a] text-white font-bold py-1.5 px-3 rounded-lg border border-white/5 transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-plus"></i> Añadir Fila
                             </button>
                         </div>
 
-                        <div id="contenedor-filas-ingredientes" class="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                        <div id="contenedor-filas-ingredientes" class="space-y-3 max-h-[300px] overflow-y-auto pr-1 scrollbar-none">
                             <div class="fila-ingrediente flex gap-2 items-center">
                                 <select required name="insumo_id"
-                                    class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all select-insumo-dinamico">
+                                    class="flex-1 glass-input-bg rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all select-insumo-dinamico">
                                 </select>
-                                <div class="relative w-32">
+                                <div class="relative w-28">
                                     <input type="number" required name="insumo_cantidad" step="0.001" placeholder="Cant."
-                                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
+                                        class="w-full glass-input-bg rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                                 </div>
-                                <button type="button" class="text-slate-600 cursor-not-allowed p-2 text-sm" disabled>
+                                <button type="button" class="text-gray-400 cursor-not-allowed p-2 text-xs" disabled>
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
                         </div>
-                        <p class="text-[10px] text-slate-500 mt-2">Usa decimales para el peso (ej. 0.200 para 200g).</p>
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
+                        <button type="submit" class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider">
                             Guardar Receta Completa
                         </button>
                     </div>
                 </form>
             </div>
-            <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                <div class="p-6 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-200">Componentes de la Receta</h3>
-                    <span id="nombre-producto-seleccionado" class="text-xs bg-slate-800 text-amber-400 font-semibold px-3 py-1 rounded-full border border-slate-700">Selecciona un producto primero</span>
+            
+            <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
+                <div class="p-5 border-b border-white/5 bg-black/10 flex justify-between items-center gap-4 flex-wrap">
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Componentes</h3>
+                    <span id="nombre-producto-seleccionado" class="text-[11px] glass-input-bg text-[#f4ad42] font-semibold px-4 py-1.5 rounded-full">Selecciona un producto primero</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                <th class="py-4 px-6">Ingrediente</th>
-                                <th class="py-4 px-6">Cantidad Necesaria</th>
-                                <th class="py-4 px-6 text-center">Acciones</th>
+                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                                <th class="py-3 px-6">Ingrediente</th>
+                                <th class="py-3 px-6">Cantidad Necesaria</th>
+                                <th class="py-3 px-6 text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-recetas" class="divide-y divide-slate-800/50 text-sm">
+                        <tbody id="tabla-recetas" class="divide-y divide-white/5 text-xs">
                             <tr>
-                                <td colspan="3" class="py-8 text-center text-slate-500 italic">No se ha seleccionado ningún producto para ver su receta.</td>
+                                <td colspan="3" class="py-8 text-center text-gray-300 italic">No se ha seleccionado ningún producto para ver su receta.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-
-
-                
-
             </div>
         </div>
             
         <div id="seccion-inventario" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit shadow-xl">
-                    <h2 class="text-lg font-bold text-slate-200 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-plus-circle text-amber-400"></i> Nuevo Ingrediente
-                    </h2>
-                    <form id="form-inventario" onsubmit="guardarIngrediente(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Nombre del Ingrediente</label>
-                            <input type="text" id="inv-nombre" required placeholder="Ej. Queso Mozzarella, Pepperoni" 
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Stock Inicial</label>
-                                <input type="number" id="inv-stock" required min="0" step="0.01" placeholder="0.00"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Stock Mínimo</label>
-                                <input type="number" id="inv-stock-min" required min="0" step="0.01" placeholder="Ej. 2.00"
-                                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 transition-all">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Unidad de Medida</label>
-                            <select id="inv-unidad" required 
-                                class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
-                                <option value="Kg">Kilogramos (Kg)</option>
-                                <option value="G">Gramos (g)</option>
-                                <option value="Litros">Litros (L)</option>
-                                <option value="Unidades">Unidades</option>
-                            </select>
-                        </div>
-
-                        <div class="pt-4">
-                            <button type="submit" 
-                                class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-500/10">
-                                Registrar Ingrediente
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                    <div class="p-6 border-b border-slate-800 bg-slate-900/50">
-                        <h3 class="font-bold text-slate-200">Ingredientes en Inventario</h3>
+            <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
+                <h2 class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                    <i class="fa-solid fa-plus-circle"></i> Nuevo Ingrediente
+                </h2>
+                <form id="form-inventario" onsubmit="guardarIngrediente(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre del Ingrediente</label>
+                        <input type="text" id="inv-nombre" required placeholder="Ej. Queso Mozzarella" 
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                    <th class="py-4 px-6">Ingrediente</th>
-                                    <th class="py-4 px-6 text-center">Stock Actual</th>
-                                    <th class="py-4 px-6 text-center">Stock Mínimo</th>
-                                    <th class="py-4 px-6 text-center">Estado</th>
-                                    <th class="py-4 px-6 text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-inventario-body" class="divide-y divide-slate-800/50 text-sm">
-                                <tr>
-                                    <td colspan="4" class="py-8 text-center text-slate-500 italic">
-                                        <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando inventario...
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Stock Inicial</label>
+                            <input type="number" id="inv-stock" required min="0" step="0.01" placeholder="0.00"
+                                class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#f4ad42] transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Stock Mínimo</label>
+                            <input type="number" id="inv-stock-min" required min="0" step="0.01" placeholder="0.00"
+                                class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#f4ad42] transition-all">
+                        </div>
                     </div>
-                </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Unidad de Medida</label>
+                        <select id="inv-unidad" required 
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                            <option value="Kg">Kilogramos (Kg)</option>
+                            <option value="G">Gramos (g)</option>
+                            <option value="Litros">Litros (L)</option>
+                            <option value="Unidades">Unidades</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" 
+                            class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider">
+                            Registrar Ingrediente
+                        </button>
+                    </div>
+                </form>
             </div>
 
-            <div id="seccion-usuarios" class="pestana-contenido hidden p-6">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-fit">
-                        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-user-plus text-amber-400"></i> Registrar Nuevo Empleado
-                        </h2>
-                        <form id="form-empleados" onsubmit="guardarEmpleado(event)" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Nombres</label>
-                                <input type="text" id="emp-nombre" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Apellidos</label>
-                                <input type="text" id="emp-apellido" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Correo Electrónico</label>
-                                <input type="email" id="emp-correo" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Contraseña de Acceso</label>
-                                <input type="password" id="emp-password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Telefono</label>
-                                <input type="text" id="emp-telefono" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Rol del Sistema</label>
-                                <select id="emp-rol" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-colors">
-                                    <option value="Administrador">Administrador (Acceso Total)</option>
-                                    <option value="Cocina">Cocinero (Panel de Pedidos)</option>
-                                    <option value="Mesero">Mesero (Toma de Ordenes)</option>
-                                    <option value="Cajero">Cajero (Realiza el cobro)</option>
+            <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
+                <div class="p-5 border-b border-white/5 bg-black/10">
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Ingredientes en Inventario</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                                <th class="py-3 px-6">Ingrediente</th>
+                                <th class="py-3 px-6 text-center">Stock Actual</th>
+                                <th class="py-3 px-6 text-center">Stock Mínimo</th>
+                                <th class="py-3 px-6 text-center">Estado</th>
+                                <th class="py-3 px-6 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-inventario-body" class="divide-y divide-white/5 text-xs">
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-gray-300">
+                                    <i class="fa-solid fa-spinner fa-spin mr-2 text-[#f4ad42]"></i> Cargando inventario...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-  
-                                </select>
-                            </div>
-                            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl transition-all shadow-lg shadow-amber-500/10">
-                                Registrar Empleado
-                            </button>
-                        </form>
+        <div id="seccion-usuarios" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
+                <h2 class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                    <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Empleado
+                </h2>
+                <form id="form-empleados" onsubmit="guardarEmpleado(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombres</label>
+                        <input type="text" id="emp-nombre" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
-
-                    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-                        <div class="p-6 border-b border-slate-800 bg-slate-900/50">
-                            <h3 class="font-bold text-slate-200">Personal Registrado</h3>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="border-b border-slate-800 bg-slate-950 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                                        <th class="py-4 px-6">Empleado</th>
-                                        <th class="py-4 px-6">Contacto</th>
-                                        <th class="py-4 px-6">Rol</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-usuarios-body" class="divide-y divide-slate-800/50 text-sm">
-                                    <tr>
-                                        <td colspan="3" class="py-8 text-center text-slate-500 italic">
-                                            <i class="fa-solid fa-spinner fa-spin mr-2"></i> Cargando personal...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Apellidos</label>
+                        <input type="text" id="emp-apellido" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Correo Electrónico</label>
+                        <input type="email" id="emp-correo" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Contraseña</label>
+                        <input type="password" id="emp-password" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Teléfono</label>
+                        <input type="text" id="emp-telefono" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Rol del Sistema</label>
+                        <select id="emp-rol" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                            <option value="Administrador">Administrador</option>
+                            <option value="Cocina">Cocinero</option>
+                            <option value="Mesero">Mesero</option>
+                            <option value="Cajero">Cajero</option>
+                        </select>
+                    </div>
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs uppercase tracking-wider">
+                            Registrar Empleado
+                        </button>
+                    </div>
+                </form>
+            </div>
 
-    
+            <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
+                <div class="p-5 border-b border-white/5 bg-black/10">
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-users"></i> Personal Registrado</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                                <th class="py-3 px-6">Empleado</th>
+                                <th class="py-3 px-6">Contacto</th>
+                                <th class="py-3 px-6">Rol</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-usuarios-body" class="divide-y divide-white/5 text-xs">
+                            <tr>
+                                <td colspan="3" class="py-8 text-center text-gray-300">
+                                    <i class="fa-solid fa-spinner fa-spin mr-2 text-[#f4ad42]"></i> Cargando personal...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
     <script>
+
+
+function mostrarConfirmacionPersonalizada(mensaje) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('modal-confirmacion');
+        const textoMensaje = document.getElementById('modal-confirmacion-mensaje');
+        const btnConfirmar = document.getElementById('btn-modal-confirmar');
+        const btnCancelar = document.getElementById('btn-modal-cancelar');
+
+        // Insertar el texto dinámico de la acción
+        textoMensaje.innerText = mensaje;
+
+        // Mostrar el modal quitando la clase 'hidden'
+        modal.classList.remove('hidden');
+
+        // Manejadores de eventos
+        function cerrar(resultado) {
+            modal.classList.add('hidden');
+            // Limpiar eventos para evitar duplicados en el próximo clic
+            btnConfirmar.onclick = null;
+            btnCancelar.onclick = null;
+            resolve(resultado);
+        }
+
+        btnConfirmar.onclick = () => cerrar(true);
+        btnCancelar.onclick = () => cerrar(false);
+    });
+}
         // Variables globales
         let listaCategoriasGlobal = [];
         let listaInsumosGlobal = [];
+        let editandoInsumoId = null;
+        let editandoUsuarioId = null;
+
 
         document.addEventListener("DOMContentLoaded", () => {
             cargarCategorias();
@@ -682,8 +757,11 @@
         }
 
         async function alternarEstadoProducto(id, nuevoEstado) {
-            const accion = nuevoEstado === 0 ? "¿Seguro que deseas deshabilitar este producto?" : "¿Deseas volver a habilitar este producto?";
-            if (!confirm(accion)) return;
+            const accion = nuevoEstado === 0 
+                ? "¿Seguro que deseas deshabilitar este producto de la venta?" 
+                : "¿Deseas volver a habilitar este producto?";
+            const confirmado = await mostrarConfirmacionPersonalizada(accion);
+            if (!confirmado) return;
 
             try {
                 const respuesta = await fetch('/api/producto/estado', {
@@ -691,17 +769,26 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id_producto: id, activo_p: nuevoEstado })
                 });
-
                 const resultado = await respuesta.json();
-
                 if (respuesta.ok) {
-                    cargarProductos(); // Refresca la tabla automáticamente
+                    cargarProductos(); 
+                    if (typeof mostrarNotificacion === "function") {
+                        mostrarNotificacion("¡Estado del producto actualizado con éxito!", "exito");
+                    }
                 } else {
-                    alert("Error: " + resultado.mensaje);
+                    if (typeof mostrarNotificacion === "function") {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    } else {
+                        alert("Error: " + resultado.mensaje);
+                    }
                 }
             } catch (error) {
                 console.error("Error al cambiar estado del producto:", error);
-                alert("Error de red al intentar cambiar el estado.");
+                if (typeof mostrarNotificacion === "function") {
+                    mostrarNotificacion("Error de red al cambiar el estado del producto.", "error");
+                } else {
+                    alert("Error de red al intentar cambiar el estado.");
+                }
             }
         }
 
@@ -791,7 +878,12 @@
                             <td class="py-4 px-6 font-medium text-slate-200">${nombreIngrediente}</td>
                             <td class="py-4 px-6 text-slate-400 font-mono">${cantidad} <span class="text-xs text-slate-500">${unidadMedida}</span></td>
                             <td class="py-4 px-6 text-center">
-                                <span class="text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">Asignado</span>
+                                <button type="button" 
+                                    onclick="eliminarIngredienteDeReceta(${item.id_producto}, ${item.id_inventario}, '${nombreIngrediente.replace(/'/g, "\\'")}')" 
+                                    class="text-rose-500 hover:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 p-2 rounded-xl transition-all active:scale-95 shadow-sm"
+                                    title="Eliminar ingrediente de la receta">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
+                                </button>
                             </td>
                         </tr>
                     `;
@@ -892,6 +984,7 @@
                         : `<button onclick="alternarEstadoIngrediente(${item.id_inventario}, 1)" class="text-slate-500 hover:text-emerald-400 p-1 transition-colors" title="Habilitar">
                             <i class="fa-solid fa-eye"></i>
                         </button>`;
+                        
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-900/30 transition-colors border-b border-slate-800/40">
                             <td class="py-3 px-4 text-sm font-medium text-slate-200">${nombreIngrediente}</td>
@@ -905,7 +998,12 @@
                                 ${badgeEstado}
                             </td>
                             <td class="py-3 px-4 text-center">
-                                ${botonAccion}
+                                <div class="flex items-center justify-center gap-2">
+                                    <button onclick='prepararEditarInsumo(${JSON.stringify(item)})' class="text-slate-400 hover:text-amber-400 p-1 transition-colors" title="Editar Insumo">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+                                    ${botonAccion}
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -919,9 +1017,8 @@
                     </tr>`;
             }
         }
-
         // 2. Guardar un nuevo ingrediente en la base de datos
-        async function guardarIngrediente(event) {
+       async function guardarIngrediente(event) {
             event.preventDefault();
             
             const nombre = document.getElementById('inv-nombre').value;
@@ -929,6 +1026,51 @@
             const stockMin = document.getElementById('inv-stock-min').value;
             const unidad = document.getElementById('inv-unidad').value;
 
+            // =================================================================
+            // INTEGRACIÓN MÍNIMA DE EDICIÓN: Solo si existe un ID cargado
+            // =================================================================
+            if (typeof editandoInsumoId !== 'undefined' && editandoInsumoId !== null) {
+                try {
+                    const respuesta = await fetch('/api/inventario/actualizar', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id_inventario: editandoInsumoId,
+                            nombre: nombre,
+                            cantidad_inicial: stock,     
+                            cantidad_minima: stockMin,   
+                            unidad: unidad               
+                        })
+                    });
+
+                    const resultado = await respuesta.json();
+
+                    if (respuesta.ok) {
+                        // REEMPLAZADO: Solo tu banner personalizado
+                        if (typeof mostrarNotificacion === "function") {
+                            mostrarNotificacion("¡Ingrediente actualizado con éxito!", "exito");
+                        }
+                        
+                        limpiarFormularioInventario(); 
+                        cargarInventario();
+                        if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
+                    } else {
+                        // REEMPLAZADO: Banner personalizado de error
+                        if (typeof mostrarNotificacion === "function") {
+                            mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error en la petición de actualización:", error);
+                    if (typeof mostrarNotificacion === "function") {
+                        mostrarNotificacion("Error de red al intentar actualizar.", "error");
+                    }
+                }
+                return; 
+            }
+            // =================================================================
+
+            // --- TU BLOQUE POST ORIGINAL (Sin alertas de navegador) ---
             try {
                 const respuesta = await fetch('/api/inventario', {
                     method: 'POST',
@@ -944,23 +1086,35 @@
                 const resultado = await respuesta.json();
 
                 if (respuesta.ok) {
-                    alert(resultado.mensaje || "Ingrediente registrado con éxito");
-                    document.getElementById('form-inventario').reset(); // Limpia el formulario completo
-                    cargarInventario(); 
-                    if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
+                    // REEMPLAZADO: Notificación estética de éxito
+                    if (typeof mostrarNotificacion === "function") {
+                        mostrarNotificacion(resultado.mensaje || "¡Ingrediente registrado con éxito!", "exito");
+                    }
                     
+                    document.getElementById('form-inventario').reset(); 
+                    cargarInventario();
+                    if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
                 } else {
-                    alert("Error del servidor: " + resultado.mensaje);
+                    // REEMPLAZADO: Notificación estética de error
+                    if (typeof mostrarNotificacion === "function") {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    }
                 }
             } catch (error) {
                 console.error("Error en la peticion fetch:", error);
-                alert("Ocurrió un error de red al intentar registrar el ingrediente.");
+                // REEMPLAZADO: Notificación estética de error de red
+                if (typeof mostrarNotificacion === "function") {
+                    mostrarNotificacion("Error de red al intentar registrar el ingrediente.", "error");
+                }
             }
         }
-        async function alternarEstadoIngrediente(id, nuevoEstado) {
-            const accion = nuevoEstado === 0 ? "¿Seguro que deseas deshabilitar este ingrediente?" : "¿Deseas volver a habilitar este ingrediente?";
-            if (!confirm(accion)) return;
 
+        async function alternarEstadoIngrediente(id, nuevoEstado) {
+            const accion = nuevoEstado === 0 
+                ? "¿Seguro que deseas deshabilitar este ingrediente? Esto podría afectar a las recetas que lo utilicen." 
+                : "¿Deseas volver a habilitar este ingrediente?";
+            const confirmado = await mostrarConfirmacionPersonalizada(accion);
+            if (!confirmado) return;
             try {
                 const respuesta = await fetch('/api/inventario/estado', {
                     method: 'PUT',
@@ -971,14 +1125,24 @@
                 const resultado = await respuesta.json();
 
                 if (respuesta.ok) {
-                    cargarInventario(); // Refresca la tabla automáticamente sin F5
-                    if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
+                    cargarInventario(); // Refresca la tabla automáticamente sin recargar la página
+                    if (typeof mostrarNotificacion === "function") {
+                        mostrarNotificacion("¡Estado del ingrediente actualizado con éxito!", "exito");
+                    }
                 } else {
-                    alert("Error: " + resultado.mensaje);
+                    if (typeof mostrarNotificacion === "function") {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    } else {
+                        alert("Error: " + resultado.mensaje);
+                    }
                 }
             } catch (error) {
-                console.error("Error al cambiar estado:", error);
-                alert("Error de red al intentar cambiar el estado.");
+                console.error("Error al cambiar estado del ingrediente:", error);
+                if (typeof mostrarNotificacion === "function") {
+                    mostrarNotificacion("Error de red al intentar cambiar el estado.", "error");
+                } else {
+                    alert("Ocurrió un error de red al intentar cambiar el estado.");
+                }
             }
         }
 
@@ -1020,96 +1184,274 @@
         }
     }
 
-    async function cargarUsuarios() {
-        const tbody = document.getElementById('tabla-usuarios-body');
-        if (!tbody) return;
-
-        try {
-            const respuesta = await fetch('/api/obtener_usuario');
-            if (!respuesta.ok) throw new Error("No se pudieron cargar los usuarios");
-
-            const usuarios = await respuesta.json();
-            tbody.innerHTML = '';
-
-            if (usuarios.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="3" class="py-8 text-center text-slate-500">No hay empleados registrados.</td>
-                    </tr>`;
-                return;
-            }
-
-            usuarios.forEach(user => {
-                // Definimos colores para los roles
-                let badgeColor = "bg-slate-950 text-slate-400 border border-slate-800";
-                if(user.rol === 'admin') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                if(user.rol === 'cocina') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                if(user.rol === 'mesero') badgeColor = "bg-sky-500/10 text-sky-400 border border-sky-500/20";
-
-                const fila = document.createElement('tr');
-                fila.className = "hover:bg-slate-850/30 transition-colors group";
+        async function cargarUsuarios() {
+            try {
+                // CORREGIDO: Ruta en singular '/api/obtener_usuario' tal como la tenías originalmente
+                const respuesta = await fetch('/api/obtener_usuario'); 
+                if (!respuesta.ok) throw new Error("No se pudieron cargar los usuarios");
                 
-                // CORREGIDO: Leemos en minúsculas las llaves exactas que vienen del SELECT de MySQL
-                fila.innerHTML = `
-                    <td class="py-3.5 px-4">
-                        <div class="font-semibold text-slate-200 group-hover:text-amber-400 transition-colors">
-                            ${user.nombre_u} ${user.apellido_u}
-                        </div>
-                    </td>
-                    <td class="py-3.5 px-4 text-xs">
-                        <div class="text-slate-300 flex items-center gap-1.5 mb-0.5">
-                            <i class="fa-solid fa-envelope text-slate-500 w-4 text-center"></i> ${user.correo_u}
-                        </div>
-                        <div class="text-slate-500 flex items-center gap-1.5">
-                            <i class="fa-solid fa-phone text-slate-600 w-4 text-center"></i> ${user.telefono_u}
-                        </div>
-                    </td>
-                    <td class="py-3.5 px-4">
-                        <span class="px-2.5 py-1 rounded-md text-xs font-bold capitalize inline-block ${badgeColor}">
-                            ${user.rol}
-                        </span>
-                    </td>
-                `;
-                tbody.appendChild(fila);
-            });
+                const usuarios = await respuesta.json();
+                const tbody = document.getElementById('tabla-usuarios-body');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                
+                if (usuarios.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-gray-400 italic">No hay personal registrado.</td></tr>`;
+                    return;
+                }
 
-        } catch (error) {
-            console.error("Error al cargar los usuarios en el HTML:", error);
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="3" class="py-8 text-center text-red-400">
-                        <i class="fa-solid fa-circle-exclamation mr-2"></i> Error al cargar el listado del personal.
-                    </td>
-                </tr>`;
+                usuarios.forEach(user => {
+                    // Mantenemos tus colores personalizados según el rol
+                    let badgeColor = "bg-slate-950 text-slate-400 border border-slate-800";
+                    if(user.rol === 'admin') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                    if(user.rol === 'cocina') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                    if(user.rol === 'mesero') badgeColor = "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+
+                    tbody.innerHTML += `
+                        <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
+                            <td class="py-4 px-6 font-medium text-slate-200">
+                                ${user.nombre_u} ${user.apellido_u}
+                            </td>
+                            <td class="py-4 px-6 text-slate-300 text-xs">
+                                <div><i class="fa-solid fa-envelope text-slate-500 w-4 mr-1"></i> ${user.correo_u}</div>
+                                <div class="mt-1"><i class="fa-solid fa-phone text-slate-500 w-4 mr-1"></i> ${user.telefono_u}</div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <span class="px-2.5 py-1 rounded-md text-xs font-bold capitalize inline-block ${badgeColor}">
+                                    ${user.rol}
+                                </span>
+                            </td>
+                            <td class="py-4 px-6 text-center">
+                                <button onclick='prepararEditarUsuario(${JSON.stringify(user)})' class="text-slate-400 hover:text-amber-400 p-1 transition-colors" title="Editar Empleado">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar usuarios:", error);
+                const tbody = document.getElementById('tabla-usuarios-body');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-red-400 font-medium"><i class="fa-solid fa-circle-exclamation mr-2"></i> Error al cargar el listado.</td></tr>`;
+                }
+            }
+}
+
+async function alternarEstadoCategoria(id, nuevoEstado) {
+    const accion = nuevoEstado === 0 
+        ? "¿Seguro que deseas deshabilitar esta categoría y todos sus productos asociados?" 
+        : "¿Deseas volver a habilitar esta categoría?";
+    
+    const confirmado = await mostrarConfirmacionPersonalizada(accion);
+    if (!confirmado) return;
+
+    try {
+        const respuesta = await fetch('/api/categoria/estado', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id_categoria: id, activo_c: nuevoEstado })
+        });
+
+        const resultado = await respuesta.json();
+
+        if (respuesta.ok) {
+            cargarCategorias(); 
+            if (typeof mostrarNotificacion === "function") {
+                mostrarNotificacion("¡Estado actualizado con éxito!", "exito");
+            }
+        } else {
+            if (typeof mostrarNotificacion === "function") {
+                mostrarNotificacion("Error: " + resultado.mensaje, "error");
+            } else {
+                alert("Error: " + resultado.mensaje);
+            }
+        }
+    } catch (error) {
+        console.error("Error al cambiar estado de la categoría:", error);
+        if (typeof mostrarNotificacion === "function") {
+            mostrarNotificacion("Error de red al intentar cambiar el estado.", "error");
+        } else {
+            alert("Error de red.");
         }
     }
+}
+    
 
-    async function alternarEstadoCategoria(id, nuevoEstado) {
-            const accion = nuevoEstado === 0 ? "¿Seguro que deseas deshabilitar esta categoría?" : "¿Deseas volver a habilitar esta categoría?";
-            if (!confirm(accion)) return;
+async function eliminarIngredienteDeReceta(idProducto, idInventario, nombreIngrediente) {
+    const accion = `¿Seguro que deseas eliminar "${nombreIngrediente}" de la receta de este producto?`;
+    
+    // Espera la confirmación del modal premium
+    const confirmado = await mostrarConfirmacionPersonalizada(accion);
+    if (!confirmado) return;
 
-            try {
-                const respuesta = await fetch('/api/categoria/estado', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id_categoria: id, activo_c: nuevoEstado })
-                });
+    try {
+        const respuesta = await fetch(`/api/recetas/eliminar/${idProducto}/${idInventario}`, {
+            method: 'DELETE'
+        });
 
-                const resultado = await respuesta.json();
+        const resultado = await respuesta.json();
 
-                if (respuesta.ok) {
-                    cargarCategorias(); // Refresca la tabla automáticamente
-                    // Opcional: Si tienes selectores de categorías abiertos en la misma página,
-                    // puedes llamar a prepararSelectoresReceta() o recargar la página para que se actualicen.
-                } else {
-                    alert("Error: " + resultado.mensaje);
-                }
-            } catch (error) {
-                console.error("Error al cambiar estado de la categoría:", error);
-                alert("Error de red al intentar cambiar el estado.");
+        if (respuesta.ok) {
+            // Recarga los ingredientes visualmente en la tabla actual
+            if (typeof cargarRecetaEspecifica === 'function') {
+                cargarRecetaEspecifica(); 
+            }
+            if (typeof mostrarNotificacion === "function") {
+                mostrarNotificacion("¡Ingrediente eliminado de la receta!", "exito");
+            }
+        } else {
+            if (typeof mostrarNotificacion === "function") {
+                mostrarNotificacion("Error: " + resultado.mensaje, "error");
             }
         }
+    } catch (error) {
+        console.error("Error al eliminar ingrediente de la receta:", error);
+        if (typeof mostrarNotificacion === "function") {
+            mostrarNotificacion("Error de red al intentar eliminar el ingrediente.", "error");
+        }
+    }
+}
+
+
+function prepararEditarInsumo(item) {
+    editandoInsumoId = item.id_inventario;
+
+    // Cambiar texto del botón para guiar al usuario
+    const btnGuardar = document.querySelector('#form-inventario button[type="submit"]');
+    if (btnGuardar) btnGuardar.innerText = "Actualizar Insumo";
+
+    // Convertir unidades g/ml de vuelta a lo que entiende tu select para pintarlo bien
+    let cantidad = parseFloat(item.stock_inicial || item.stock_actual || 0);
+    let cantidadMinima = parseFloat(item.stock_minimo || 0);
+    let unidadOriginal = item.unidad_registrada || 'g';
+    let unidadSelect = unidadOriginal === 'g' ? 'Gramos' : 'Mililitros';
+
+    if (unidadOriginal === 'g' && cantidad >= 1000) {
+        cantidad = (cantidad / 1000).toFixed(2);
+        cantidadMinima = (cantidadMinima / 1000).toFixed(2);
+        unidadSelect = 'Kg';
+    } else if (unidadOriginal === 'ml' && cantidad >= 1000) {
+        cantidad = (cantidad / 1000).toFixed(2);
+        cantidadMinima = (cantidadMinima / 1000).toFixed(2);
+        unidadSelect = 'Litros';
+    }
+
+    // Rellenar tus inputs originales usando tus IDs exactos
+    document.getElementById('inv-nombre').value = item.nombre_i || item.nombre;
+    document.getElementById('inv-stock').value = cantidad;
+    document.getElementById('inv-stock-min').value = cantidadMinima;
+    document.getElementById('inv-unidad').value = unidadSelect;
+
+    // Subir suavemente al formulario
+    document.getElementById('form-inventario').scrollIntoView({ behavior: 'smooth' });
+}
+
+
+function prepararEditarUsuario(user) {
+    // 1. Guardamos el ID único de tu tabla
+    editandoUsuarioId = user.id_usuario;
+
+    // 2. Buscamos tu formulario real: 'form-empleados'
+    const formEmpleados = document.getElementById('form-empleados');
+    const btnGuardar = formEmpleados ? formEmpleados.querySelector('button[type="submit"]') : null;
     
+    if (btnGuardar) {
+        btnGuardar.innerText = "Actualizar Empleado";
+        // Cambiamos el comportamiento del submit para que edite en vez de registrar uno nuevo
+        formEmpleados.setAttribute('onsubmit', 'ejecutarActualizacionUsuario(event)');
+    }
+
+    // 3. Crear el botón de cancelar si no existe
+    if (!document.getElementById('btn-cancelar-edicion-usuario') && formEmpleados) {
+        const btnCancelar = document.createElement('button');
+        btnCancelar.id = 'btn-cancelar-edicion-usuario';
+        btnCancelar.type = 'button';
+        btnCancelar.className = 'w-full mt-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all text-xs uppercase tracking-wider text-center block';
+        btnCancelar.innerText = 'Cancelar Edición';
+        btnCancelar.onclick = limpiarFormularioUsuario;
+        btnGuardar.parentNode.appendChild(btnCancelar);
+    }
+
+    // 4. AUTOCOMPLETAR con tus IDs reales: 'emp-nombre', 'emp-apellido', etc.
+    if (document.getElementById('emp-nombre')) document.getElementById('emp-nombre').value = user.nombre_u || '';
+    if (document.getElementById('emp-apellido')) document.getElementById('emp-apellido').value = user.apellido_u || '';
+    if (document.getElementById('emp-correo')) document.getElementById('emp-correo').value = user.correo_u || ''; 
+    if (document.getElementById('emp-telefono')) document.getElementById('emp-telefono').value = user.telefono_u || '';
+    if (document.getElementById('emp-rol')) document.getElementById('emp-rol').value = user.rol || 'Mesero';
+
+    // Opcional: El campo contraseña no se auto-rellena por seguridad, se quita el 'required' temporalmente
+    if (document.getElementById('emp-password')) document.getElementById('emp-password').removeAttribute('required');
+
+    // Desplazamiento suave hacia arriba donde está el formulario
+    if (formEmpleados) formEmpleados.scrollIntoView({ behavior: 'smooth' });
+}
+
+function limpiarFormularioUsuario() {
+    editandoUsuarioId = null;
+    const formEmpleados = document.getElementById('form-empleados');
+    
+    if (formEmpleados) {
+        formEmpleados.reset();
+        formEmpleados.setAttribute('onsubmit', 'guardarEmpleado(event)'); // Restablece el registro normal
+        const btnGuardar = formEmpleados.querySelector('button[type="submit"]');
+        if (btnGuardar) btnGuardar.innerText = "Registrar Empleado";
+        
+        // Volvemos a pedir contraseña si van a registrar uno nuevo
+        if (document.getElementById('emp-password')) document.getElementById('emp-password').setAttribute('required', 'required');
+    }
+
+    const btnCancelar = document.getElementById('btn-cancelar-edicion-usuario');
+    if (btnCancelar) btnCancelar.remove();
+}
+
+async function ejecutarActualizacionUsuario(event) {
+    event.preventDefault();
+
+    const nombre = document.getElementById('emp-nombre')?.value || '';
+    const apellido = document.getElementById('emp-apellido')?.value || '';
+    const correo = document.getElementById('emp-correo')?.value || '';
+    const telefono = document.getElementById('emp-telefono')?.value || '';
+    const rol = document.getElementById('emp-rol')?.value || 'Mesero';
+
+    try {
+        const respuesta = await fetch('/api/usuarios/actualizar', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_usuario: editandoUsuarioId,
+                nombre: nombre,
+                apellido: apellido,
+                usuario: correo, 
+                rol: rol,
+                telefono: telefono
+            })
+        });
+
+        const resultado = await respuesta.json();
+
+        if (respuesta.ok) {
+            // CORREGIDO: Fuera alerts antiguos, se usa tu banner premium de éxito
+            if (typeof mostrarNotificacion === "function") {
+                mostrarNotificacion("¡Empleado actualizado con éxito!", "exito");
+            }
+            limpiarFormularioUsuario();
+            cargarUsuarios(); 
+        } else {
+            // CORREGIDO: Banner premium de error
+            if (typeof mostrarNotificacion === "function") {
+                mostrarNotificacion("Error: " + resultado.mensaje, "error");
+            }
+        }
+    } catch (error) {
+        console.error("Error en la petición PUT de usuarios:", error);
+        // CORREGIDO: Banner premium de error de red
+        if (typeof mostrarNotificacion === "function") {
+            mostrarNotificacion("Error de red al intentar actualizar el empleado.", "error");
+        }
+    }
+}
+
     </script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from src.usuarios import registrar_usuarios, validar_usuarios,obtener_usuario
+from src.usuarios import registrar_usuarios, validar_usuarios,obtener_usuario,actualizar_usuario_completo
 from src.productos import registrar_producto, obtener_productos, actualizar_producto, cambiar_estado_producto,obtener_productos_publicos
 from src.categorias import registrar_categoria, obtener_categorias, actualizar_categoria, obtener_categorias_publicas, cambiar_estado_categoria
-from src.recetas import registrar_recetas, obtener_receta
-from src.inventario import registrar_inventario, obtener_inventario,cambiar_estado_ingrediente
+from src.recetas import registrar_recetas, obtener_receta, borrar_ingrediente_de_receta
+from src.inventario import registrar_inventario, obtener_inventario,cambiar_estado_ingrediente, actualizar_inventario
 from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos,obtener_pedidos_caja
 from src.clientes import registrar_clientes, validar_clientes
 from src.pagos import obtener_pagopendiente,registrar_pago_pedido
@@ -162,6 +162,9 @@ def api_registrar_recetas():
         return jsonify({"mensaje": "Receta registrada con éxito"}), 200
     else:
         return jsonify({"mensaje": "Error al registrar algunos ingredientes"}), 500
+    
+
+
 
 @app.route('/api/inventario', methods=['POST'])
 def api_registrar_inventario():
@@ -361,7 +364,42 @@ def api_cambiar_estado_categoria():
         return jsonify({"mensaje": mensaje}), 200
     else:
         return jsonify({"mensaje": "No se pudo cambiar el estado en la base de datos"}), 500
+    
 
+@app.route('/api/mis_pedidos_activos', methods=['GET'])
+def api_mis_pedidos_activos():
+    try:
+        id_cliente = request.args.get('id_cliente')
+        todos_los_pedidos = obtener_pedido()
+        
+        if not todos_los_pedidos:
+            return jsonify([]), 200
+
+        pedidos_filtrados = []
+        for p in todos_los_pedidos:
+            # 1. Control seguro de estados (evitamos fallos por valores Null)
+            estado_crudo = p.get('estado') or p.get('estado_p')
+            estado_p = str(estado_crudo).strip() if estado_crudo is not None else 'Pendiente'
+
+            # Ignoramos los pedidos que ya finalizaron su ciclo
+            if estado_p not in ['Pagado', 'Entregado', 'Cancelado']:
+                if id_cliente:
+                    # Capturamos todas las posibles variables de ID que use tu base de datos
+                    id_p_cliente = p.get('id_cliente') or p.get('id_usuario')
+                    origen = str(p.get('origen_pedido', '')).lower()
+                    
+                    # FILTRO FLEXIBLE: Si coincide el ID numérico O si el pedido fue hecho a domicilio por el usuario
+                    if (id_p_cliente and str(id_p_cliente) == str(id_cliente)) or ("domicilio" in origen):
+                        pedidos_filtrados.append(p)
+                else:
+                    # Si entran como comensales en mesa QR sin iniciar sesión
+                    pedidos_filtrados.append(p)
+
+        return jsonify(pedidos_filtrados), 200
+
+    except Exception as e:
+        print(f"Error crítico en API mis_pedidos_activos: {e}")
+        return jsonify({"mensaje": "Error interno al procesar los pedidos"}), 500
 
 @app.route('/api/obtener_categorias', methods=['GET'])
 def api_obtener_categorias():
@@ -479,6 +517,63 @@ def api_cambiar_estado_producto():
         return jsonify({"mensaje": "No se pudo cambiar el estado"}), 500
 
 
+@app.route('/api/inventario/actualizar', methods=['PUT'])
+def api_actualizar_inventario():
+    try:
+        datos = request.get_json()
+        id_inventario = datos.get('id_inventario')
+        nombre = datos.get('nombre')
+        cantidad_inicial = datos.get('cantidad_inicial')
+        cantidad_minima = datos.get('cantidad_minima')
+        unidad = datos.get('unidad')
+
+        # Validación rápida de seguridad
+        if not all([id_inventario, nombre, cantidad_inicial is not None, cantidad_minima is not None, unidad]):
+            return jsonify({"mensaje": "Datos del insumo incompletos"}), 400
+
+        # Convertir a tipos numéricos correctos
+        exito = actualizar_inventario(
+            int(id_inventario), 
+            nombre, 
+            float(cantidad_inicial), 
+            float(cantidad_minima), 
+            unidad
+        )
+
+        if exito:
+            return jsonify({"mensaje": "Insumo actualizado con éxito en el inventario"}), 200
+        else:
+            return jsonify({"mensaje": "No se pudo actualizar el insumo o no sufrió cambios"}), 404
+
+    except Exception as e:
+        print(f"Error en API api_actualizar_inventario: {e}")
+        return jsonify({"mensaje": "Error interno del servidor"}), 500
+
+
+@app.route('/api/usuarios/actualizar', methods=['PUT'])
+def api_actualizar_usuario_completo():
+    try:
+        datos = request.get_json()
+        id_usuario = datos.get('id_usuario')
+        nombre = datos.get('nombre')
+        apellido = datos.get('apellido')
+        usuario = datos.get('usuario')
+        rol = datos.get('rol')
+        telefono = datos.get('telefono')
+
+
+        if not all([id_usuario, nombre, apellido, usuario, rol, telefono]):
+            return jsonify({"mensaje": "Datos del empleado incompletos"}), 400
+
+        exito = actualizar_usuario_completo(int(id_usuario), nombre, apellido, usuario, rol, telefono)
+
+        if exito:
+            return jsonify({"mensaje": "Empleado actualizado con éxito"}), 200
+        else:
+            return jsonify({"mensaje": "No se pudo actualizar el empleado o no sufrió cambios"}), 404
+    except Exception as e:
+        print(f"Error en API api_actualizar_usuario_completo: {e}")
+        return jsonify({"mensaje": "Error interno del servidor"}), 500
 
 # ===== rutas de las vistas 
 
@@ -515,7 +610,18 @@ def vista_menu_qr():
 
 # ============== funciones de eliminaciones 
 
-
+@app.route('/api/recetas/eliminar/<int:id_producto>/<int:id_inventario>', methods=['DELETE'])
+def eliminar_ingrediente_receta(id_producto, id_inventario):
+    try:
+        exito = borrar_ingrediente_de_receta(id_producto, id_inventario)
+        
+        if exito:
+            return jsonify({"mensaje": "Ingrediente removido con éxito de la receta"}), 200
+        else:
+            return jsonify({"mensaje": "No se pudo encontrar el ingrediente especificado"}), 404
+    except Exception as e:
+        print(f"Error en API eliminar_ingrediente_receta: {e}")
+        return jsonify({"mensaje": "Error interno en el servidor"}), 500
 
 
 if __name__== '__main__':
