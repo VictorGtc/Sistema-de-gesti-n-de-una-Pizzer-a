@@ -100,3 +100,37 @@ def actualizar_inventario(id_inventario, nombre, cantidad_inicial, cantidad_mini
     finally:
         cursor.close()
         db.close()
+
+def restar_stock_inventario(id_inventario, cantidad_a_restar):
+    db = conectar_db()
+    if db is None: return False
+    cursor = db.cursor(dictionary=True)
+    try:
+        cursor.execute("SELECT stock_inicial, unidad_registrada FROM inventario WHERE id_inventario = %s", (id_inventario,))
+        ingrediente = cursor.fetchone()
+        
+        if not ingrediente:
+            return False
+        cursor.execute("UPDATE inventario SET stock_inicial = stock_inicial - %s WHERE id_inventario = %s", 
+                       (cantidad_a_restar, id_inventario))
+        
+        db.commit()
+        return True
+    except Exception as e:
+        print(f"Error al descontar inventario: {e}")
+        db.rollback()
+        return False
+    finally:
+        cursor.close()
+        db.close()
+
+
+def sumar_stock_db(id_inventario, cantidad_a_sumar):
+    db = conectar_db()
+    cursor = db.cursor()
+    sql = "UPDATE inventario SET stock_inicial = stock_inicial + %s WHERE id_inventario = %s"
+    cursor.execute(sql, (cantidad_a_sumar, id_inventario))
+    db.commit()
+    cursor.close()
+    db.close()
+    return True

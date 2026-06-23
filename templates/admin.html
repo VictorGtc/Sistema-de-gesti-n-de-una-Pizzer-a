@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pizzería - Panel de Administración</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Fondo general con la imagen desenfocada de fondo como en el catálogo */
         body {
-            background-image: linear-gradient(rgba(43, 36, 36, 0.88), rgba(29, 23, 23, 0.90)), url('https://phantom-elmundo.unidadeditorial.es/5cdc8f0c5b7b2ec1cf25506056cd8bec/crop/132x205/2897x2048/resize/920/f/webp/assets/multimedia/imagenes/2025/02/06/17388596752431.jpg'); /* Ajusta la ruta de tu imagen de fondo si es necesario */
+            background-image: linear-gradient(rgba(43, 36, 36, 0.88), rgba(29, 23, 23, 0.90)), url('https://phantom-elmundo.unidadeditorial.es/5cdc8f0c5b7b2ec1cf25506056cd8bec/crop/132x205/2897x2048/resize/920/f/webp/assets/multimedia/imagenes/2025/02/06/17388596752431.jpg');
+            /* Ajusta la ruta de tu imagen de fondo si es necesario */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -32,41 +35,68 @@
         .scrollbar-none::-webkit-scrollbar {
             display: none;
         }
+
         .scrollbar-none {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
+
 <body class="text-white min-h-screen font-sans antialiased">
 
-    <div id="modal-confirmacion" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-        <div class="bg-[#362f2d]/90 border border-white/10 backdrop-blur-xl p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-all duration-200">
-            <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+    <div id="modal-confirmacion"
+        class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div
+            class="bg-[#362f2d]/90 border border-white/10 backdrop-blur-xl p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-all duration-200">
+            <div
+                class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
                 <i class="fa-solid fa-circle-question"></i>
             </div>
             <h3 class="text-base font-bold text-slate-100 mb-2">¿Confirmar Acción?</h3>
-            <p id="modal-confirmacion-mensaje" class="text-xs text-slate-300 leading-relaxed mb-6">¿Estás seguro de realizar esta acción?</p>
+            <p id="modal-confirmacion-mensaje" class="text-xs text-slate-300 leading-relaxed mb-6">¿Estás seguro de
+                realizar esta acción?</p>
             <div class="flex gap-3 justify-center">
-                <button id="btn-modal-cancelar" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/5 transition-all">
+                <button id="btn-modal-cancelar"
+                    class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/5 transition-all">
                     Cancelar
                 </button>
-                <button id="btn-modal-confirmar" class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] text-white shadow-md transition-all active:scale-95">
+                <button id="btn-modal-confirmar"
+                    class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] text-white shadow-md transition-all active:scale-95">
                     Sí, continuar
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="contenedor-notificaciones" class="fixed top-24 right-6 z-[9999] flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
-        
-    <nav class="bg-[#362f2d]/70 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
+    <div id="contenedorToasts"
+        class="fixed top-6 right-6 z-[99999] flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
+
+    <nav
+        class="bg-[#362f2d]/70 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
         <div class="flex items-center gap-3">
             <h1 class="text-xl font-extrabold tracking-wide text-[#f4ad42]">
                 PIZZERÍA EL INGE <span class="text-gray-300 font-medium text-sm ml-2">| Panel Administrativo</span>
             </h1>
         </div>
-        <a href="/index" class="text-xs bg-[#4a3f3c] hover:bg-[#5a4e4a] text-gray-200 font-bold py-2 px-4 rounded-xl border border-white/10 transition-all flex items-center gap-2 h-fit">
+        <a href="/index"
+            class="text-xs bg-[#4a3f3c] hover:bg-[#5a4e4a] text-gray-200 font-bold py-2 px-4 rounded-xl border border-white/10 transition-all flex items-center gap-2 h-fit">
             <i class="fa-solid fa-arrow-left text-[#f4ad42]"></i> Volver al Inicio
         </a>
     </nav>
@@ -75,68 +105,80 @@
 
     <div class="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-5 mt-5 pb-12">
 
-        
+
         <div class="flex gap-2 border-b border-white/5 mb-8 overflow-x-auto scrollbar-none pb-3">
-            <button onclick="cambiarPestana('productos')" id="tab-productos" 
+            <button onclick="cambiarPestana('productos')" id="tab-productos"
                 class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#e05c3e] text-white shadow-lg shadow-[#e05c3e]/20 transition-all flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-pizza-slice"></i> Gestión de Productos
             </button>
-            <button onclick="cambiarPestana('categorias')" id="tab-categorias" 
+            <button onclick="cambiarPestana('categorias')" id="tab-categorias"
                 class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-list"></i> Gestión de Categorías
             </button>
-            <button onclick="cambiarPestana('recetas')" id="tab-recetas" 
+            <button onclick="cambiarPestana('recetas')" id="tab-recetas"
                 class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-mortar-pestle"></i> Recetas por Producto
             </button>
-            <button onclick="cambiarPestana('inventario')" id="tab-inventario" 
+            <button onclick="cambiarPestana('inventario')" id="tab-inventario"
                 class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
-                <i class="fa-solid fa-boxes-stacked"></i> Control de Inventario 
+                <i class="fa-solid fa-boxes-stacked"></i> Control de Inventario
             </button>
-            <button onclick="cambiarPestana('usuarios')" id="tab-usuarios" 
+            <button onclick="cambiarPestana('usuarios')" id="tab-usuarios"
                 class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
                 <i class="fa-solid fa-users-gear"></i> Gestión de Empleados
+            </button>
+            <button onclick="cambiarPestana('ventas')" id="tab-ventas"
+                class="px-5 py-2.5 rounded-full font-bold text-xs bg-[#4a3f3c]/60 text-gray-300 hover:bg-[#4a3f3c] transition-all flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-chart-line text-sm"></i> Historial de Ventas
             </button>
         </div>
 
         <div id="seccion-productos" class="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
             <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
-                <h2 id="titulo-form-producto" class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                <h2 id="titulo-form-producto"
+                    class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
                     <i class="fa-solid fa-plus-circle"></i> Agregar Nuevo Producto
                 </h2>
-                <form id="form-producto" onsubmit="guardarProducto(event)" enctype="multipart/form-data" class="space-y-4">
+                <form id="form-producto" onsubmit="guardarProducto(event)" enctype="multipart/form-data"
+                    class="space-y-4">
                     <input type="hidden" id="prod-id">
-                    
+
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre del Producto</label>
-                        <input type="text" id="prod-nombre" required 
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre del
+                            Producto</label>
+                        <input type="text" id="prod-nombre" required
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
-                    
+
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Precio ($)</label>
-                        <input type="number" id="prod-precio" step="0.01" required 
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Precio
+                            ($)</label>
+                        <input type="number" id="prod-precio" step="0.01" required
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
-                    
+
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Categoría</label>
-                        <select id="prod-categoria" required 
+                        <label
+                            class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Categoría</label>
+                        <select id="prod-categoria" required
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                         </select>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Imagen del Producto</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Imagen del
+                            Producto</label>
                         <input type="file" id="prod-imagen" name="imagen_route" accept="image/*"
                             class="w-full glass-input-bg rounded-xl px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#4a3f3c] file:text-white hover:file:bg-[#5a4e4a] transition-all">
                     </div>
 
                     <div class="pt-4 flex gap-3">
-                        <button type="submit" class="flex-1 bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 uppercase text-xs tracking-wider">
+                        <button type="submit"
+                            class="flex-1 bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 uppercase text-xs tracking-wider">
                             Confirmar Registro
                         </button>
-                        <button type="button" id="btn-cancelar-prod" onclick="limpiarFormProducto()" class="hidden bg-[#4a3f3c] text-white font-bold py-3 px-4 rounded-xl text-xs transition-all">
+                        <button type="button" id="btn-cancelar-prod" onclick="limpiarFormProducto()"
+                            class="hidden bg-[#4a3f3c] text-white font-bold py-3 px-4 rounded-xl text-xs transition-all">
                             Cancelar
                         </button>
                     </div>
@@ -145,16 +187,18 @@
 
             <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
                 <div class="p-5 border-b border-white/5 bg-black/10">
-                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-layer-group"></i> Productos Registrados</h3>
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i
+                            class="fa-solid fa-layer-group"></i> Productos Registrados</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                            <tr
+                                class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
                                 <th class="py-3 px-6">Imagen</th>
                                 <th class="py-3 px-6">Nombre</th>
                                 <th class="py-3 px-6">Precio</th>
-                                <th class="py-3 px-6 text-center">Estado</th> 
+                                <th class="py-3 px-6 text-center">Estado</th>
                                 <th class="py-4 px-6 text-center">Acciones</th>
                             </tr>
                         </thead>
@@ -167,29 +211,35 @@
 
         <div id="seccion-categorias" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
-                <h2 id="titulo-form-categoria" class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                <h2 id="titulo-form-categoria"
+                    class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
                     <i class="fa-solid fa-plus-circle"></i> Agregar Nueva Categoría
                 </h2>
-                <form id="form-categoria" onsubmit="guardarCategoria(event)" enctype="multipart/form-data" class="space-y-4">
+                <form id="form-categoria" onsubmit="guardarCategoria(event)" enctype="multipart/form-data"
+                    class="space-y-4">
                     <input type="hidden" id="cat-id">
-                    
+
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre de la Categoría</label>
-                        <input type="text" id="cat-nombre" required 
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre de la
+                            Categoría</label>
+                        <input type="text" id="cat-nombre" required
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
-                    
+
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Imagen de la Categoría</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Imagen de la
+                            Categoría</label>
                         <input type="file" id="cat-imagen" name="image_route" accept="image/*"
                             class="w-full glass-input-bg rounded-xl px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#4a3f3c] file:text-white hover:file:bg-[#5a4e4a] transition-all">
                     </div>
 
                     <div class="pt-4 flex gap-3">
-                        <button type="submit" class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider">
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider">
                             Confirmar Registro
                         </button>
-                        <button type="button" id="btn-cancelar-cat" onclick="limpiarFormCategoria()" class="hidden bg-[#4a3f3c] text-white font-bold py-3 px-4 rounded-xl text-xs transition-all">
+                        <button type="button" id="btn-cancelar-cat" onclick="limpiarFormCategoria()"
+                            class="hidden bg-[#4a3f3c] text-white font-bold py-3 px-4 rounded-xl text-xs transition-all">
                             Cancelar
                         </button>
                     </div>
@@ -198,12 +248,14 @@
 
             <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
                 <div class="p-5 border-b border-white/5 bg-black/10">
-                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-folder-open"></i> Categorías Registradas</h3>
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i
+                            class="fa-solid fa-folder-open"></i> Categorías Registradas</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                            <tr
+                                class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
                                 <th class="py-3 px-6">Imagen</th>
                                 <th class="py-3 px-6">Nombre de Categoría</th>
                                 <th class="py-3 px-6 text-center">Estado</th>
@@ -219,33 +271,38 @@
 
         <div id="seccion-recetas" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
-                <h2 class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                <h2
+                    class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
                     <i class="fa-solid fa-basket-shopping"></i> Configurar Receta
                 </h2>
                 <form id="form-receta" onsubmit="guardarRecetaCompleta(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">1. Selecciona el Producto</label>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">1.
+                            Selecciona el Producto</label>
                         <select id="receta-producto" required onchange="cargarRecetaEspecifica()"
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                         </select>
                     </div>
-                    
+
                     <div>
                         <div class="flex justify-between items-center mb-2">
-                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider">2. Insumos y Cantidades</label>
-                            <button type="button" onclick="agregarFilaIngrediente()" 
+                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider">2. Insumos y
+                                Cantidades</label>
+                            <button type="button" onclick="agregarFilaIngrediente()"
                                 class="text-[10px] bg-[#4a3f3c] hover:bg-[#5a4e4a] text-white font-bold py-1.5 px-3 rounded-lg border border-white/5 transition-all flex items-center gap-1">
                                 <i class="fa-solid fa-plus"></i> Añadir Fila
                             </button>
                         </div>
 
-                        <div id="contenedor-filas-ingredientes" class="space-y-3 max-h-[300px] overflow-y-auto pr-1 scrollbar-none">
+                        <div id="contenedor-filas-ingredientes"
+                            class="space-y-3 max-h-[300px] overflow-y-auto pr-1 scrollbar-none">
                             <div class="fila-ingrediente flex gap-2 items-center">
                                 <select required name="insumo_id"
                                     class="flex-1 glass-input-bg rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all select-insumo-dinamico">
                                 </select>
                                 <div class="relative w-28">
-                                    <input type="number" required name="insumo_cantidad" step="0.001" placeholder="Cant."
+                                    <input type="number" required name="insumo_cantidad" step="0.001"
+                                        placeholder="Cant."
                                         class="w-full glass-input-bg rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                                 </div>
                                 <button type="button" class="text-gray-400 cursor-not-allowed p-2 text-xs" disabled>
@@ -256,22 +313,27 @@
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider">
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider">
                             Guardar Receta Completa
                         </button>
                     </div>
                 </form>
             </div>
-            
+
             <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
                 <div class="p-5 border-b border-white/5 bg-black/10 flex justify-between items-center gap-4 flex-wrap">
-                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-receipt"></i> Componentes</h3>
-                    <span id="nombre-producto-seleccionado" class="text-[11px] glass-input-bg text-[#f4ad42] font-semibold px-4 py-1.5 rounded-full">Selecciona un producto primero</span>
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i
+                            class="fa-solid fa-receipt"></i> Componentes</h3>
+                    <span id="nombre-producto-seleccionado"
+                        class="text-[11px] glass-input-bg text-[#f4ad42] font-semibold px-4 py-1.5 rounded-full">Selecciona
+                        un producto primero</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                            <tr
+                                class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
                                 <th class="py-3 px-6">Ingrediente</th>
                                 <th class="py-3 px-6">Cantidad Necesaria</th>
                                 <th class="py-3 px-6 text-center">Acciones</th>
@@ -279,42 +341,48 @@
                         </thead>
                         <tbody id="tabla-recetas" class="divide-y divide-white/5 text-xs">
                             <tr>
-                                <td colspan="3" class="py-8 text-center text-gray-300 italic">No se ha seleccionado ningún producto para ver su receta.</td>
+                                <td colspan="3" class="py-8 text-center text-gray-300 italic">No se ha seleccionado
+                                    ningún producto para ver su receta.</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-            
+
         <div id="seccion-inventario" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
-                <h2 class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                <h2
+                    class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
                     <i class="fa-solid fa-plus-circle"></i> Nuevo Ingrediente
                 </h2>
                 <form id="form-inventario" onsubmit="guardarIngrediente(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre del Ingrediente</label>
-                        <input type="text" id="inv-nombre" required placeholder="Ej. Queso Mozzarella" 
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombre del
+                            Ingrediente</label>
+                        <input type="text" id="inv-nombre" required placeholder="Ej. Queso Mozzarella"
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
-                    
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Stock Inicial</label>
+                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Stock
+                                Inicial</label>
                             <input type="number" id="inv-stock" required min="0" step="0.01" placeholder="0.00"
                                 class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#f4ad42] transition-all">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Stock Mínimo</label>
+                            <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Stock
+                                Mínimo</label>
                             <input type="number" id="inv-stock-min" required min="0" step="0.01" placeholder="0.00"
                                 class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-[#f4ad42] transition-all">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Unidad de Medida</label>
-                        <select id="inv-unidad" required 
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Unidad de
+                            Medida</label>
+                        <select id="inv-unidad" required
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                             <option value="Kg">Kilogramos (Kg)</option>
                             <option value="G">Gramos (g)</option>
@@ -324,22 +392,25 @@
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" 
+                        <button type="submit"
                             class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-xs uppercase tracking-wider">
                             Registrar Ingrediente
                         </button>
+
                     </div>
                 </form>
             </div>
 
             <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
                 <div class="p-5 border-b border-white/5 bg-black/10">
-                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-cubes"></i> Ingredientes en Inventario</h3>
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i
+                            class="fa-solid fa-cubes"></i> Ingredientes en Inventario</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                            <tr
+                                class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
                                 <th class="py-3 px-6">Ingrediente</th>
                                 <th class="py-3 px-6 text-center">Stock Actual</th>
                                 <th class="py-3 px-6 text-center">Stock Mínimo</th>
@@ -350,7 +421,8 @@
                         <tbody id="tabla-inventario-body" class="divide-y divide-white/5 text-xs">
                             <tr>
                                 <td colspan="5" class="py-8 text-center text-gray-300">
-                                    <i class="fa-solid fa-spinner fa-spin mr-2 text-[#f4ad42]"></i> Cargando inventario...
+                                    <i class="fa-solid fa-spinner fa-spin mr-2 text-[#f4ad42]"></i> Cargando
+                                    inventario...
                                 </td>
                             </tr>
                         </tbody>
@@ -359,35 +431,48 @@
             </div>
         </div>
 
-        <div id="seccion-usuarios" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div id="seccion-usuarios" class="seccion-contenido hidden grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="glass-card rounded-3xl p-6 h-fit shadow-xl">
-                <h2 class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
+                <h2
+                    class="text-base font-bold text-[#f4ad42] mb-5 flex items-center gap-2 border-b border-white/5 pb-3">
                     <i class="fa-solid fa-user-plus"></i> Registrar Nuevo Empleado
                 </h2>
                 <form id="form-empleados" onsubmit="guardarEmpleado(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombres</label>
-                        <input type="text" id="emp-nombre" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                        <label
+                            class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombres</label>
+                        <input type="text" id="emp-nombre" required
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Apellidos</label>
-                        <input type="text" id="emp-apellido" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                        <label
+                            class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Apellidos</label>
+                        <input type="text" id="emp-apellido" required
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Correo Electrónico</label>
-                        <input type="email" id="emp-correo" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Correo
+                            Electrónico</label>
+                        <input type="email" id="emp-correo" required
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Contraseña</label>
-                        <input type="password" id="emp-password" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                        <label
+                            class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Contraseña</label>
+                        <input type="password" id="emp-password" required
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Teléfono</label>
-                        <input type="text" id="emp-telefono" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                        <label
+                            class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Teléfono</label>
+                        <input type="text" id="emp-telefono" required
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Rol del Sistema</label>
-                        <select id="emp-rol" required class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Rol del
+                            Sistema</label>
+                        <select id="emp-rol" required
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                             <option value="Administrador">Administrador</option>
                             <option value="Cocina">Cocinero</option>
                             <option value="Mesero">Mesero</option>
@@ -395,7 +480,8 @@
                         </select>
                     </div>
                     <div class="pt-2">
-                        <button type="submit" class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs uppercase tracking-wider">
+                        <button type="submit"
+                            class="w-full bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95 text-xs uppercase tracking-wider">
                             Registrar Empleado
                         </button>
                     </div>
@@ -404,12 +490,14 @@
 
             <div class="lg:col-span-2 glass-card rounded-3xl overflow-hidden shadow-xl">
                 <div class="p-5 border-b border-white/5 bg-black/10">
-                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i class="fa-solid fa-users"></i> Personal Registrado</h3>
+                    <h3 class="font-bold text-[#f4ad42] text-sm flex items-center gap-2"><i
+                            class="fa-solid fa-users"></i> Personal Registrado</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                            <tr
+                                class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
                                 <th class="py-3 px-6">Empleado</th>
                                 <th class="py-3 px-6">Contacto</th>
                                 <th class="py-3 px-6">Rol</th>
@@ -427,150 +515,242 @@
             </div>
         </div>
 
-    </div>
+        <div id="seccion-ventas" class="seccion-contenido hidden fade-in space-y-6">
+            <div class="glass-card rounded-3xl p-6 shadow-xl">
 
-    <script>
+                <div
+                    class="p-5 border-b border-white/5 bg-black/10 flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-t-3xl mb-6">
+                    <div>
+                        <h2 class="text-base font-bold text-[#f4ad42] flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line"></i> Historial de Ventas Realizadas
+                        </h2>
+                        <p class="text-xs text-stone-300 mt-1">Monitoreo de ingresos, pedidos liquidados y auditoría de
+                            comandas.</p>
+                    </div>
 
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <div class="relative flex-1 sm:w-64">
+                            <i
+                                class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs"></i>
+                            <input type="text" id="buscar-venta" oninput="filtrarVentas()"
+                                placeholder="Buscar por ID o producto..."
+                                class="w-full glass-input-bg rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-gray-400 focus:outline-none focus:border-[#f4ad42] transition-all font-medium">
+                        </div>
+                        <div class="relative">
+                            <i
+                                class="fa-solid fa-calendar-days absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs"></i>
+                            <input type="date" id="filtro-fecha-venta" onchange="filtrarVentas()"
+                                class="glass-input-bg text-white rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:border-[#f4ad42] transition-all font-medium">
+                        </div>
+                    </div>
+                </div>
 
-function mostrarConfirmacionPersonalizada(mensaje) {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('modal-confirmacion');
-        const textoMensaje = document.getElementById('modal-confirmacion-mensaje');
-        const btnConfirmar = document.getElementById('btn-modal-confirmar');
-        const btnCancelar = document.getElementById('btn-modal-cancelar');
+                <div class="glass-card rounded-3xl overflow-hidden shadow-xl border border-white/5">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
+                                    <th class="py-4 px-6">ID Pedido</th>
+                                    <th class="py-4 px-6">Origen</th>
+                                    <th class="py-4 px-6">Fecha y Hora</th>
+                                    <th class="py-4 px-6">Detalle del Pedido</th>
+                                    <th class="py-4 px-6 text-right">Total Pagado</th>
+                                    <th class="py-4 px-6 text-center">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-ventas-body" class="divide-y divide-white/5 text-xs text-white">
+                                <tr>
+                                    <td colspan="6" class="py-8 text-center text-gray-300 italic">Cargando historial de
+                                        ventas...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-        // Insertar el texto dinámico de la acción
-        textoMensaje.innerText = mensaje;
+            </div>
+        </div>
+        <script>
+            function mostrarNotificacion(mensaje, tipo = 'exito') {
+                const contenedor = document.getElementById('contenedorToasts');
+                if (!contenedor) return;
+                const toast = document.createElement('div');
+                toast.className = `flex items-center gap-3 p-4 rounded-2xl border backdrop-blur-md shadow-xl transition-all duration-300 fade-in pointer-events-auto
+                ${tipo === 'exito'
+                        ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-200'
+                        : 'bg-red-500/20 border-red-500/30 text-red-200'}`;
 
-        // Mostrar el modal quitando la clase 'hidden'
-        modal.classList.remove('hidden');
+                const icono = tipo === 'exito' ? 'fa-circle-check' : 'fa-circle-exclamation';
 
-        // Manejadores de eventos
-        function cerrar(resultado) {
-            modal.classList.add('hidden');
-            // Limpiar eventos para evitar duplicados en el próximo clic
-            btnConfirmar.onclick = null;
-            btnCancelar.onclick = null;
-            resolve(resultado);
-        }
+                toast.innerHTML = `
+                <i class="fa-solid ${icono} text-lg"></i>
+                <p class="text-sm font-semibold tracking-wide">${mensaje}</p>
+            `;
 
-        btnConfirmar.onclick = () => cerrar(true);
-        btnCancelar.onclick = () => cerrar(false);
-    });
-}
-        // Variables globales
-        let listaCategoriasGlobal = [];
-        let listaInsumosGlobal = [];
-        let editandoInsumoId = null;
-        let editandoUsuarioId = null;
+                contenedor.appendChild(toast);
 
-
-        document.addEventListener("DOMContentLoaded", () => {
-            cargarCategorias();
-            cargarProductos();
-            cargarInventario();
-            cargarUsuarios();
-        });
-
-        // CONTROL DE PESTAÑAS (TABS)
-        // CONTROL DE PESTAÑAS (TABS)
-        function cambiarPestana(pestana) {
-            // 1. CAPTURAMOS LAS CUATRO SECCIONES DEL HTML
-            const secProd = document.getElementById('seccion-productos');
-            const secCat = document.getElementById('seccion-categorias');
-            const secRec = document.getElementById('seccion-recetas');
-            const secInv = document.getElementById('seccion-inventario');
-            const secUser = document.getElementById('seccion-usuarios'); // <-- La sección nueva
-
-            
-            // 2. CAPTURAMOS LOS CUATRO BOTONES de la barra superior
-            const tabProd = document.getElementById('tab-productos');
-            const tabCat = document.getElementById('tab-categorias');
-            const tabRec = document.getElementById('tab-recetas');
-            const tabInv = document.getElementById('tab-inventario');
-            const tabUser = document.getElementById('tab-usuarios'); // <-- El botón nuevo
-
-            // 3. OCULTAMOS TODAS LAS SECCIONES (les ponemos 'hidden') por seguridad
-            if(secProd) secProd.classList.add('hidden');
-            if(secCat) secCat.classList.add('hidden');
-            if(secRec) secRec.classList.add('hidden');
-            if(secInv) secInv.classList.add('hidden');
-            if(secUser) secUser.classList.add('hidden');
-
-            // 4. RESETEAMOS LOS BOTONES: Les quitamos el color amarillo y los dejamos opacos
-            const claseTabInactiva = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
-            if(tabProd) tabProd.className = claseTabInactiva;
-            if(tabCat) tabCat.className = claseTabInactiva;
-            if(tabRec) tabRec.className = claseTabInactiva;
-            if(tabInv) tabInv.className = claseTabInactiva;
-            if(tabUser) tabUser.className = claseTabInactiva;
-            // Esta es la clase de Tailwind que pinta el botón de amarillo brillante
-            const claseTabActiva = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
-
-            // 5. EVALUAMOS QUÉ PESTAÑA SE TOCÓ Y LA ENCENDEMOS
-            if (pestana === 'productos') {
-                secProd.classList.remove('hidden'); // Muestra la sección
-                tabProd.className = claseTabActiva; // Enciende el botón
-            } 
-            else if (pestana === 'categorias') {
-                secCat.classList.remove('hidden');
-                tabCat.className = claseTabActiva;
-            } 
-            else if (pestana === 'recetas') {
-                secRec.classList.remove('hidden');
-                tabRec.className = claseTabActiva;
-                // Si la función para preparar los selects existe, la ejecuta
-                if (typeof prepararSelectoresReceta === "function") prepararSelectoresReceta();
-            } 
-            else if (pestana === 'inventario') {
-                secInv.classList.remove('hidden'); // Muestra el inventario
-                tabInv.className = claseTabActiva; // Enciende el botón de inventario
-                
-                // ¡IMPORTANTE!: Cada vez que abras esta pestaña, llamará a la API automáticamente 
-                // para traer los ingredientes actualizados sin tener que recargar la página.
-                if (typeof cargarInventario === "function") cargarInventario();
-            }else if (pestana === 'usuarios') {
-                if(secUser) secUser.classList.remove('hidden'); // Muestra la sección de empleados
-                if(tabUser) tabUser.className = claseTabActiva; // Enciende su botón de amarillo
-            }else if (pestana === 'usuarios') {
-                if(secUser) secUser.classList.remove('hidden');
-                if(tabUser) tabUser.className = claseTabActiva;
-                cargarUsuarios(); // <--- ¡AQUÍ! Llama a la función al dar clic al botón de la barra
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-10px)';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3500);
             }
-        }
 
-        // ==========================================
-        // 📁 CONTROLADORES DE CATEGORÍAS
-        // ==========================================
-        async function cargarCategorias() {
-            try {
-                const respuesta = await fetch('/api/obtener_categorias');
-                const categorias = await respuesta.json();
-                listaCategoriasGlobal = categorias;
 
-                const tbody = document.getElementById('tabla-categorias');
-                tbody.innerHTML = '';
-                
-                categorias.forEach(cat => {
-                    // 1. Validamos el estado de la categoría (por defecto activa)
-                    const estaActiva = cat.activo_c !== 0;
+            function mostrarConfirmacionPersonalizada(mensaje) {
+                return new Promise((resolve) => {
+                    const modal = document.getElementById('modal-confirmacion');
+                    const textoMensaje = document.getElementById('modal-confirmacion-mensaje');
+                    const btnConfirmar = document.getElementById('btn-modal-confirmar');
+                    const btnCancelar = document.getElementById('btn-modal-cancelar');
 
-                    // 2. Creamos el Badge dinámico para el estado
-                    const badgeEstado = estaActiva 
-                        ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`
-                        : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
+                    // Insertar el texto dinámico de la acción
+                    textoMensaje.innerText = mensaje;
 
-                    // 3. Cambiamos el botón de la papelera por el ojo dinámico (sin alterar tus estilos)
-                    const botonAccion = estaActiva
-                        ? `<button onclick="alternarEstadoCategoria(${cat.id_categoria}, 0)" class="text-xs bg-slate-800/40 hover:bg-red-900/40 text-slate-400 hover:text-red-400 font-bold py-2 px-3 rounded-lg transition-all border border-slate-800" title="Deshabilitar">
+                    // Mostrar el modal quitando la clase 'hidden'
+                    modal.classList.remove('hidden');
+
+                    // Manejadores de eventos
+                    function cerrar(resultado) {
+                        modal.classList.add('hidden');
+                        // Limpiar eventos para evitar duplicados en el próximo clic
+                        btnConfirmar.onclick = null;
+                        btnCancelar.onclick = null;
+                        resolve(resultado);
+                    }
+
+                    btnConfirmar.onclick = () => cerrar(true);
+                    btnCancelar.onclick = () => cerrar(false);
+                });
+            }
+            // Variables globales
+            let listaCategoriasGlobal = [];
+            let listaInsumosGlobal = [];
+            let editandoInsumoId = null;
+            let editandoUsuarioId = null;
+
+
+            document.addEventListener("DOMContentLoaded", () => {
+                cargarCategorias();
+                cargarProductos();
+                cargarInventario();
+                cargarUsuarios();
+            });
+
+            // CONTROL DE PESTAÑAS (TABS)
+            // CONTROL DE PESTAÑAS (TABS)
+            function cambiarPestana(pestana) {
+                // 1. CAPTURAMOS LAS SECCIONES DEL HTML
+                const secProd = document.getElementById('seccion-productos');
+                const secCat = document.getElementById('seccion-categorias');
+                const secRec = document.getElementById('seccion-recetas');
+                const secInv = document.getElementById('seccion-inventario');
+                const secUser = document.getElementById('seccion-usuarios');
+                const secVentas = document.getElementById('seccion-ventas'); // <-- ¡NUEVA SECCIÓN DE VENTAS!
+
+                // 2. CAPTURAMOS LOS BOTONES de la barra superior
+                const tabProd = document.getElementById('tab-productos');
+                const tabCat = document.getElementById('tab-categorias');
+                const tabRec = document.getElementById('tab-recetas');
+                const tabInv = document.getElementById('tab-inventario');
+                const tabUser = document.getElementById('tab-usuarios');
+                const tabVentas = document.getElementById('tab-ventas'); // <-- ¡NUEVO BOTÓN DE VENTAS!
+
+                // 3. OCULTAMOS TODAS LAS SECCIONES (les ponemos 'hidden') por seguridad
+                if (secProd) secProd.classList.add('hidden');
+                if (secCat) secCat.classList.add('hidden');
+                if (secRec) secRec.classList.add('hidden');
+                if (secInv) secInv.classList.add('hidden');
+                if (secUser) secUser.classList.add('hidden');
+                if (secVentas) secVentas.classList.add('hidden'); // <-- Ocultar ventas
+
+                // 4. RESETEAMOS LOS BOTONES: Les quitamos el color amarillo y los dejamos opacos
+                const claseTabInactiva = "px-6 py-3 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all flex items-center gap-2";
+                if (tabProd) tabProd.className = claseTabInactiva;
+                if (tabCat) tabCat.className = claseTabInactiva;
+                if (tabRec) tabRec.className = claseTabInactiva;
+                if (tabInv) tabInv.className = claseTabInactiva;
+                if (tabUser) tabUser.className = claseTabInactiva;
+                if (tabVentas) tabVentas.className = claseTabInactiva; // <-- Resetear botón ventas
+
+                // Esta es la clase de Tailwind que pinta el botón de amarillo brillante
+                const claseTabActiva = "px-6 py-3 font-bold text-sm border-b-2 border-amber-400 text-amber-400 transition-all flex items-center gap-2";
+
+                // 5. EVALUAMOS QUÉ PESTAÑA SE TOCÓ Y LA ENCENDEMOS
+                if (pestana === 'productos') {
+                    if (secProd) secProd.classList.remove('hidden'); // Muestra la sección
+                    if (tabProd) tabProd.className = claseTabActiva; // Enciende el botón
+                }
+                else if (pestana === 'categorias') {
+                    if (secCat) secCat.classList.remove('hidden');
+                    if (tabCat) tabCat.className = claseTabActiva;
+                }
+                else if (pestana === 'recetas') {
+                    if (secRec) secRec.classList.remove('hidden');
+                    if (tabRec) tabRec.className = claseTabActiva;
+                    // Si la función para preparar los selects existe, la ejecuta
+                    if (typeof prepararSelectoresReceta === "function") prepararSelectoresReceta();
+                }
+                else if (pestana === 'inventario') {
+                    if (secInv) secInv.classList.remove('hidden');
+                    if (tabInv) tabInv.className = claseTabActiva;
+
+                    // Carga los ingredientes actualizados automáticamente
+                    if (typeof cargarInventario === "function") cargarInventario();
+                }
+                else if (pestana === 'usuarios') {
+                    if (secUser) secUser.classList.remove('hidden'); // Muestra la sección de empleados
+                    if (tabUser) tabUser.className = claseTabActiva; // Enciende su botón de amarillo
+
+                    // CORREGIDO: Llamada única y limpia a la API de usuarios
+                    if (typeof cargarUsuarios === "function") cargarUsuarios();
+                }
+                else if (pestana === 'ventas') {
+                    if (secVentas) secVentas.classList.remove('hidden');
+                    if (tabVentas) tabVentas.className = claseTabActiva;
+
+                    // ESTA LÍNEA ES LA QUE HACE QUE APAREZCAN LOS DATOS
+                    if (typeof cargarVentas === "function") {
+                        cargarVentas();
+                    } else {
+                        console.error("La función cargarVentas no está definida");
+                    }
+                }
+            }
+
+            // ==========================================
+            // 📁 CONTROLADORES DE CATEGORÍAS
+            // ==========================================
+            async function cargarCategorias() {
+                try {
+                    const respuesta = await fetch('/api/obtener_categorias');
+                    const categorias = await respuesta.json();
+                    listaCategoriasGlobal = categorias;
+
+                    const tbody = document.getElementById('tabla-categorias');
+                    tbody.innerHTML = '';
+
+                    categorias.forEach(cat => {
+                        // 1. Validamos el estado de la categoría (por defecto activa)
+                        const estaActiva = cat.activo_c !== 0;
+
+                        // 2. Creamos el Badge dinámico para el estado
+                        const badgeEstado = estaActiva
+                            ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`
+                            : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
+
+                        // 3. Cambiamos el botón de la papelera por el ojo dinámico (sin alterar tus estilos)
+                        const botonAccion = estaActiva
+                            ? `<button onclick="alternarEstadoCategoria(${cat.id_categoria}, 0)" class="text-xs bg-slate-800/40 hover:bg-red-900/40 text-slate-400 hover:text-red-400 font-bold py-2 px-3 rounded-lg transition-all border border-slate-800" title="Deshabilitar">
                             <i class="fa-solid fa-eye-slash"></i>
                         </button>`
-                        : `<button onclick="alternarEstadoCategoria(${cat.id_categoria}, 1)" class="text-xs bg-slate-800/40 hover:bg-emerald-900/40 text-slate-500 hover:text-emerald-400 font-bold py-2 px-3 rounded-lg transition-all border border-slate-800" title="Habilitar">
+                            : `<button onclick="alternarEstadoCategoria(${cat.id_categoria}, 1)" class="text-xs bg-slate-800/40 hover:bg-emerald-900/40 text-slate-500 hover:text-emerald-400 font-bold py-2 px-3 rounded-lg transition-all border border-slate-800" title="Habilitar">
                             <i class="fa-solid fa-eye"></i>
                         </button>`;
 
-                    // 4. Renderizamos manteniendo la IMAGEN intacta
-                    tbody.innerHTML += `
+                        // 4. Renderizamos manteniendo la IMAGEN intacta
+                        tbody.innerHTML += `
                         <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
                             <td class="py-4 px-6">
                                 <img src="/static/uploads/categorias/${cat.imagen_c}" alt="${cat.nombre_c}" class="w-12 h-12 object-cover rounded-xl border border-slate-800">
@@ -589,100 +769,105 @@ function mostrarConfirmacionPersonalizada(mensaje) {
                             </td>
                         </tr>
                     `;
-                });
+                    });
 
-                const selectProdCat = document.getElementById('prod-categoria');
-                selectProdCat.innerHTML = '<option value="" disabled selected>Selecciona una categoría</option>';
-                categorias.forEach(cat => {
-                    selectProdCat.innerHTML += `<option value="${cat.id_categoria}">${cat.nombre_c}</option>`;
-                });
-            } catch (error) {
-                console.error("Error al cargar categorías:", error);
-            }
-        }
-
-        async function guardarCategoria(event) {
-            event.preventDefault();
-            const idCat = document.getElementById('cat-id').value;
-            const nombre = document.getElementById('cat-nombre').value;
-            const archivoInput = document.getElementById('cat-imagen');
-
-            const formData = new FormData();
-            formData.append('nombre', nombre);
-            if (archivoInput.files[0]) {
-                formData.append('image_route', archivoInput.files[0]);
-            }
-
-            let url = '/api/categorias';
-            if (idCat) url = `/api/categorias/actualizar/${idCat}`;
-
-            try {
-                const respuesta = await fetch(url, { method: 'POST', body: formData });
-                const resultado = await respuesta.json();
-                if (respuesta.ok) {
-                    alert(resultado.mensaje);
-                    limpiarFormCategoria();
-                    cargarCategorias();
-                } else {
-                    alert("Error: " + (resultado.mensaje || resultado.error));
+                    const selectProdCat = document.getElementById('prod-categoria');
+                    selectProdCat.innerHTML = '<option value="" disabled selected>Selecciona una categoría</option>';
+                    categorias.forEach(cat => {
+                        selectProdCat.innerHTML += `<option value="${cat.id_categoria}">${cat.nombre_c}</option>`;
+                    });
+                } catch (error) {
+                    console.error("Error al cargar categorías:", error);
                 }
-            } catch (error) {
-                console.error("Error al guardar categoría:", error);
             }
-        }
 
-        function prepararEditarCategoria(id, nombre) {
-            document.getElementById('cat-id').value = id;
-            document.getElementById('cat-nombre').value = nombre;
-            document.getElementById('titulo-form-categoria').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Categoría';
-            document.getElementById('btn-cancelar-cat').classList.remove('hidden');
-        }
+            async function guardarCategoria(event) {
+                event.preventDefault();
+                const idCat = document.getElementById('cat-id').value;
+                const nombre = document.getElementById('cat-nombre').value;
+                const archivoInput = document.getElementById('cat-imagen');
 
-        function limpiarFormCategoria() {
-            document.getElementById('form-categoria').reset();
-            document.getElementById('cat-id').value = '';
-            document.getElementById('titulo-form-categoria').innerHTML = '<i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nueva Categoría';
-            document.getElementById('btn-cancelar-cat').classList.add('hidden');
-        }
-
-        async function eliminarCategoriaJs(id) {
-            if (!confirm("¿Estás seguro?")) return;
-            try {
-                const respuesta = await fetch(`/api/categorias/eliminar/${id}`, { method: 'DELETE' });
-                const resultado = await respuesta.json();
-                if (respuesta.ok) {
-                    alert(resultado.mensaje);
-                    cargarCategorias();
+                const formData = new FormData();
+                formData.append('nombre', nombre);
+                if (archivoInput.files[0]) {
+                    formData.append('image_route', archivoInput.files[0]);
                 }
-            } catch (error) {
-                console.error(error);
+
+                let url = '/api/categorias';
+                if (idCat) url = `/api/categorias/actualizar/${idCat}`;
+
+                try {
+                    const respuesta = await fetch(url, { method: 'POST', body: formData });
+                    const resultado = await respuesta.json();
+                    if (respuesta.ok) {
+                        mostrarNotificacion(resultado.mensaje, 'exito');
+                        limpiarFormCategoria();
+                        cargarCategorias();
+                    } else {
+                        mostrarNotificacion("Error: " + (resultado.mensaje || resultado.error), 'error');
+                    }
+                } catch (error) {
+                    console.error("Error al guardar categoría:", error);
+                    mostrarNotificacion("Error de red al guardar categoría.", 'error');
+                }
             }
-        }
 
-        // ==========================================
-        // 🍕 CONTROLADORES DE PRODUCTOS
-        // ==========================================
-        async function cargarProductos() {
-            try {
-                const respuesta = await fetch('/api/obtener_productos');
-                const productos = await respuesta.json();
-                const tbody = document.getElementById('tabla-productos');
-                tbody.innerHTML = '';
+            function prepararEditarCategoria(id, nombre) {
+                document.getElementById('cat-id').value = id;
+                document.getElementById('cat-nombre').value = nombre;
+                document.getElementById('titulo-form-categoria').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Categoría';
+                document.getElementById('btn-cancelar-cat').classList.remove('hidden');
+            }
 
-                productos.forEach(prod => {
-                    const estaActivo = prod.activo_p !== 0;
-                    const badgeEstado = estaActivo 
-                        ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`
-                        : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
-                    const botonAccion = estaActivo
-                        ? `<button onclick="alternarEstadoProducto(${prod.id_producto}, 0)" class="text-slate-400 hover:text-red-400 p-1 transition-colors" title="Deshabilitar">
+            function limpiarFormCategoria() {
+                document.getElementById('form-categoria').reset();
+                document.getElementById('cat-id').value = '';
+                document.getElementById('titulo-form-categoria').innerHTML = '<i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nueva Categoría';
+                document.getElementById('btn-cancelar-cat').classList.add('hidden');
+            }
+
+            async function eliminarCategoriaJs(id) {
+                const confirmado = await mostrarConfirmacionPersonalizada("¿Seguro que deseas eliminar esta categoría?");
+                if (!confirmado) return;
+                try {
+                    const respuesta = await fetch(`/api/categorias/eliminar/${id}`, { method: 'DELETE' });
+                    const resultado = await respuesta.json();
+                    if (respuesta.ok) {
+                        mostrarNotificacion(resultado.mensaje, 'exito');
+                        cargarCategorias();
+                    } else {
+                        mostrarNotificacion("Error: " + (resultado.mensaje || resultado.error), 'error');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    mostrarNotificacion("Error de red al intentar eliminar la categoría.", 'error');
+                }
+            }
+
+            // ==========================================
+            // 🍕 CONTROLADORES DE PRODUCTOS
+            // ==========================================
+            async function cargarProductos() {
+                try {
+                    const respuesta = await fetch('/api/obtener_productos');
+                    const productos = await respuesta.json();
+                    const tbody = document.getElementById('tabla-productos');
+                    tbody.innerHTML = '';
+
+                    productos.forEach(prod => {
+                        const estaActivo = prod.activo_p !== 0;
+                        const badgeEstado = estaActivo
+                            ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`
+                            : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
+                        const botonAccion = estaActivo
+                            ? `<button onclick="alternarEstadoProducto(${prod.id_producto}, 0)" class="text-slate-400 hover:text-red-400 p-1 transition-colors" title="Deshabilitar">
                             <i class="fa-solid fa-eye-slash"></i>
                         </button>`
-                        : `<button onclick="alternarEstadoProducto(${prod.id_producto}, 1)" class="text-slate-500 hover:text-emerald-400 p-1 transition-colors" title="Habilitar">
+                            : `<button onclick="alternarEstadoProducto(${prod.id_producto}, 1)" class="text-slate-500 hover:text-emerald-400 p-1 transition-colors" title="Habilitar">
                             <i class="fa-solid fa-eye"></i>
                         </button>`;
 
-                    tbody.innerHTML += `
+                        tbody.innerHTML += `
                         <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
                             <td class="py-4 px-6">
                                 <img src="/static/uploads/productos/${prod.imagen_pr}" alt="${prod.nombre_pr}" class="w-12 h-12 object-cover rounded-xl border border-slate-800">
@@ -702,133 +887,126 @@ function mostrarConfirmacionPersonalizada(mensaje) {
                             </td>
                         </tr>
                     `;
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        }
-
-        async function guardarProducto(event) {
-            event.preventDefault();
-            const idProd = document.getElementById('prod-id').value;
-            const nombre = document.getElementById('prod-nombre').value;
-            const precio = document.getElementById('prod-precio').value;
-            const idCategoria = document.getElementById('prod-categoria').value;
-            const archivoInput = document.getElementById('prod-imagen');
-
-            const formData = new FormData();
-            formData.append('nombre', nombre);
-            formData.append('precio', precio);
-            formData.append('id_categoria', idCategoria);
-            if (archivoInput.files[0]) {
-                formData.append('imagen_route', archivoInput.files[0]);
-            }
-
-            let url = '/api/productos';
-            if (idProd) url = `/api/productos/actualizar/${idProd}`;
-
-            try {
-                const respuesta = await fetch(url, { method: 'POST', body: formData });
-                const resultado = await respuesta.json();
-                if (respuesta.ok) {
-                    alert(resultado.mensaje);
-                    limpiarFormProducto();
-                    cargarProductos();
+                    });
+                } catch (error) {
+                    console.error(error);
                 }
-            } catch (error) {
-                console.error(error);
             }
-        }
 
-        function prepararEditarProducto(id, nombre, precio, idCategoria) {
-            document.getElementById('prod-id').value = id;
-            document.getElementById('prod-nombre').value = nombre;
-            document.getElementById('prod-precio').value = precio;
-            document.getElementById('prod-categoria').value = idCategoria;
-            document.getElementById('titulo-form-producto').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Producto';
-            document.getElementById('btn-cancelar-prod').classList.remove('hidden');
-        }
+            async function guardarProducto(event) {
+                event.preventDefault();
+                const idProd = document.getElementById('prod-id').value;
+                const nombre = document.getElementById('prod-nombre').value;
+                const precio = document.getElementById('prod-precio').value;
+                const idCategoria = document.getElementById('prod-categoria').value;
+                const archivoInput = document.getElementById('prod-imagen');
 
-        function limpiarFormProducto() {
-            document.getElementById('form-producto').reset();
-            document.getElementById('prod-id').value = '';
-            document.getElementById('titulo-form-producto').innerHTML = '<i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nuevo Producto';
-            document.getElementById('btn-cancelar-prod').classList.add('hidden');
-        }
+                const formData = new FormData();
+                formData.append('nombre', nombre);
+                formData.append('precio', precio);
+                formData.append('id_categoria', idCategoria);
+                if (archivoInput.files[0]) {
+                    formData.append('imagen_route', archivoInput.files[0]);
+                }
 
-        async function alternarEstadoProducto(id, nuevoEstado) {
-            const accion = nuevoEstado === 0 
-                ? "¿Seguro que deseas deshabilitar este producto de la venta?" 
-                : "¿Deseas volver a habilitar este producto?";
-            const confirmado = await mostrarConfirmacionPersonalizada(accion);
-            if (!confirmado) return;
+                let url = '/api/productos';
+                if (idProd) url = `/api/productos/actualizar/${idProd}`;
 
-            try {
-                const respuesta = await fetch('/api/producto/estado', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id_producto: id, activo_p: nuevoEstado })
-                });
-                const resultado = await respuesta.json();
-                if (respuesta.ok) {
-                    cargarProductos(); 
-                    if (typeof mostrarNotificacion === "function") {
-                        mostrarNotificacion("¡Estado del producto actualizado con éxito!", "exito");
-                    }
-                } else {
-                    if (typeof mostrarNotificacion === "function") {
-                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                try {
+                    const respuesta = await fetch(url, { method: 'POST', body: formData });
+                    const resultado = await respuesta.json();
+                    if (respuesta.ok) {
+                        mostrarNotificacion(resultado.mensaje, 'exito');
+                        limpiarFormProducto();
+                        cargarProductos();
                     } else {
-                        alert("Error: " + resultado.mensaje);
+                        mostrarNotificacion("Error: " + (resultado.mensaje || resultado.error), 'error');
                     }
+                } catch (error) {
+                    console.error(error);
+                    mostrarNotificacion("Error de red al intentar guardar el producto.", 'error');
                 }
-            } catch (error) {
-                console.error("Error al cambiar estado del producto:", error);
-                if (typeof mostrarNotificacion === "function") {
+            }
+
+            function prepararEditarProducto(id, nombre, precio, idCategoria) {
+                document.getElementById('prod-id').value = id;
+                document.getElementById('prod-nombre').value = nombre;
+                document.getElementById('prod-precio').value = precio;
+                document.getElementById('prod-categoria').value = idCategoria;
+                document.getElementById('titulo-form-producto').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Producto';
+                document.getElementById('btn-cancelar-prod').classList.remove('hidden');
+            }
+
+            function limpiarFormProducto() {
+                document.getElementById('form-producto').reset();
+                document.getElementById('prod-id').value = '';
+                document.getElementById('titulo-form-producto').innerHTML = '<i class="fa-solid fa-plus-circle text-amber-400"></i> Agregar Nuevo Producto';
+                document.getElementById('btn-cancelar-prod').classList.add('hidden');
+            }
+
+            async function alternarEstadoProducto(id, nuevoEstado) {
+                const accion = nuevoEstado === 0
+                    ? "¿Seguro que deseas deshabilitar este producto de la venta?"
+                    : "¿Deseas volver a habilitar este producto?";
+                const confirmado = await mostrarConfirmacionPersonalizada(accion);
+                if (!confirmado) return;
+
+                try {
+                    const respuesta = await fetch('/api/producto/estado', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_producto: id, activo_p: nuevoEstado })
+                    });
+                    const resultado = await respuesta.json();
+                    if (respuesta.ok) {
+                        cargarProductos();
+                        mostrarNotificacion("¡Estado del producto actualizado con éxito!", "exito");
+                    } else {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    }
+                } catch (error) {
+                    console.error("Error al cambiar estado del producto:", error);
                     mostrarNotificacion("Error de red al cambiar el estado del producto.", "error");
-                } else {
-                    alert("Error de red al intentar cambiar el estado.");
                 }
             }
-        }
 
-        // ==========================================
-        // 🧪 CONTROLADORES DE RECETAS (DINÁMICO)
-        // ==========================================
-        async function prepararSelectoresReceta() {
-            try {
-                const resProd = await fetch('/api/obtener_productos');
-                const productos = await resProd.json();
-                const selectProd = document.getElementById('receta-producto');
-                
-                selectProd.innerHTML = '<option value="" disabled selected>Selecciona un producto</option>';
-                productos.forEach(p => {
-                    selectProd.innerHTML += `<option value="${p.id_producto}">${p.nombre_pr}</option>`;
-                });
+            // ==========================================
+            // 🧪 CONTROLADORES DE RECETAS (DINÁMICO)
+            // ==========================================
+            async function prepararSelectoresReceta() {
+                try {
+                    const resProd = await fetch('/api/obtener_productos');
+                    const productos = await resProd.json();
+                    const selectProd = document.getElementById('receta-producto');
 
-                const resInv = await fetch('/api/obtener_inventario');
-                listaInsumosGlobal = await resInv.json();
-                
-                reconstruirOpcionesSelectInsumo(document.querySelector('.select-insumo-dinamico'));
-            } catch (error) {
-                console.error(error);
+                    selectProd.innerHTML = '<option value="" disabled selected>Selecciona un producto</option>';
+                    productos.forEach(p => {
+                        selectProd.innerHTML += `<option value="${p.id_producto}">${p.nombre_pr}</option>`;
+                    });
+
+                    const resInv = await fetch('/api/obtener_inventario');
+                    listaInsumosGlobal = await resInv.json();
+
+                    reconstruirOpcionesSelectInsumo(document.querySelector('.select-insumo-dinamico'));
+                } catch (error) {
+                    console.error(error);
+                }
             }
-        }
 
-        function reconstruirOpcionesSelectInsumo(selectElement) {
-            if (!selectElement) return;
-            selectElement.innerHTML = '<option value="" disabled selected>Insumo...</option>';
-            listaInsumosGlobal.forEach(i => {
-                selectElement.innerHTML += `<option value="${i.id_inventario}">${i.nombre_i}</option>`;
-            });
-        }
+            function reconstruirOpcionesSelectInsumo(selectElement) {
+                if (!selectElement) return;
+                selectElement.innerHTML = '<option value="" disabled selected>Insumo...</option>';
+                listaInsumosGlobal.forEach(i => {
+                    selectElement.innerHTML += `<option value="${i.id_inventario}">${i.nombre_i}</option>`;
+                });
+            }
 
-        function agregarFilaIngrediente() {
-            const contenedor = document.getElementById('contenedor-filas-ingredientes');
-            const nuevaFila = document.createElement('div');
-            nuevaFila.className = "fila-ingrediente flex gap-2 items-center";
-            
-            nuevaFila.innerHTML = `
+            function agregarFilaIngrediente() {
+                const contenedor = document.getElementById('contenedor-filas-ingredientes');
+                const nuevaFila = document.createElement('div');
+                nuevaFila.className = "fila-ingrediente flex gap-2 items-center";
+
+                nuevaFila.innerHTML = `
                 <select required name="insumo_id" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all"></select>
                 <div class="relative w-32">
                     <input type="number" required name="insumo_cantidad" step="0.001" placeholder="Cant." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all">
@@ -837,43 +1015,43 @@ function mostrarConfirmacionPersonalizada(mensaje) {
                     <i class="fa-solid fa-trash"></i>
                 </button>
             `;
-            contenedor.appendChild(nuevaFila);
-            reconstruirOpcionesSelectInsumo(nuevaFila.querySelector('select'));
-        }
+                contenedor.appendChild(nuevaFila);
+                reconstruirOpcionesSelectInsumo(nuevaFila.querySelector('select'));
+            }
 
-        async function cargarRecetaEspecifica() {
-            const idProducto = document.getElementById('receta-producto').value;
-            const select = document.getElementById('receta-producto');
-            const nombreProducto = select.options[select.selectedIndex].text;
-            document.getElementById('nombre-producto-seleccionado').innerText = nombreProducto;
-            
-            try {
-                const respuesta = await fetch('/api/obtener_receta');
-                const todasLasRecetas = await respuesta.json();
-                const recetaFiltrada = todasLasRecetas.filter(r => r.id_producto == idProducto);
-                const tbody = document.getElementById('tabla-recetas');
-                tbody.innerHTML = '';
-                
-                if (recetaFiltrada.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-500 italic">Sin ingredientes asignados.</td></tr>`;
-                    return;
-                }
-                
-                recetaFiltrada.forEach(item => {
+            async function cargarRecetaEspecifica() {
+                const idProducto = document.getElementById('receta-producto').value;
+                const select = document.getElementById('receta-producto');
+                const nombreProducto = select.options[select.selectedIndex].text;
+                document.getElementById('nombre-producto-seleccionado').innerText = nombreProducto;
 
-                    const nombreIngrediente = item.nombre_i || ('Insumo #' + item.id_inventario);
-                    let cantidad = parseFloat(item.cantidad_requerida || 0);
-                    let unidadMedida = item.unidad_registrada || 'g';
-                    if (unidadMedida === 'g' && cantidad >= 1000) {
-                        cantidad = (cantidad / 1000).toFixed(2);
-                        unidadMedida = 'Kg';
-                    } else if (unidadMedida === 'ml' && cantidad >= 1000) {
-                        cantidad = (cantidad / 1000).toFixed(2);
-                        unidadMedida = 'L';
-                    } else {
-                        cantidad = cantidad % 1 === 0 ? cantidad.toFixed(0) : cantidad.toFixed(2);
+                try {
+                    const respuesta = await fetch('/api/obtener_receta');
+                    const todasLasRecetas = await respuesta.json();
+                    const recetaFiltrada = todasLasRecetas.filter(r => r.id_producto == idProducto);
+                    const tbody = document.getElementById('tabla-recetas');
+                    tbody.innerHTML = '';
+
+                    if (recetaFiltrada.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="3" class="py-8 text-center text-slate-500 italic">Sin ingredientes asignados.</td></tr>`;
+                        return;
                     }
-                    tbody.innerHTML += `
+
+                    recetaFiltrada.forEach(item => {
+
+                        const nombreIngrediente = item.nombre_i || ('Insumo #' + item.id_inventario);
+                        let cantidad = parseFloat(item.cantidad_requerida || 0);
+                        let unidadMedida = item.unidad_registrada || 'g';
+                        if (unidadMedida === 'g' && cantidad >= 1000) {
+                            cantidad = (cantidad / 1000).toFixed(2);
+                            unidadMedida = 'Kg';
+                        } else if (unidadMedida === 'ml' && cantidad >= 1000) {
+                            cantidad = (cantidad / 1000).toFixed(2);
+                            unidadMedida = 'L';
+                        } else {
+                            cantidad = cantidad % 1 === 0 ? cantidad.toFixed(0) : cantidad.toFixed(2);
+                        }
+                        tbody.innerHTML += `
                         <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
                             <td class="py-4 px-6 font-medium text-slate-200">${nombreIngrediente}</td>
                             <td class="py-4 px-6 text-slate-400 font-mono">${cantidad} <span class="text-xs text-slate-500">${unidadMedida}</span></td>
@@ -887,105 +1065,118 @@ function mostrarConfirmacionPersonalizada(mensaje) {
                             </td>
                         </tr>
                     `;
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        }
-
-        async function guardarRecetaCompleta(event) {
-            event.preventDefault();
-            const idProducto = document.getElementById('receta-producto').value;
-            if (!idProducto) return alert("Selecciona un producto.");
-
-            const filas = document.querySelectorAll('.fila-ingrediente');
-            let ingredientesBatch = [];
-
-            filas.forEach(fila => {
-                const idInsumo = fila.querySelector('select[name="insumo_id"]').value;
-                const cantidad = fila.querySelector('input[name="insumo_cantidad"]').value;
-                if (idInsumo && cantidad) {
-                    ingredientesBatch.push({ id_inventario: idInsumo, cantidad_requerida: cantidad });
+                    });
+                } catch (error) {
+                    console.error(error);
                 }
-            });
+            }
 
-            try {
-                const respuesta = await fetch('/api/recetas', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        id_producto: idProducto, 
-                        ingredientes: ingredientesBatch 
-                    })
+            async function guardarRecetaCompleta(event) {
+                event.preventDefault();
+                const idProducto = document.getElementById('receta-producto').value;
+                if (!idProducto) {
+                    mostrarNotificacion("Selecciona un producto.", "error");
+                    return;
+                }
+
+                const filas = document.querySelectorAll('.fila-ingrediente');
+                let ingredientesBatch = [];
+
+                filas.forEach(fila => {
+                    const idInsumo = fila.querySelector('select[name="insumo_id"]').value;
+                    const cantidad = fila.querySelector('input[name="insumo_cantidad"]').value;
+                    if (idInsumo && cantidad) {
+                        ingredientesBatch.push({ id_inventario: idInsumo, cantidad_requerida: cantidad });
+                    }
                 });
-                const resultado = await respuesta.json();
-                if (respuesta.ok) {
-                    alert("Receta guardada con éxito");
-                    const contenedor = document.getElementById('contenedor-filas-ingredientes');
-                    contenedor.innerHTML = `
+
+                try {
+                    const respuesta = await fetch('/api/recetas', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id_producto: idProducto,
+                            ingredientes: ingredientesBatch
+                        })
+                    });
+                    const resultado = await respuesta.json();
+                    if (respuesta.ok) {
+                        mostrarNotificacion("Receta guardada con éxito", "exito");
+                        const contenedor = document.getElementById('contenedor-filas-ingredientes');
+                        contenedor.innerHTML = `
                         <div class="fila-ingrediente flex gap-2 items-center">
                             <select required name="insumo_id" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all select-insumo-dinamico"></select>
                             <div class="relative w-32"><input type="number" required name="insumo_cantidad" step="0.001" placeholder="Cant." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 transition-all"></div>
                             <button type="button" class="text-slate-600 cursor-not-allowed p-2 text-sm" disabled><i class="fa-solid fa-trash"></i></button>
                         </div>
                     `;
-                    reconstruirOpcionesSelectInsumo(contenedor.querySelector('.select-insumo-dinamico'));
-                    cargarRecetaEspecifica();
+                        reconstruirOpcionesSelectInsumo(contenedor.querySelector('.select-insumo-dinamico'));
+                        cargarRecetaEspecifica();
+                    } else {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    mostrarNotificacion("Error de red al guardar la receta.", "error");
                 }
-            } catch (error) {
-                console.error(error);
             }
-        }
-        async function cargarInventario() {
-            try {
-                const respuesta = await fetch('/api/obtener_inventario'); // Asegúrate de que coincida con tu ruta backend
-                const ingredientes = await respuesta.json();
-                
-                const tbody = document.getElementById('tabla-inventario-body');
-                tbody.innerHTML = ''; // Limpiar indicador de carga
-                
-                if (ingredientes.length === 0) {
-                    tbody.innerHTML = `
+            async function cargarInventario() {
+                try {
+                    const respuesta = await fetch(`/api/obtener_inventario?t=${new Date().getTime()}`);
+                    const ingredientes = await respuesta.json();
+
+                    const tbody = document.getElementById('tabla-inventario-body');
+                    tbody.innerHTML = ''; // Limpiar indicador de carga
+
+                    if (ingredientes.length === 0) {
+                        tbody.innerHTML = `
                         <tr>
                             <td colspan="4" class="py-8 px-4 text-center text-sm text-slate-500 italic">No hay ingredientes registrados.</td>
                         </tr>`;
-                    return;
-                }
-
-                ingredientes.forEach(item => {
-                    // Validación visual si el stock está por debajo del mínimo
-                    const nombreIngrediente = item.nombre_i || item.nombre;
-                    let stockActual = parseFloat(item.stock_inicial || item.stock_actual || 0);
-                    let stockMinimo = parseFloat(item.stock_minimo || 0);
-                    let unidadMedida = item.unidad_registrada || item.unidad_medida || 'g';
-                    const estaActivo = item.activo !== 0;
-                    if (unidadMedida === 'g' && stockActual >= 1000) {
-                        stockActual = (stockActual / 1000).toFixed(2);
-                        stockMinimo = (stockMinimo / 1000).toFixed(2);
-                        unidadMedida = 'Kg';
-                    } else if (unidadMedida === 'ml' && stockActual >= 1000) {
-                        stockActual = (stockActual / 1000).toFixed(2);
-                        stockMinimo = (stockMinimo / 1000).toFixed(2);
-                        unidadMedida = 'L';
+                        return;
                     }
 
-                    const esBajo = parseFloat(item.stock_inicial || item.stock_actual) <= parseFloat(item.stock_minimo);
-                    
-                    const badgeEstado = estaActivo 
-                        ? (esBajo ? `<span class="bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Stock Bajo</span>`
-                                : `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`)
-                        : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
+                    ingredientes.forEach(item => {
+                        // Validación visual si el stock está por debajo del mínimo
+                        const nombreIngrediente = item.nombre_i || item.nombre;
+                        let stockActual = parseFloat(item.stock_inicial || item.stock_actual || 0);
+                        let stockMinimo = parseFloat(item.stock_minimo || 0);
+                        let unidadMedida = item.unidad_registrada || item.unidad_medida || 'g';
+                        const estaActivo = item.activo !== 0;
+                        if (unidadMedida === 'g' && stockActual >= 1000) {
+                            stockActual = (stockActual / 1000).toFixed(2);
+                            stockMinimo = (stockMinimo / 1000).toFixed(2);
+                            unidadMedida = 'Kg';
+                        } else if (unidadMedida === 'ml' && stockActual >= 1000) {
+                            stockActual = (stockActual / 1000).toFixed(2);
+                            stockMinimo = (stockMinimo / 1000).toFixed(2);
+                            unidadMedida = 'L';
+                        }
 
-                    // Creamos el botón dinámico: si está activo muestra icono de "Desactivar" (ojo/basura), si no, de "Activar"
-                    const botonAccion = estaActivo
-                        ? `<button onclick="alternarEstadoIngrediente(${item.id_inventario}, 0)" class="text-slate-400 hover:text-red-400 p-1 transition-colors" title="Deshabilitar">
+                        const esBajo = parseFloat(item.stock_inicial || item.stock_actual) <= parseFloat(item.stock_minimo);
+
+                        const badgeEstado = estaActivo
+                            ? (esBajo ? `<span class="bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Stock Bajo</span>`
+                                : `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Ok</span>`)
+                            : `<span class="bg-slate-800 text-slate-500 border border-slate-700 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Inactivo</span>`;
+
+                        // Creamos el botón dinámico: si está activo muestra icono de "Desactivar" (ojo/basura), si no, de "Activar"
+                        const botonAccion = estaActivo
+                            ? `<button onclick="alternarEstadoIngrediente(${item.id_inventario}, 0)" class="text-slate-400 hover:text-red-400 p-1 transition-colors" title="Deshabilitar">
                             <i class="fa-solid fa-eye-slash"></i>
                         </button>`
-                        : `<button onclick="alternarEstadoIngrediente(${item.id_inventario}, 1)" class="text-slate-500 hover:text-emerald-400 p-1 transition-colors" title="Habilitar">
+                            : `<button onclick="alternarEstadoIngrediente(${item.id_inventario}, 1)" class="text-slate-500 hover:text-emerald-400 p-1 transition-colors" title="Habilitar">
                             <i class="fa-solid fa-eye"></i>
                         </button>`;
-                        
-                    tbody.innerHTML += `
+
+                        const botonSumar = `<button onclick="sumarStockIngrediente(${item.id_inventario})" 
+                                            class="text-slate-400 hover:text-emerald-400 p-1 transition-colors" 
+                                            title="Agregar Stock">
+                                            <i class="fa-solid fa-plus-circle"></i>
+                                        </button>`;
+
+
+                        tbody.innerHTML += `
                         <tr class="hover:bg-slate-900/30 transition-colors border-b border-slate-800/40">
                             <td class="py-3 px-4 text-sm font-medium text-slate-200">${nombreIngrediente}</td>
                             <td class="py-3 px-4 text-sm text-center font-mono ${esBajo ? 'text-red-400 font-bold' : 'text-slate-300'}">
@@ -1002,212 +1193,187 @@ function mostrarConfirmacionPersonalizada(mensaje) {
                                     <button onclick='prepararEditarInsumo(${JSON.stringify(item)})' class="text-slate-400 hover:text-amber-400 p-1 transition-colors" title="Editar Insumo">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </button>
+                                    ${botonSumar}
                                     ${botonAccion}
                                 </div>
                             </td>
                         </tr>
                     `;
-                });
-                
-            } catch (error) {
-                console.error("Error al cargar el inventario:", error);
-                document.getElementById('tabla-inventario-body').innerHTML = `
+                    });
+
+                } catch (error) {
+                    console.error("Error al cargar el inventario:", error);
+                    document.getElementById('tabla-inventario-body').innerHTML = `
                     <tr>
                         <td colspan="4" class="py-8 px-4 text-center text-sm text-red-400 font-medium">Error al conectar con el servidor.</td>
                     </tr>`;
+                }
             }
-        }
-        // 2. Guardar un nuevo ingrediente en la base de datos
-       async function guardarIngrediente(event) {
-            event.preventDefault();
-            
-            const nombre = document.getElementById('inv-nombre').value;
-            const stock = document.getElementById('inv-stock').value;
-            const stockMin = document.getElementById('inv-stock-min').value;
-            const unidad = document.getElementById('inv-unidad').value;
 
-            // =================================================================
-            // INTEGRACIÓN MÍNIMA DE EDICIÓN: Solo si existe un ID cargado
-            // =================================================================
-            if (typeof editandoInsumoId !== 'undefined' && editandoInsumoId !== null) {
+            async function guardarIngrediente(event) {
+                event.preventDefault();
+
+                const nombre = document.getElementById('inv-nombre').value;
+                const stock = document.getElementById('inv-stock').value;
+                const stockMin = document.getElementById('inv-stock-min').value;
+                const unidad = document.getElementById('inv-unidad').value;
+
+                // =================================================================
+                // INTEGRACIÓN MÍNIMA DE EDICIÓN: Solo si existe un ID cargado
+                // =================================================================
+                if (typeof editandoInsumoId !== 'undefined' && editandoInsumoId !== null) {
+                    try {
+                        const respuesta = await fetch('/api/inventario/actualizar', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                id_inventario: editandoInsumoId,
+                                nombre: nombre,
+                                cantidad_inicial: stock,
+                                cantidad_minima: stockMin,
+                                unidad: unidad
+                            })
+                        });
+
+                        const resultado = await respuesta.json();
+
+                        if (respuesta.ok) {
+                            mostrarNotificacion("¡Ingrediente actualizado con éxito!", "exito");
+                            editandoInsumoId = null;
+                            document.getElementById('form-inventario').reset();
+                            await cargarInventario();
+                            if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
+                        } else {
+                            mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                        }
+                    } catch (error) {
+                        console.error("Error en la petición de actualización:", error);
+                        mostrarNotificacion("Error de red al intentar actualizar.", "error");
+                    }
+                    return;
+                }
+                // =================================================================
+
+                // --- TU BLOQUE POST ORIGINAL (Sin alertas de navegador) ---
                 try {
-                    const respuesta = await fetch('/api/inventario/actualizar', {
-                        method: 'PUT',
+                    const respuesta = await fetch('/api/inventario', {
+                        method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            id_inventario: editandoInsumoId,
-                            nombre: nombre,
-                            cantidad_inicial: stock,     
-                            cantidad_minima: stockMin,   
-                            unidad: unidad               
+                            nombre_i: nombre,
+                            stock_actual: stock,
+                            stock_minimo: stockMin,
+                            unidad_registrada: unidad
                         })
                     });
 
                     const resultado = await respuesta.json();
 
                     if (respuesta.ok) {
-                        // REEMPLAZADO: Solo tu banner personalizado
-                        if (typeof mostrarNotificacion === "function") {
-                            mostrarNotificacion("¡Ingrediente actualizado con éxito!", "exito");
-                        }
-                        
-                        limpiarFormularioInventario(); 
+                        mostrarNotificacion(resultado.mensaje || "¡Ingrediente registrado con éxito!", "exito");
+                        document.getElementById('form-inventario').reset();
                         cargarInventario();
                         if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
                     } else {
-                        // REEMPLAZADO: Banner personalizado de error
-                        if (typeof mostrarNotificacion === "function") {
-                            mostrarNotificacion("Error: " + resultado.mensaje, "error");
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error en la petición de actualización:", error);
-                    if (typeof mostrarNotificacion === "function") {
-                        mostrarNotificacion("Error de red al intentar actualizar.", "error");
-                    }
-                }
-                return; 
-            }
-            // =================================================================
-
-            // --- TU BLOQUE POST ORIGINAL (Sin alertas de navegador) ---
-            try {
-                const respuesta = await fetch('/api/inventario', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nombre_i: nombre,
-                        stock_actual: stock,
-                        stock_minimo: stockMin,
-                        unidad_registrada: unidad
-                    })
-                });
-
-                const resultado = await respuesta.json();
-
-                if (respuesta.ok) {
-                    // REEMPLAZADO: Notificación estética de éxito
-                    if (typeof mostrarNotificacion === "function") {
-                        mostrarNotificacion(resultado.mensaje || "¡Ingrediente registrado con éxito!", "exito");
-                    }
-                    
-                    document.getElementById('form-inventario').reset(); 
-                    cargarInventario();
-                    if (typeof cargarSelectInventario === 'function') cargarSelectInventario();
-                } else {
-                    // REEMPLAZADO: Notificación estética de error
-                    if (typeof mostrarNotificacion === "function") {
                         mostrarNotificacion("Error: " + resultado.mensaje, "error");
                     }
-                }
-            } catch (error) {
-                console.error("Error en la peticion fetch:", error);
-                // REEMPLAZADO: Notificación estética de error de red
-                if (typeof mostrarNotificacion === "function") {
+                } catch (error) {
+                    console.error("Error en la peticion fetch:", error);
                     mostrarNotificacion("Error de red al intentar registrar el ingrediente.", "error");
                 }
             }
-        }
 
-        async function alternarEstadoIngrediente(id, nuevoEstado) {
-            const accion = nuevoEstado === 0 
-                ? "¿Seguro que deseas deshabilitar este ingrediente? Esto podría afectar a las recetas que lo utilicen." 
-                : "¿Deseas volver a habilitar este ingrediente?";
-            const confirmado = await mostrarConfirmacionPersonalizada(accion);
-            if (!confirmado) return;
-            try {
-                const respuesta = await fetch('/api/inventario/estado', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id_inventario: id, activo: nuevoEstado })
-                });
+            async function alternarEstadoIngrediente(id, nuevoEstado) {
+                const accion = nuevoEstado === 0
+                    ? "¿Seguro que deseas deshabilitar este ingrediente? Esto podría afectar a las recetas que lo utilicen."
+                    : "¿Deseas volver a habilitar este ingrediente?";
+                const confirmado = await mostrarConfirmacionPersonalizada(accion);
+                if (!confirmado) return;
+                try {
+                    const respuesta = await fetch('/api/inventario/estado', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_inventario: id, activo: nuevoEstado })
+                    });
 
-                const resultado = await respuesta.json();
+                    const resultado = await respuesta.json();
 
-                if (respuesta.ok) {
-                    cargarInventario(); // Refresca la tabla automáticamente sin recargar la página
-                    if (typeof mostrarNotificacion === "function") {
+                    if (respuesta.ok) {
+                        cargarInventario();
                         mostrarNotificacion("¡Estado del ingrediente actualizado con éxito!", "exito");
-                    }
-                } else {
-                    if (typeof mostrarNotificacion === "function") {
-                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
                     } else {
-                        alert("Error: " + resultado.mensaje);
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
                     }
-                }
-            } catch (error) {
-                console.error("Error al cambiar estado del ingrediente:", error);
-                if (typeof mostrarNotificacion === "function") {
+                } catch (error) {
+                    console.error("Error al cambiar estado del ingrediente:", error);
                     mostrarNotificacion("Error de red al intentar cambiar el estado.", "error");
-                } else {
-                    alert("Ocurrió un error de red al intentar cambiar el estado.");
                 }
             }
-        }
 
-        async function guardarEmpleado(event) {
-        event.preventDefault();
-        
-        const nombre = document.getElementById('emp-nombre').value;
-        const apellido = document.getElementById('emp-apellido').value; // Nuevo
-        const correo = document.getElementById('emp-correo').value;
-        const password = document.getElementById('emp-password').value;
-        const telefono = document.getElementById('emp-telefono').value; // Nuevo
-        const rol = document.getElementById('emp-rol').value;
+            async function guardarEmpleado(event) {
+                event.preventDefault();
 
-        try {
-            const respuesta = await fetch('/api/usuarios/registrar_empleado', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nombre: nombre,
-                    apellido: apellido,
-                    correo: correo,
-                    password: password,
-                    telefono: telefono,
-                    rol: rol
-                })
-            });
+                const nombre = document.getElementById('emp-nombre').value;
+                const apellido = document.getElementById('emp-apellido').value; // Nuevo
+                const correo = document.getElementById('emp-correo').value;
+                const password = document.getElementById('emp-password').value;
+                const telefono = document.getElementById('emp-telefono').value; // Nuevo
+                const rol = document.getElementById('emp-rol').value;
 
-            const resultado = await respuesta.json();
+                try {
+                    const respuesta = await fetch('/api/usuarios/registrar_empleado', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            nombre: nombre,
+                            apellido: apellido,
+                            correo: correo,
+                            password: password,
+                            telefono: telefono,
+                            rol: rol
+                        })
+                    });
 
-            if (respuesta.ok) {
-                alert(resultado.mensaje || "Empleado registrado con éxito");
-                document.getElementById('form-empleados').reset(); // Limpia el formulario
-            } else {
-                alert("Error: " + resultado.mensaje);
-            }
-        } catch (error) {
-            console.error("Error en la petición:", error);
-            alert("Ocurrió un error de red al intentar registrar al empleado.");
-        }
-    }
+                    const resultado = await respuesta.json();
 
-        async function cargarUsuarios() {
-            try {
-                // CORREGIDO: Ruta en singular '/api/obtener_usuario' tal como la tenías originalmente
-                const respuesta = await fetch('/api/obtener_usuario'); 
-                if (!respuesta.ok) throw new Error("No se pudieron cargar los usuarios");
-                
-                const usuarios = await respuesta.json();
-                const tbody = document.getElementById('tabla-usuarios-body');
-                if (!tbody) return;
-                tbody.innerHTML = '';
-                
-                if (usuarios.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-gray-400 italic">No hay personal registrado.</td></tr>`;
-                    return;
+                    if (respuesta.ok) {
+                        mostrarNotificacion(resultado.mensaje || "Empleado registrado con éxito", "exito");
+                        document.getElementById('form-empleados').reset();
+                        await cargarUsuarios();
+
+                    } else {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    }
+                } catch (error) {
+                    console.error("Error en la petición:", error);
+                    mostrarNotificacion("Ocurrió un error de red al intentar registrar al empleado.", "error");
                 }
+            }
 
-                usuarios.forEach(user => {
-                    // Mantenemos tus colores personalizados según el rol
-                    let badgeColor = "bg-slate-950 text-slate-400 border border-slate-800";
-                    if(user.rol === 'admin') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                    if(user.rol === 'cocina') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                    if(user.rol === 'mesero') badgeColor = "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+            async function cargarUsuarios() {
+                try {
+                    // CORREGIDO: Ruta en singular '/api/obtener_usuario' tal como la tenías originalmente
+                    const respuesta = await fetch(`/api/obtener_usuario?t=${new Date().getTime()}`);
+                    if (!respuesta.ok) throw new Error("No se pudieron cargar los usuarios");
 
-                    tbody.innerHTML += `
+                    const usuarios = await respuesta.json();
+                    const tbody = document.getElementById('tabla-usuarios-body');
+                    if (!tbody) return;
+                    tbody.innerHTML = '';
+
+                    if (usuarios.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-gray-400 italic">No hay personal registrado.</td></tr>`;
+                        return;
+                    }
+
+                    usuarios.forEach(user => {
+                        // Mantenemos tus colores personalizados según el rol
+                        let badgeColor = "bg-slate-950 text-slate-400 border border-slate-800";
+                        if (user.rol === 'admin') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                        if (user.rol === 'cocina') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                        if (user.rol === 'mesero') badgeColor = "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+
+                        tbody.innerHTML += `
                         <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
                             <td class="py-4 px-6 font-medium text-slate-200">
                                 ${user.nombre_u} ${user.apellido_u}
@@ -1228,230 +1394,376 @@ function mostrarConfirmacionPersonalizada(mensaje) {
                             </td>
                         </tr>
                     `;
-                });
-            } catch (error) {
-                console.error("Error al cargar usuarios:", error);
-                const tbody = document.getElementById('tabla-usuarios-body');
-                if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-red-400 font-medium"><i class="fa-solid fa-circle-exclamation mr-2"></i> Error al cargar el listado.</td></tr>`;
+                    });
+                } catch (error) {
+                    console.error("Error al cargar usuarios:", error);
+                    const tbody = document.getElementById('tabla-usuarios-body');
+                    if (tbody) {
+                        tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-red-400 font-medium"><i class="fa-solid fa-circle-exclamation mr-2"></i> Error al cargar el listado.</td></tr>`;
+                    }
                 }
             }
-}
 
-async function alternarEstadoCategoria(id, nuevoEstado) {
-    const accion = nuevoEstado === 0 
-        ? "¿Seguro que deseas deshabilitar esta categoría y todos sus productos asociados?" 
-        : "¿Deseas volver a habilitar esta categoría?";
-    
-    const confirmado = await mostrarConfirmacionPersonalizada(accion);
-    if (!confirmado) return;
+            async function alternarEstadoCategoria(id, nuevoEstado) {
+                const accion = nuevoEstado === 0
+                    ? "¿Seguro que deseas deshabilitar esta categoría y todos sus productos asociados?"
+                    : "¿Deseas volver a habilitar esta categoría?";
 
-    try {
-        const respuesta = await fetch('/api/categoria/estado', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id_categoria: id, activo_c: nuevoEstado })
-        });
+                const confirmado = await mostrarConfirmacionPersonalizada(accion);
+                if (!confirmado) return;
 
-        const resultado = await respuesta.json();
+                try {
+                    const respuesta = await fetch('/api/categoria/estado', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_categoria: id, activo_c: nuevoEstado })
+                    });
 
-        if (respuesta.ok) {
-            cargarCategorias(); 
-            if (typeof mostrarNotificacion === "function") {
-                mostrarNotificacion("¡Estado actualizado con éxito!", "exito");
+                    const resultado = await respuesta.json();
+
+                    if (respuesta.ok) {
+                        cargarCategorias();
+                        mostrarNotificacion("¡Estado de categoría actualizado con éxito!", "exito");
+                    } else {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    }
+                } catch (error) {
+                    console.error("Error al cambiar estado de la categoría:", error);
+                    mostrarNotificacion("Error de red al intentar cambiar el estado.", "error");
+                }
             }
-        } else {
-            if (typeof mostrarNotificacion === "function") {
-                mostrarNotificacion("Error: " + resultado.mensaje, "error");
-            } else {
-                alert("Error: " + resultado.mensaje);
+
+
+            async function eliminarIngredienteDeReceta(idProducto, idInventario, nombreIngrediente) {
+                const accion = `¿Seguro que deseas eliminar "${nombreIngrediente}" de la receta de este producto?`;
+
+                // Espera la confirmación del modal premium
+                const confirmado = await mostrarConfirmacionPersonalizada(accion);
+                if (!confirmado) return;
+
+                try {
+                    const respuesta = await fetch(`/api/recetas/eliminar/${idProducto}/${idInventario}`, {
+                        method: 'DELETE'
+                    });
+
+                    const resultado = await respuesta.json();
+
+                    if (respuesta.ok) {
+                        if (typeof cargarRecetaEspecifica === 'function') {
+                            cargarRecetaEspecifica();
+                        }
+                        mostrarNotificacion("¡Ingrediente eliminado de la receta!", "exito");
+                    } else {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    }
+                } catch (error) {
+                    console.error("Error al eliminar ingrediente de la receta:", error);
+                    mostrarNotificacion("Error de red al intentar eliminar el ingrediente.", "error");
+                }
             }
-        }
-    } catch (error) {
-        console.error("Error al cambiar estado de la categoría:", error);
-        if (typeof mostrarNotificacion === "function") {
-            mostrarNotificacion("Error de red al intentar cambiar el estado.", "error");
-        } else {
-            alert("Error de red.");
-        }
-    }
-}
-    
 
-async function eliminarIngredienteDeReceta(idProducto, idInventario, nombreIngrediente) {
-    const accion = `¿Seguro que deseas eliminar "${nombreIngrediente}" de la receta de este producto?`;
-    
-    // Espera la confirmación del modal premium
-    const confirmado = await mostrarConfirmacionPersonalizada(accion);
-    if (!confirmado) return;
 
-    try {
-        const respuesta = await fetch(`/api/recetas/eliminar/${idProducto}/${idInventario}`, {
-            method: 'DELETE'
-        });
+            function prepararEditarInsumo(item) {
+                editandoInsumoId = item.id_inventario;
 
-        const resultado = await respuesta.json();
+                // Cambiar texto del botón para guiar al usuario
+                const btnGuardar = document.querySelector('#form-inventario button[type="submit"]');
+                if (btnGuardar) btnGuardar.innerText = "Actualizar Insumo";
 
-        if (respuesta.ok) {
-            // Recarga los ingredientes visualmente en la tabla actual
-            if (typeof cargarRecetaEspecifica === 'function') {
-                cargarRecetaEspecifica(); 
+                // Convertir unidades g/ml de vuelta a lo que entiende tu select para pintarlo bien
+                let cantidad = parseFloat(item.stock_inicial || item.stock_actual || 0);
+                let cantidadMinima = parseFloat(item.stock_minimo || 0);
+                let unidadOriginal = item.unidad_registrada || 'g';
+                let unidadSelect = unidadOriginal === 'g' ? 'Gramos' : 'Mililitros';
+
+                if (unidadOriginal === 'g' && cantidad >= 1000) {
+                    cantidad = (cantidad / 1000).toFixed(2);
+                    cantidadMinima = (cantidadMinima / 1000).toFixed(2);
+                    unidadSelect = 'Kg';
+                } else if (unidadOriginal === 'ml' && cantidad >= 1000) {
+                    cantidad = (cantidad / 1000).toFixed(2);
+                    cantidadMinima = (cantidadMinima / 1000).toFixed(2);
+                    unidadSelect = 'Litros';
+                }
+
+                // Rellenar tus inputs originales usando tus IDs exactos
+                document.getElementById('inv-nombre').value = item.nombre_i || item.nombre;
+                document.getElementById('inv-stock').value = cantidad;
+                document.getElementById('inv-stock-min').value = cantidadMinima;
+                document.getElementById('inv-unidad').value = unidadSelect;
+
+                // Subir suavemente al formulario
+                document.getElementById('form-inventario').scrollIntoView({ behavior: 'smooth' });
             }
-            if (typeof mostrarNotificacion === "function") {
-                mostrarNotificacion("¡Ingrediente eliminado de la receta!", "exito");
+
+
+            function prepararEditarUsuario(user) {
+                // 1. Guardamos el ID único de tu tabla
+                editandoUsuarioId = user.id_usuario;
+
+                // 2. Buscamos tu formulario real: 'form-empleados'
+                const formEmpleados = document.getElementById('form-empleados');
+                const btnGuardar = formEmpleados ? formEmpleados.querySelector('button[type="submit"]') : null;
+
+                if (btnGuardar) {
+                    btnGuardar.innerText = "Actualizar Empleado";
+                    // Cambiamos el comportamiento del submit para que edite en vez de registrar uno nuevo
+                    formEmpleados.setAttribute('onsubmit', 'ejecutarActualizacionUsuario(event)');
+                }
+
+                // 3. Crear el botón de cancelar si no existe
+                if (!document.getElementById('btn-cancelar-edicion-usuario') && formEmpleados) {
+                    const btnCancelar = document.createElement('button');
+                    btnCancelar.id = 'btn-cancelar-edicion-usuario';
+                    btnCancelar.type = 'button';
+                    btnCancelar.className = 'w-full mt-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all text-xs uppercase tracking-wider text-center block';
+                    btnCancelar.innerText = 'Cancelar Edición';
+                    btnCancelar.onclick = limpiarFormularioUsuario;
+                    btnGuardar.parentNode.appendChild(btnCancelar);
+                }
+
+                // 4. AUTOCOMPLETAR con tus IDs reales: 'emp-nombre', 'emp-apellido', etc.
+                if (document.getElementById('emp-nombre')) document.getElementById('emp-nombre').value = user.nombre_u || '';
+                if (document.getElementById('emp-apellido')) document.getElementById('emp-apellido').value = user.apellido_u || '';
+                if (document.getElementById('emp-correo')) document.getElementById('emp-correo').value = user.correo_u || '';
+                if (document.getElementById('emp-telefono')) document.getElementById('emp-telefono').value = user.telefono_u || '';
+                if (document.getElementById('emp-rol')) document.getElementById('emp-rol').value = user.rol || 'Mesero';
+
+                // Opcional: El campo contraseña no se auto-rellena por seguridad, se quita el 'required' temporalmente
+                if (document.getElementById('emp-password')) document.getElementById('emp-password').removeAttribute('required');
+
+                // Desplazamiento suave hacia arriba donde está el formulario
+                if (formEmpleados) formEmpleados.scrollIntoView({ behavior: 'smooth' });
             }
-        } else {
-            if (typeof mostrarNotificacion === "function") {
-                mostrarNotificacion("Error: " + resultado.mensaje, "error");
+
+            function limpiarFormularioUsuario() {
+                editandoUsuarioId = null;
+                const formEmpleados = document.getElementById('form-empleados');
+
+                if (formEmpleados) {
+                    formEmpleados.reset();
+                    formEmpleados.setAttribute('onsubmit', 'guardarEmpleado(event)'); // Restablece el registro normal
+                    const btnGuardar = formEmpleados.querySelector('button[type="submit"]');
+                    if (btnGuardar) btnGuardar.innerText = "Registrar Empleado";
+
+                    // Volvemos a pedir contraseña si van a registrar uno nuevo
+                    if (document.getElementById('emp-password')) document.getElementById('emp-password').setAttribute('required', 'required');
+                }
+
+                const btnCancelar = document.getElementById('btn-cancelar-edicion-usuario');
+                if (btnCancelar) btnCancelar.remove();
             }
-        }
-    } catch (error) {
-        console.error("Error al eliminar ingrediente de la receta:", error);
-        if (typeof mostrarNotificacion === "function") {
-            mostrarNotificacion("Error de red al intentar eliminar el ingrediente.", "error");
-        }
-    }
-}
 
+            async function ejecutarActualizacionUsuario(event) {
+                event.preventDefault();
 
-function prepararEditarInsumo(item) {
-    editandoInsumoId = item.id_inventario;
+                const nombre = document.getElementById('emp-nombre')?.value || '';
+                const apellido = document.getElementById('emp-apellido')?.value || '';
+                const correo = document.getElementById('emp-correo')?.value || '';
+                const telefono = document.getElementById('emp-telefono')?.value || '';
+                const rol = document.getElementById('emp-rol')?.value || 'Mesero';
 
-    // Cambiar texto del botón para guiar al usuario
-    const btnGuardar = document.querySelector('#form-inventario button[type="submit"]');
-    if (btnGuardar) btnGuardar.innerText = "Actualizar Insumo";
+                try {
+                    const respuesta = await fetch('/api/usuarios/actualizar', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id_usuario: editandoUsuarioId,
+                            nombre: nombre,
+                            apellido: apellido,
+                            usuario: correo,
+                            rol: rol,
+                            telefono: telefono
+                        })
+                    });
 
-    // Convertir unidades g/ml de vuelta a lo que entiende tu select para pintarlo bien
-    let cantidad = parseFloat(item.stock_inicial || item.stock_actual || 0);
-    let cantidadMinima = parseFloat(item.stock_minimo || 0);
-    let unidadOriginal = item.unidad_registrada || 'g';
-    let unidadSelect = unidadOriginal === 'g' ? 'Gramos' : 'Mililitros';
+                    const resultado = await respuesta.json();
 
-    if (unidadOriginal === 'g' && cantidad >= 1000) {
-        cantidad = (cantidad / 1000).toFixed(2);
-        cantidadMinima = (cantidadMinima / 1000).toFixed(2);
-        unidadSelect = 'Kg';
-    } else if (unidadOriginal === 'ml' && cantidad >= 1000) {
-        cantidad = (cantidad / 1000).toFixed(2);
-        cantidadMinima = (cantidadMinima / 1000).toFixed(2);
-        unidadSelect = 'Litros';
-    }
-
-    // Rellenar tus inputs originales usando tus IDs exactos
-    document.getElementById('inv-nombre').value = item.nombre_i || item.nombre;
-    document.getElementById('inv-stock').value = cantidad;
-    document.getElementById('inv-stock-min').value = cantidadMinima;
-    document.getElementById('inv-unidad').value = unidadSelect;
-
-    // Subir suavemente al formulario
-    document.getElementById('form-inventario').scrollIntoView({ behavior: 'smooth' });
-}
-
-
-function prepararEditarUsuario(user) {
-    // 1. Guardamos el ID único de tu tabla
-    editandoUsuarioId = user.id_usuario;
-
-    // 2. Buscamos tu formulario real: 'form-empleados'
-    const formEmpleados = document.getElementById('form-empleados');
-    const btnGuardar = formEmpleados ? formEmpleados.querySelector('button[type="submit"]') : null;
-    
-    if (btnGuardar) {
-        btnGuardar.innerText = "Actualizar Empleado";
-        // Cambiamos el comportamiento del submit para que edite en vez de registrar uno nuevo
-        formEmpleados.setAttribute('onsubmit', 'ejecutarActualizacionUsuario(event)');
-    }
-
-    // 3. Crear el botón de cancelar si no existe
-    if (!document.getElementById('btn-cancelar-edicion-usuario') && formEmpleados) {
-        const btnCancelar = document.createElement('button');
-        btnCancelar.id = 'btn-cancelar-edicion-usuario';
-        btnCancelar.type = 'button';
-        btnCancelar.className = 'w-full mt-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all text-xs uppercase tracking-wider text-center block';
-        btnCancelar.innerText = 'Cancelar Edición';
-        btnCancelar.onclick = limpiarFormularioUsuario;
-        btnGuardar.parentNode.appendChild(btnCancelar);
-    }
-
-    // 4. AUTOCOMPLETAR con tus IDs reales: 'emp-nombre', 'emp-apellido', etc.
-    if (document.getElementById('emp-nombre')) document.getElementById('emp-nombre').value = user.nombre_u || '';
-    if (document.getElementById('emp-apellido')) document.getElementById('emp-apellido').value = user.apellido_u || '';
-    if (document.getElementById('emp-correo')) document.getElementById('emp-correo').value = user.correo_u || ''; 
-    if (document.getElementById('emp-telefono')) document.getElementById('emp-telefono').value = user.telefono_u || '';
-    if (document.getElementById('emp-rol')) document.getElementById('emp-rol').value = user.rol || 'Mesero';
-
-    // Opcional: El campo contraseña no se auto-rellena por seguridad, se quita el 'required' temporalmente
-    if (document.getElementById('emp-password')) document.getElementById('emp-password').removeAttribute('required');
-
-    // Desplazamiento suave hacia arriba donde está el formulario
-    if (formEmpleados) formEmpleados.scrollIntoView({ behavior: 'smooth' });
-}
-
-function limpiarFormularioUsuario() {
-    editandoUsuarioId = null;
-    const formEmpleados = document.getElementById('form-empleados');
-    
-    if (formEmpleados) {
-        formEmpleados.reset();
-        formEmpleados.setAttribute('onsubmit', 'guardarEmpleado(event)'); // Restablece el registro normal
-        const btnGuardar = formEmpleados.querySelector('button[type="submit"]');
-        if (btnGuardar) btnGuardar.innerText = "Registrar Empleado";
-        
-        // Volvemos a pedir contraseña si van a registrar uno nuevo
-        if (document.getElementById('emp-password')) document.getElementById('emp-password').setAttribute('required', 'required');
-    }
-
-    const btnCancelar = document.getElementById('btn-cancelar-edicion-usuario');
-    if (btnCancelar) btnCancelar.remove();
-}
-
-async function ejecutarActualizacionUsuario(event) {
-    event.preventDefault();
-
-    const nombre = document.getElementById('emp-nombre')?.value || '';
-    const apellido = document.getElementById('emp-apellido')?.value || '';
-    const correo = document.getElementById('emp-correo')?.value || '';
-    const telefono = document.getElementById('emp-telefono')?.value || '';
-    const rol = document.getElementById('emp-rol')?.value || 'Mesero';
-
-    try {
-        const respuesta = await fetch('/api/usuarios/actualizar', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id_usuario: editandoUsuarioId,
-                nombre: nombre,
-                apellido: apellido,
-                usuario: correo, 
-                rol: rol,
-                telefono: telefono
-            })
-        });
-
-        const resultado = await respuesta.json();
-
-        if (respuesta.ok) {
-            // CORREGIDO: Fuera alerts antiguos, se usa tu banner premium de éxito
-            if (typeof mostrarNotificacion === "function") {
-                mostrarNotificacion("¡Empleado actualizado con éxito!", "exito");
+                    if (respuesta.ok) {
+                        mostrarNotificacion("¡Empleado actualizado con éxito!", "exito");
+                        limpiarFormularioUsuario();
+                        cargarUsuarios();
+                    } else {
+                        mostrarNotificacion("Error: " + resultado.mensaje, "error");
+                    }
+                } catch (error) {
+                    console.error("Error en la petición PUT de usuarios:", error);
+                    mostrarNotificacion("Error de red al intentar actualizar el empleado.", "error");
+                }
             }
-            limpiarFormularioUsuario();
-            cargarUsuarios(); 
-        } else {
-            // CORREGIDO: Banner premium de error
-            if (typeof mostrarNotificacion === "function") {
-                mostrarNotificacion("Error: " + resultado.mensaje, "error");
-            }
-        }
-    } catch (error) {
-        console.error("Error en la petición PUT de usuarios:", error);
-        // CORREGIDO: Banner premium de error de red
-        if (typeof mostrarNotificacion === "function") {
-            mostrarNotificacion("Error de red al intentar actualizar el empleado.", "error");
-        }
-    }
-}
+            function mostrarSeccion(idSeccion) {
+                document.querySelectorAll('.seccion-contenido').forEach(seccion => seccion.classList.add('hidden'));
+                document.querySelectorAll('.seccion-btn').forEach(btn => btn.classList.remove('text-amber-400', 'bg-white/5', 'border-l-4', 'border-amber-500'));
 
-    </script>
+                const seccionActiva = document.getElementById(`seccion-${idSeccion}`);
+                if (seccionActiva) seccionActiva.classList.remove('hidden');
+
+                const btnActivo = event?.currentTarget;
+                if (btnActivo) btnActivo.classList.add('text-amber-400', 'bg-white/5', 'border-l-4', 'border-amber-500');
+
+                // 🔄 Disparador de carga según sección
+                if (idSeccion === 'inventario') cargarInventario();
+                if (idSeccion === 'categorias') cargarCategorias();
+                if (idSeccion === 'productos') { cargarProductos(); cargarCategoriasFormEdicion(); }
+                if (idSeccion === 'empleados') cargarUsuarios();
+                if (idSeccion === 'ventas') cargarHistorialVentas(); // <-- Nueva línea agregada
+            }
+
+            let ventasLocales = []; // Cache en memoria para búsquedas instantáneas
+
+            // 1. Fetch de datos desde la API
+            async function cargarHistorialVentas() {
+                try {
+                    const respuesta = await fetch('/api/admin/historial_ventas');
+                    if (!respuesta.ok) throw new Error("Error en la respuesta del servidor");
+
+                    const ventas = await respuesta.json();
+                    ventasLocales = ventas;
+                    renderizarTablaVentas(ventas);
+                } catch (error) {
+                    console.error("Error al cargar historial:", error);
+                    mostrarNotificacion("No se pudo obtener el historial de ventas.", "error");
+                }
+            }
+
+            // 2. Pintar los datos en el HTML
+            function renderizarTablaVentas(listaVentas) {
+                const tbody = document.getElementById('tabla-ventas-body');
+                tbody.innerHTML = '';
+
+                if (listaVentas.length === 0) {
+                    tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-10 text-stone-500 italic">
+                    No se registran transacciones finalizadas en el historial.
+                </td>
+            </tr>`;
+                    return;
+                }
+
+                listaVentas.forEach(v => {
+                    // Formatear la lista de productos consumidos en un badge compacto
+                    const detalleProductos = v.productos.map(p =>
+                        `<span class="inline-block bg-stone-900/80 text-[11px] px-2 py-0.5 rounded-md border border-white/5 text-stone-400 mr-1 mb-1">
+                ${p.nombre_pr} <b class="text-amber-400">x${p.cantidad_v}</b>
+             </span>`
+                    ).join('');
+
+                    // Gestión visual del estado
+                    let badgeColor = "bg-stone-800 text-stone-400 border-stone-700";
+                    if (v.estado === 'Pagado' || v.estado === 'Entregado') {
+                        badgeColor = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                    } else if (v.estado === 'Cancelado') {
+                        badgeColor = "bg-red-500/10 text-red-400 border-red-500/20";
+                    }
+
+                    const fechaFormateada = v.fecha_p ? new Date(v.fecha_p).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '---';
+                    const totalVenta = parseFloat(v.total_p || 0).toFixed(2);
+
+                    tbody.innerHTML += `
+            <tr class="hover:bg-white/[0.02] transition-colors">
+                <td class="py-4 px-6 font-mono font-bold text-amber-200">#${v.id_pedido}</td>
+                <td class="py-4 px-6 font-bold text-amber-50 capitalize">${v.origen_pedido}</td>
+                <td class="py-4 px-6 text-stone-400 font-medium">${fechaFormateada}</td>
+                <td class="py-4 px-6 max-w-xs">${detalleProductos}</td>
+                <td class="py-4 px-6 text-right font-black text-amber-400 text-sm">$${totalVenta}</td>
+                <td class="py-4 px-6 text-center">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border uppercase tracking-wider ${badgeColor}">
+                        ${v.estado}
+                    </span>
+                </td>
+            </tr>
+        `;
+                });
+            }
+
+            // 3. Motor de filtrado en tiempo real sin recargar página
+            function filtrarVentas() {
+                const termino = document.getElementById('buscar-venta').value.toLowerCase().trim();
+                if (!termino) {
+                    renderizarTablaVentas(ventasLocales);
+                    return;
+                }
+
+                const filtrados = ventasLocales.filter(v =>
+                    v.id_pedido.toString().includes(termino) ||
+                    v.origen_pedido.toLowerCase().includes(termino) ||
+                    v.estado.toLowerCase().includes(termino)
+                );
+                renderizarTablaVentas(filtrados);
+            }
+
+            async function cargarVentas() {
+                const tbody = document.getElementById('tabla-ventas-body');
+                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-stone-400">Cargando datos...</td></tr>`;
+
+                try {
+                    const respuesta = await fetch('/api/admin/historial_ventas'); // Asegúrate de que esta ruta coincida con tu backend
+                    if (!respuesta.ok) throw new Error("Error en la API");
+
+                    const ventas = await respuesta.json();
+                    ventasLocales = ventas; // Guardamos para el filtro
+                    renderizarTablaVentas(ventas);
+                } catch (error) {
+                    console.error("Error al cargar ventas:", error);
+                    tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-400">Error al cargar datos. Verifica el servidor.</td></tr>`;
+                }
+            }
+
+
+            async function sumarStockIngrediente(id, nombre) {
+                const { value: formValues } = await Swal.fire({
+                    title: `Agregar stock: ${nombre}`,
+                    html:
+                        '<input type="number" id="swal-input1" class="swal2-input" placeholder="Cantidad">' +
+                        '<select id="swal-input2" class="swal2-select">' +
+                        '<option value="g">Gramos (g)</option>' +
+                        '<option value="kg">Kilos (kg)</option>' +
+                        '<option value="ml">Mililitros (ml)</option>' +
+                        '<option value="l">Litros (l)</option>' +
+                        '<option value="unid">Unidades</option>' +
+                        '</select>',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        return [
+                            document.getElementById('swal-input1').value,
+                            document.getElementById('swal-input2').value
+                        ]
+                    }
+                });
+
+                if (formValues) {
+                    const [cantidad, unidad] = formValues;
+
+                    // Validamos que sea un número
+                    if (!cantidad || parseFloat(cantidad) <= 0) {
+                        Swal.fire('Error', 'Ingresa una cantidad válida', 'error');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/api/inventario/sumar/${id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ cantidad: parseFloat(cantidad), unidad: unidad })
+                        });
+
+                        const resultado = await response.json();
+
+                        if (response.ok) {
+                            Swal.fire('¡Éxito!', 'Stock actualizado', 'success');
+                            // ESTO ES LO QUE TE FALTABA PARA EL REFRESCO:
+                            await cargarInventario();
+                        } else {
+                            Swal.fire('Error', resultado.mensaje || 'No se pudo actualizar', 'error');
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire('Error', 'Fallo de conexión', 'error');
+                    }
+                }
+            }
+        </script>
 </body>
+
 </html>

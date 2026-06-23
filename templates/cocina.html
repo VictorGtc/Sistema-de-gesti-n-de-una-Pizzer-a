@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pizzería El Inge - Panel de Cocina</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .fade-in {
             animation: fadeIn 0.3s ease-out forwards;
@@ -17,6 +18,7 @@
     </style>
 </head>
 <body class="bg-slate-950 text-white min-h-screen font-sans">
+    <div id="contenedorToasts" class="fixed top-6 right-6 z-[99999] space-y-4 max-w-sm w-full pointer-events-none"></div>
 
     <nav class="bg-slate-900/75 backdrop-blur-md border-b border-slate-700/50 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div class="flex items-center gap-3">
@@ -85,6 +87,31 @@
     </main>
 
     <script>
+        function mostrarNotificacion(mensaje, tipo = 'exito') {
+            const contenedor = document.getElementById('contenedorToasts');
+            if (!contenedor) return;
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-4 rounded-2xl border backdrop-blur-md shadow-xl transition-all duration-300 fade-in pointer-events-auto
+                ${tipo === 'exito' 
+                    ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-200' 
+                    : 'bg-red-500/20 border-red-500/30 text-red-200'}`;
+            
+            const icono = tipo === 'exito' ? 'fa-circle-check' : 'fa-circle-exclamation';
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${icono} text-lg"></i>
+                <p class="text-sm font-semibold tracking-wide">${mensaje}</p>
+            `;
+            
+            contenedor.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             actualizarTablero();
             // Polling automático cada 15 segundos para refrescar la cocina en tiempo real
@@ -209,11 +236,11 @@
                 if (respuesta.ok) {
                     actualizarTablero();
                 } else {
-                    alert("No se pudo actualizar el estado de la orden.");
+                    mostrarNotificacion("No se pudo actualizar el estado de la orden.", "error");
                 }
             } catch (error) {
                 console.error("Error al actualizar estado:", error);
-                alert("Error de conexión con el servidor.");
+                mostrarNotificacion("Error de conexión con el servidor.", "error");
             }
         }
 

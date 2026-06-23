@@ -55,6 +55,25 @@
 
     <div id="contenedorToasts" class="fixed top-6 right-6 z-50 space-y-4 max-w-sm w-full pointer-events-none"></div>
 
+    <!-- Modal de Confirmación Personalizada -->
+    <div id="modal-confirmacion" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-[#362f2d]/90 border border-white/10 backdrop-blur-xl p-6 rounded-2xl max-w-sm w-full text-center shadow-2xl transform scale-95 transition-all duration-200">
+            <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-100 mb-2">¿Confirmar Acción?</h3>
+            <p id="modal-confirmacion-mensaje" class="text-xs text-slate-300 leading-relaxed mb-6">¿Estás seguro de realizar esta acción?</p>
+            <div class="flex gap-3 justify-center">
+                <button id="btn-modal-cancelar" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-white/5 transition-all">
+                    Cancelar
+                </button>
+                <button id="btn-modal-confirmar" class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] text-white shadow-md transition-all active:scale-95">
+                    Sí, continuar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <nav class="bg-stone-950/40 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-40 shadow-xl">
         <div class="flex items-center gap-3">
             <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-stone-950 shadow-lg shadow-orange-500/10 text-base font-bold">
@@ -145,6 +164,29 @@
                 toast.style.transform = 'translateY(-10px)';
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
+        }
+
+        // Confirmación Personalizada Modal
+        function mostrarConfirmacionPersonalizada(mensaje) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('modal-confirmacion');
+                const textoMensaje = document.getElementById('modal-confirmacion-mensaje');
+                const btnConfirmar = document.getElementById('btn-modal-confirmar');
+                const btnCancelar = document.getElementById('btn-modal-cancelar');
+
+                textoMensaje.innerText = mensaje;
+                modal.classList.remove('hidden');
+
+                function cerrar(resultado) {
+                    modal.classList.add('hidden');
+                    btnConfirmar.onclick = null;
+                    btnCancelar.onclick = null;
+                    resolve(resultado);
+                }
+
+                btnConfirmar.onclick = () => cerrar(true);
+                btnCancelar.onclick = () => cerrar(false);
+            });
         }
 
         // 1. Cargar los pedidos activos desde el endpoint de app.py
@@ -272,30 +314,23 @@
 
         async function procesarCobro() {
             if (!idPedidoSeleccionado) return;
-            if (!confirm(`¿Confirmar cobro definitivo y cierre de la Cuenta #${idPedidoSeleccionado}?`)) return;
+            
+            const confirmado = await mostrarConfirmacionPersonalizada(`¿Confirmar cobro definitivo y cierre de la Cuenta #${idPedidoSeleccionado}?`);
+            if (!confirmado) return;
 
             try {
-                const respuesta = await fetch(`/api/pedidos/pagar/${idPedidoSeleccionado}`, {
-                    method: 'PUT'
+                // CAMBIA AQUÍ: Usaremos la ruta que creamos para registrar el pago
+                // Asegúrate de que el método sea POST (como definimos en la ruta)
+                const respuesta = await fetch(`/api/pagar_pedido/${idPedidoSeleccionado}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
                 });
 
                 if (respuesta.ok) {
-                    mostrarNotificacion(`¡Venta #${idPedidoSeleccionado} liquidada correctamente!`, 'exito');
-                    
-                    // Limpiamos el panel lateral de manera elegante con el estado vacío
+                    mostrarNotificacion(`¡Venta #${idPedidoSeleccionado} liquidada y stock actualizado!`, 'exito');
+                    // ... resto del código igual ...
                     document.getElementById('panel-acciones-pago').classList.add('hidden');
-                    document.getElementById('detalle-pedido-seleccionado').innerHTML = `
-                        <div class="flex flex-col items-center justify-center text-center py-20 px-4 fade-in">
-                            <div class="w-16 h-16 bg-stone-950/40 rounded-full flex items-center justify-center border border-white/10 mb-4 shadow-inner text-amber-500/60">
-                                <i class="fa-solid fa-hand-pointer text-xl"></i>
-                            </div>
-                            <p class="text-amber-200/80 font-bold text-sm uppercase tracking-wide">Selecciona una orden</p>
-                            <p class="text-stone-400 text-xs mt-1 max-w-[220px]">Haz clic sobre cualquiera de las tarjetas de la izquierda para desglosar sus consumos y proceder al cobro.</p>
-                        </div>
-                    `;
-                    idPedidoSeleccionado = null;
-                    
-                    // Recargamos asíncronamente las tarjetas del panel izquierdo
+                    // ...
                     cargarPedidosActivos(); 
                 } else {
                     mostrarNotificacion("Error en el servidor al intentar cerrar la cuenta.", "error");

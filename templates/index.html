@@ -395,7 +395,7 @@
                     lista_producto: productosPayload
                 };
             } else {
-                urlTarget = 'http://127.0.0.1:5000/api/pedido_domicilio';
+                urlTarget = 'http://127.0.0.1:5000/api/pagar_domicilio';
                 
                 const direccion = document.getElementById('direccionEntrega').value;
                 const metodoPago = document.getElementById('metodoPago').value;
@@ -420,7 +420,8 @@
 
                 bodyPayload = {
                     id_cliente: idSesion ? parseInt(idSesion) : null,
-                    productos: productosPayload,
+                    id_usuario: null, // Agregamos esto para evitar el KeyError
+                    lista_producto: productosPayload, // CAMBIAMOS 'productos' por 'lista_producto'
                     metodo_pago: metodoPago,
                     numero_tarjeta: numeroTarjeta,
                     direccion: direccion

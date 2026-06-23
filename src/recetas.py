@@ -67,3 +67,21 @@ def borrar_ingrediente_de_receta(id_producto, id_inventario):
     finally:
         cursor.close()
         db.close()
+
+def obtener_ingredientes_por_producto(id_producto):
+    db = conectar_db()
+    cursor = db.cursor(dictionary=True)
+    consulta = """
+        SELECT id_inventario, cantidad_requerida 
+        FROM recetas 
+        WHERE id_producto = %s
+    """
+    try:
+        cursor.execute(consulta, (id_producto,))
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error al obtener ingredientes para el producto {id_producto}: {e}")
+        return []
+    finally:
+        cursor.close()
+        db.close()

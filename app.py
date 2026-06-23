@@ -4,8 +4,8 @@ from src.usuarios import registrar_usuarios, validar_usuarios,obtener_usuario,ac
 from src.productos import registrar_producto, obtener_productos, actualizar_producto, cambiar_estado_producto,obtener_productos_publicos
 from src.categorias import registrar_categoria, obtener_categorias, actualizar_categoria, obtener_categorias_publicas, cambiar_estado_categoria
 from src.recetas import registrar_recetas, obtener_receta, borrar_ingrediente_de_receta
-from src.inventario import registrar_inventario, obtener_inventario,cambiar_estado_ingrediente, actualizar_inventario
-from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos,obtener_pedidos_caja
+from src.inventario import registrar_inventario, obtener_inventario,cambiar_estado_ingrediente, actualizar_inventario, sumar_stock_db
+from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos,obtener_pedidos_caja, registrar_pedido_domicilio
 from src.clientes import registrar_clientes, validar_clientes
 from src.pagos import obtener_pagopendiente,registrar_pago_pedido
 
@@ -331,9 +331,29 @@ def api_actualizar_categoria(id_categoria):
         return jsonify({"mensaje": "La categoría no pudo ser actualizada"}), 500
 
 
-
-
+@app.route('/api/pagar_pedido/<int:id_pedido>', methods=['POST'])
+def finalizar_cobro(id_pedido):
+    return registrar_pago_pedido(id_pedido)
     
+
+
+
+@app.route('/api/pagar_domicilio', methods=['POST'])
+def api_pagar_domicilio():
+    datos = request.json
+    id_cliente = datos.get('id_cliente')
+    lista_producto = datos.get('lista_producto')
+    id_usuario = datos.get('id_usuario', None) 
+
+    id_pedido = registrar_pedido_domicilio(id_cliente, id_usuario, lista_producto)
+    
+    if id_pedido:
+        return registrar_pago_pedido(id_pedido)
+    else:
+        return jsonify({"error": "Error al registrar pedido"}), 500
+
+
+# ==== Rutas GET 
 
 
 @app.route('/api/obtener_categorias_publicas', methods=['GET'])
@@ -377,29 +397,55 @@ def api_mis_pedidos_activos():
 
         pedidos_filtrados = []
         for p in todos_los_pedidos:
-            # 1. Control seguro de estados (evitamos fallos por valores Null)
             estado_crudo = p.get('estado') or p.get('estado_p')
             estado_p = str(estado_crudo).strip() if estado_crudo is not None else 'Pendiente'
-
-            # Ignoramos los pedidos que ya finalizaron su ciclo
+        
+            # Solo procesamos estados activos
             if estado_p not in ['Pagado', 'Entregado', 'Cancelado']:
-                if id_cliente:
-                    # Capturamos todas las posibles variables de ID que use tu base de datos
-                    id_p_cliente = p.get('id_cliente') or p.get('id_usuario')
-                    origen = str(p.get('origen_pedido', '')).lower()
-                    
-                    # FILTRO FLEXIBLE: Si coincide el ID numérico O si el pedido fue hecho a domicilio por el usuario
-                    if (id_p_cliente and str(id_p_cliente) == str(id_cliente)) or ("domicilio" in origen):
+                
+                id_p_cliente = p.get('id_cliente')
+                
+                # --- AQUÍ ESTÁ LA LÓGICA CORREGIDA ---
+                # Comparamos ambos como STRINGS para evitar el problema de int vs str
+                if id_cliente and id_p_cliente is not None:
+                    if str(id_p_cliente).strip() == str(id_cliente).strip():
                         pedidos_filtrados.append(p)
-                else:
-                    # Si entran como comensales en mesa QR sin iniciar sesión
-                    pedidos_filtrados.append(p)
+                # -------------------------------------
 
         return jsonify(pedidos_filtrados), 200
 
     except Exception as e:
         print(f"Error crítico en API mis_pedidos_activos: {e}")
         return jsonify({"mensaje": "Error interno al procesar los pedidos"}), 500
+    
+
+@app.route('/api/admin/historial_ventas', methods=['GET'])
+def api_historial_ventas():
+    try:
+        todos_los_pedidos = obtener_pedido()
+        
+        if not todos_los_pedidos:
+            return jsonify([]), 200
+
+        historial = []
+        for p in todos_los_pedidos:
+            estado_crudo = p.get('estado') or p.get('estado_p')
+            estado = str(estado_crudo).strip() if estado_crudo is not None else 'Pendiente'
+            if estado in ['Pagado', 'Entregado', 'Cancelado']:
+                historial.append({
+                    "id_pedido": p.get('id_pedido'),
+                    "origen_pedido": p.get('origen_pedido', 'No especificado'),
+                    "fecha_p": p.get('fecha_p'),
+                    "total_p": p.get('total_p', 0),
+                    "estado": estado,
+                    "productos": p.get('productos', [])
+                })
+        historial.sort(key=lambda x: x['id_pedido'], reverse=True)
+        return jsonify(historial), 200
+
+    except Exception as e:
+        print(f"Error en API historial_ventas: {e}")
+        return jsonify({"mensaje": "Error interno al procesar el historial"}), 500
 
 @app.route('/api/obtener_categorias', methods=['GET'])
 def api_obtener_categorias():
@@ -574,6 +620,34 @@ def api_actualizar_usuario_completo():
     except Exception as e:
         print(f"Error en API api_actualizar_usuario_completo: {e}")
         return jsonify({"mensaje": "Error interno del servidor"}), 500
+    
+
+
+@app.route('/api/inventario/sumar/<int:id>', methods=['PUT'])
+def api_sumar_inventario(id):
+    datos = request.json
+    cantidad = float(datos.get('cantidad'))
+    unidad = datos.get('unidad') # Capturamos la unidad que llega desde el select
+    
+    # Lógica de conversión (Ajusta esto según tu unidad base: si guardas todo en gramos/ml)
+    cantidad_final = cantidad
+    
+    if unidad == 'kg':
+        cantidad_final = cantidad * 1000
+    elif unidad == 'l':
+        cantidad_final = cantidad * 1000
+    # Si es 'g', 'ml' o 'unid', se queda igual
+    
+    if cantidad_final <= 0:
+        return jsonify({"mensaje": "Cantidad inválida"}), 400
+    
+    try:
+        # Pasamos la cantidad ya convertida a la base de datos
+        resultado = sumar_stock_db(id, cantidad_final)
+        return jsonify({"mensaje": "Stock sumado exitosamente"}), 200
+    except Exception as e:
+        print(f"--- ERROR DETECTADO ---: {e}") 
+        return jsonify({"mensaje": f"Error interno: {str(e)}"}), 500
 
 # ===== rutas de las vistas 
 

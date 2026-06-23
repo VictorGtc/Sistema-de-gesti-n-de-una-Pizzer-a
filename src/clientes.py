@@ -26,38 +26,50 @@ def registrar_clientes(nombre, apellido, correo, password, telefono, direccion):
 
 
 def validar_clientes(correo, password):
-    db=conectar_db()
-
+    db = conectar_db()
     if db is None:
-        return False
+        return False, "Error de conexión"
     
     cursor = db.cursor()
+    datos_usuarios = None
+    es_valido = False
+    mensaje = "Credenciales incorrectas"
     
-    consulta_sql ='SELECT id_cliente, nombre_cl, apellido_cl, correo_cl, contraseña_cl, direccion FROM clientes WHERE correo_cl = %s'
-    valores=(correo,)
-    cursor.execute(consulta_sql,valores)
+    try:
+        consulta_sql = 'SELECT id_cliente, nombre_cl, apellido_cl, correo_cl, contraseña_cl, direccion FROM clientes WHERE correo_cl = %s'
+        valores = (correo,)
+        cursor.execute(consulta_sql, valores)
 
-    resultado=cursor.fetchone()
+        resultado = cursor.fetchone()
 
-    if resultado is not None:
-
-        if check_password_hash(resultado[4],password):
-            datos_usuarios = {
-                'id_cliente':resultado[0],
-                'Nombre':resultado[1], 
-                'Apellido': resultado[2],
-                'Correo': resultado[3], 
-                'Direccion': resultado[5]}
+        if resultado is not None:
+            if check_password_hash(resultado[4], password):
+                datos_usuarios = {
+                    'id_cliente': resultado[0],
+                    'Nombre': resultado[1], 
+                    'Apellido': resultado[2],
+                    'Correo': resultado[3], 
+                    'Direccion': resultado[5]
+                }
+                es_valido = True
+                mensaje = "Éxito"
+            else:
+                es_valido = False
+                mensaje = "Credenciales incorrectas"
+        else:
+            es_valido = False
+            mensaje = "Credenciales incorrectas"
+            
+    except Exception as e:
+        print(f"Error en base de datos: {e}")
+        es_valido = False
+        mensaje = "Error interno"
+        
+    finally:
+        if cursor:
+            cursor.fetchall() 
             cursor.close()
+        if db:
             db.close()
-            return True, datos_usuarios  
-        else :
-            cursor.close()
-            db.close()
-            return False, "Credenciales incorrectas"
-
-    else:
-        cursor.close()
-        db.close()
-        return False, "Credenciales incorrectas "
-
+            
+    return es_valido, datos_usuarios if es_valido else mensaje

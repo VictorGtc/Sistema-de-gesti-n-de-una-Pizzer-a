@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,28 +19,42 @@
         .fade-in {
             animation: fadeIn 0.5s ease-out forwards;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Capa superpuesta: Mezcla un tono rústico de horno con la foto elegida */
         .bg-pizza-overlay {
-            background: linear-gradient(to bottom, rgba(28, 15, 10, 0.85), rgba(12, 6, 4, 0.92)), 
-                        var(--url-fondo-pizzeria) no-repeat center center fixed;
+            background: linear-gradient(to bottom, rgba(28, 15, 10, 0.85), rgba(12, 6, 4, 0.92)),
+                var(--url-fondo-pizzeria) no-repeat center center fixed;
             background-size: cover;
         }
     </style>
 </head>
-<body class="bg-pizza-overlay text-amber-50/90 min-h-screen flex items-center justify-center font-sans antialiased py-10 p-4">
 
-    <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/20 transition-all duration-300 hover:border-white/30 fade-in">
-        
+<body
+    class="bg-pizza-overlay text-amber-50/90 min-h-screen flex items-center justify-center font-sans antialiased py-10 p-4">
+    <div id="contenedorToasts" class="fixed top-6 right-6 z-50 space-y-4 max-w-sm w-full pointer-events-none"></div>
+
+    <div
+        class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/20 transition-all duration-300 hover:border-white/30 fade-in">
+
         <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-stone-950 mb-3 shadow-lg shadow-orange-500/20 text-xl font-bold">
+            <div
+                class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-red-500 to-orange-500 text-stone-950 mb-3 shadow-lg shadow-orange-500/20 text-xl font-bold">
                 <i class="fa-solid fa-user-plus"></i>
             </div>
-            <h1 class="text-3xl font-black bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent tracking-wider uppercase">
+            <h1
+                class="text-3xl font-black bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent tracking-wider uppercase">
                 Crear Cuenta
             </h1>
             <p class="text-stone-200 text-sm mt-1 font-medium">Regístrate para realizar tus pedidos a domicilio</p>
@@ -49,45 +64,47 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Nombre</label>
-                    <input type="text" id="nombre" required 
+                    <input type="text" id="nombre" required
                         class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Apellido</label>
-                    <input type="text" id="apellido" required 
+                    <input type="text" id="apellido" required
                         class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm">
                 </div>
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Correo Electrónico</label>
-                <input type="email" id="correo" required 
+                <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Correo
+                    Electrónico</label>
+                <input type="email" id="correo" required
                     class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm"
                     placeholder="ejemplo@correo.com">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Contraseña</label>
-                <input type="password" id="password" required 
+                <input type="password" id="password" required
                     class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm"
                     placeholder="••••••••">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Teléfono</label>
-                <input type="tel" id="telefono" required 
+                <input type="tel" id="telefono" required
                     class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Dirección de Envío</label>
-                <input type="text" id="direccion" required 
+                <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Dirección de
+                    Envío</label>
+                <input type="text" id="direccion" required
                     class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm"
                     placeholder="Calle, Número, Referencia">
             </div>
 
-            <button type="submit" 
+            <button type="submit"
                 class="w-full bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 hover:brightness-110 text-stone-950 font-black py-3.5 px-4 rounded-xl shadow-xl transform active:scale-95 transition-all duration-150 shadow-orange-500/20 tracking-wide uppercase text-xs mt-4">
                 Registrarme
             </button>
@@ -95,13 +112,39 @@
 
         <div class="text-center mt-6">
             <p class="text-sm text-stone-300">
-                ¿Ya tienes una cuenta? 
-                <a href="/" class="text-amber-400 hover:text-amber-300 font-bold transition duration-150 ml-1">Inicia sesión aquí</a>
+                ¿Ya tienes una cuenta?
+                <a href="/" class="text-amber-400 hover:text-amber-300 font-bold transition duration-150 ml-1">Inicia
+                    sesión aquí</a>
             </p>
         </div>
     </div>
 
     <script>
+        function mostrarNotificacion(mensaje, tipo = 'exito') {
+            const contenedor = document.getElementById('contenedorToasts');
+            if (!contenedor) return;
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-4 rounded-2xl border backdrop-blur-md shadow-xl transition-all duration-300 fade-in pointer-events-auto
+                ${tipo === 'exito'
+                    ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-200'
+                    : 'bg-red-500/20 border-red-500/30 text-red-200'}`;
+
+            const icono = tipo === 'exito' ? 'fa-circle-check' : 'fa-circle-exclamation';
+
+            toast.innerHTML = `
+                <i class="fa-solid ${icono} text-lg"></i>
+                <p class="text-sm font-semibold tracking-wide">${mensaje}</p>
+            `;
+
+            contenedor.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
         document.getElementById('formRegistro').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -131,16 +174,19 @@
                 const data = await respuesta.json();
 
                 if (respuesta.ok) {
-                    alert(data.mensaje);
-                    window.location.href = '/login';
+                    mostrarNotificacion(data.mensaje || '¡Registro exitoso!', 'exito');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1500);
                 } else {
-                    alert(data.error || 'Error al registrar el cliente');
+                    mostrarNotificacion(data.error || 'Error al registrar el cliente', 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('No se pudo conectar con el servidor.');
+                mostrarNotificacion('No se pudo conectar con el servidor.', 'error');
             }
         });
     </script>
 </body>
+
 </html>
