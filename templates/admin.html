@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pizzería - Panel de Administración</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/static/alerts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -566,6 +568,27 @@
                                 </tr>
                             </tbody>
                         </table>
+                </div>
+
+                <!-- Contenedor del Gráfico de Ventas (Estadísticas) -->
+                <div class="mt-8 border-t border-white/5 pt-6 space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-[#f4ad42] flex items-center gap-2">
+                                <i class="fa-solid fa-chart-bar"></i> Estadísticas de Productos Vendidos
+                            </h3>
+                            <p class="text-[11px] text-stone-400 mt-0.5">Volumen total de ventas acumuladas por producto.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative w-full h-[280px] bg-black/10 rounded-2xl p-4 border border-white/5">
+                        <canvas id="canvas-grafico-ventas"></canvas>
+                    </div>
+
+                    <!-- Mensaje del producto más vendido -->
+                    <div id="mensaje-mas-vendido" class="p-4 rounded-xl bg-stone-900/60 border border-stone-850 text-stone-450 text-xs font-semibold flex items-center gap-2.5">
+                        <i class="fa-solid fa-circle-info text-stone-450 text-sm"></i>
+                        <span>No hay datos de ventas finalizadas en este momento.</span>
                     </div>
                 </div>
 
@@ -1610,6 +1633,7 @@
             }
 
             let ventasLocales = []; // Cache en memoria para búsquedas instantáneas
+            let graficoVentasInstance = null;
 
             // 1. Fetch de datos desde la API
             async function cargarHistorialVentas() {
@@ -1626,10 +1650,56 @@
                 }
             }
 
-            // 2. Pintar los datos en el HTML
+            // 2. Pintar los datos en el HTML y actualizar estadísticas
             function renderizarTablaVentas(listaVentas) {
                 const tbody = document.getElementById('tabla-ventas-body');
                 tbody.innerHTML = '';
+
+                // Agregación de ventas por producto para estadísticas
+                let ventasPorProducto = {};
+                listaVentas.forEach(v => {
+                    if (v.estado === 'Pagado' || v.estado === 'Entregado') {
+                        v.productos.forEach(p => {
+                            const nombre = p.nombre_pr || p.nombre_producto || 'Desconocido';
+                            const cantidad = parseInt(p.cantidad_v || p.cantidad_p || 0);
+                            if (!ventasPorProducto[nombre]) {
+                                ventasPorProducto[nombre] = 0;
+                            }
+                            ventasPorProducto[nombre] += cantidad;
+                        });
+                    }
+                });
+
+                // Encontrar el producto más vendido
+                let maxCantidad = 0;
+                let productoMasVendido = 'Ninguno';
+                for (const prod in ventasPorProducto) {
+                    if (ventasPorProducto[prod] > maxCantidad) {
+                        maxCantidad = ventasPorProducto[prod];
+                        productoMasVendido = prod;
+                    }
+                }
+
+                // Actualizar el mensaje del producto más vendido
+                const mensajeMasVendido = document.getElementById('mensaje-mas-vendido');
+                if (mensajeMasVendido) {
+                    if (maxCantidad > 0) {
+                        mensajeMasVendido.innerHTML = `
+                            <i class="fa-solid fa-trophy text-amber-400 text-sm animate-bounce"></i>
+                            <span>El producto <b>${productoMasVendido}</b> es el que más se vendió, con un total de <b>${maxCantidad}</b> unidades.</span>
+                        `;
+                        mensajeMasVendido.className = "p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold flex items-center gap-2.5";
+                    } else {
+                        mensajeMasVendido.innerHTML = `
+                            <i class="fa-solid fa-circle-info text-stone-400 text-sm"></i>
+                            <span>No hay datos de ventas finalizadas en este momento.</span>
+                        `;
+                        mensajeMasVendido.className = "p-4 rounded-xl bg-stone-900/60 border border-stone-800 text-stone-400 text-xs font-semibold flex items-center gap-2.5";
+                    }
+                }
+
+                // Dibujar/actualizar el gráfico
+                actualizarGraficoVentas(ventasPorProducto);
 
                 if (listaVentas.length === 0) {
                     tbody.innerHTML = `
@@ -1674,6 +1744,80 @@
                 </td>
             </tr>
         `;
+                });
+            }
+
+            function actualizarGraficoVentas(ventasPorProducto) {
+                const canvas = document.getElementById('canvas-grafico-ventas');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                
+                // Ordenar productos por mayor volumen de venta descendente
+                const sortedProducts = Object.entries(ventasPorProducto).sort((a, b) => b[1] - a[1]);
+                const labels = sortedProducts.map(entry => entry[0]);
+                const data = sortedProducts.map(entry => entry[1]);
+
+                if (graficoVentasInstance) {
+                    graficoVentasInstance.destroy();
+                }
+
+                // Estilos por defecto para que combine con el tema oscuro/dorado de la pizzería
+                Chart.defaults.color = '#a8a29e'; // text-stone-400
+                Chart.defaults.font.family = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+                graficoVentasInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Cantidad Vendida',
+                            data: data,
+                            backgroundColor: 'rgba(244, 173, 66, 0.2)', // Ámbar semitransparente
+                            borderColor: 'rgba(244, 173, 66, 0.8)', // Borde ámbar sólido
+                            borderWidth: 1.5,
+                            borderRadius: 8,
+                            barPercentage: 0.5,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false // Ocultamos leyenda por ser dataset único
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.95)', // Slate-900 premium blur
+                                borderColor: 'rgba(244, 173, 66, 0.2)',
+                                borderWidth: 1,
+                                titleColor: '#fff',
+                                bodyColor: '#f4ad42',
+                                padding: 10,
+                                cornerRadius: 8,
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.03)',
+                                },
+                                ticks: {
+                                    font: { size: 10, weight: '500' }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)',
+                                },
+                                ticks: {
+                                    precision: 0, // Solo enteros
+                                    font: { size: 10 }
+                                },
+                                beginAtZero: true
+                            }
+                        }
+                    }
                 });
             }
 

@@ -1,6 +1,7 @@
 from database.db import conectar_db
 from flask import jsonify
 from src.inventario import restar_stock_inventario
+from datetime import datetime
 
 def obtener_pagopendiente():
     db = conectar_db()
@@ -17,6 +18,11 @@ def obtener_pagopendiente():
         """
         cursor.execute(consulta)
         pedidos = cursor.fetchall()
+        
+        # Formatear fecha_p para evitar problemas de zona horaria en el frontend
+        for p in pedidos:
+            if isinstance(p['fecha_p'], datetime):
+                p['fecha_p'] = p['fecha_p'].strftime('%Y-%m-%d %H:%M:%S')
         
         cursor.close()
         db.close()

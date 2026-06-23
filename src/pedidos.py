@@ -85,7 +85,7 @@ def obtener_pedido():
                     'numero_mesa': fila['numero_mesa'],
                     'id_cliente': fila['id_cliente'], # Esto es lo que usas para filtrar en app.py
                     'origen_pedido': origen,
-                    'fecha_p': fila['fecha_p'],
+                    'fecha_p': fila['fecha_p'].strftime('%Y-%m-%d %H:%M:%S') if isinstance(fila['fecha_p'], datetime) else fila['fecha_p'],
                     'total_p': fila['total_p'],
                     'id_usuario': fila['id_usuario'],
                     'estado': fila['estado'],
