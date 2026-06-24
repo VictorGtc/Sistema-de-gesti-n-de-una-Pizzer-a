@@ -140,11 +140,27 @@
                 </div>
 
                     {% if mesa %}
-                        <div class="bg-orange-500/20 border border-orange-500/30 p-4 rounded-2xl text-center backdrop-blur-sm">
+                        <div class="bg-orange-500/20 border border-orange-500/30 p-4 rounded-2xl text-center backdrop-blur-sm mb-4">
                             <p class="text-sm text-orange-400 font-bold flex items-center justify-center gap-1.5">
                                 <i class="fa-solid fa-chair"></i> Confirmando para la Mesa {{ mesa }}
                             </p>
                             <p class="text-xs text-stone-200 mt-1.5 leading-relaxed">Tu orden irá directo a la cocina. Pagas en caja física al finalizar de comer.</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-1.5">Teléfono de Contacto</label>
+                                    <input type="text" id="telefonoContacto" required placeholder="Ej: 0987654321" maxlength="10"
+                                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                        class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200 backdrop-blur-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-1.5">Identificación (Cédula/RUC)</label>
+                                    <input type="text" id="cedulaRuc" required placeholder="Ej: 0102030405" maxlength="13"
+                                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                        class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200 backdrop-blur-sm">
+                                </div>
+                            </div>
                         </div>
                     {% else %}
                         <div class="space-y-4">
@@ -262,12 +278,13 @@
             if (document.getElementById('direccionEntrega')) {
                 document.getElementById('direccionEntrega').value = localStorage.getItem('direccion_cliente') || '';
             }
-            if (document.getElementById('telefonoContacto')) {
-                document.getElementById('telefonoContacto').value = localStorage.getItem('telefono_cliente') || '';
-            }
-            if (document.getElementById('cedulaRuc')) {
-                document.getElementById('cedulaRuc').value = localStorage.getItem('cedula_cliente') || '';
-            }
+        }
+        
+        if (document.getElementById('telefonoContacto')) {
+            document.getElementById('telefonoContacto').value = localStorage.getItem('telefono_cliente') || '';
+        }
+        if (document.getElementById('cedulaRuc')) {
+            document.getElementById('cedulaRuc').value = localStorage.getItem('cedula_cliente') || '';
         }
         
         const RUTA_IMG_CATEGORIAS = '/static/uploads/categorias/';
@@ -506,32 +523,40 @@
             let urlTarget = '';
             let bodyPayload = {};
 
+            const telefono = document.getElementById('telefonoContacto')?.value || '';
+            const cedulaRuc = document.getElementById('cedulaRuc')?.value || '';
+            const idSesion = localStorage.getItem('id_cliente');
+
+            if (!telefono.trim() || telefono.length < 7) {
+                mostrarNotificacion('Ingresa un teléfono de contacto válido (7 a 10 dígitos).', 'error');
+                return;
+            }
+            if (!cedulaRuc.trim() || cedulaRuc.length < 10) {
+                mostrarNotificacion('Ingresa una identificación válida (10 dígitos mínimos).', 'error');
+                return;
+            }
+
+            localStorage.setItem('telefono_cliente', telefono);
+            localStorage.setItem('cedula_cliente', cedulaRuc);
+
             if (numeroMesaActual) {
                 urlTarget = '/api/pedido_local'; 
                 bodyPayload = {
                     numero_mesa: parseInt(numeroMesaActual),
                     id_usuario: 1, 
-                    lista_producto: productosPayload
+                    lista_producto: productosPayload,
+                    id_cliente: idSesion ? parseInt(idSesion) : null,
+                    telefono: telefono,
+                    cedula_ruc: cedulaRuc
                 };
             } else {
                 urlTarget = '/api/pagar_domicilio';
                 
                 const direccion = document.getElementById('direccionEntrega').value;
                 const metodoPago = document.getElementById('metodoPago').value;
-                const telefono = document.getElementById('telefonoContacto').value;
-                const cedulaRuc = document.getElementById('cedulaRuc').value;
-                const idSesion = localStorage.getItem('id_cliente');
 
                 if (!direccion.trim()) {
                     mostrarNotificacion('Ingresa una dirección de entrega para llevar tu pedido.', 'error');
-                    return;
-                }
-                if (!telefono.trim() || telefono.length < 7) {
-                    mostrarNotificacion('Ingresa un teléfono de contacto válido (7 a 10 dígitos).', 'error');
-                    return;
-                }
-                if (!cedulaRuc.trim() || cedulaRuc.length < 10) {
-                    mostrarNotificacion('Ingresa una identificación válida (10 dígitos mínimos).', 'error');
                     return;
                 }
 
@@ -548,8 +573,6 @@
                 }
 
                 localStorage.setItem('direccion_cliente', direccion);
-                localStorage.setItem('telefono_cliente', telefono);
-                localStorage.setItem('cedula_cliente', cedulaRuc);
 
                 bodyPayload = {
                     id_cliente: idSesion ? parseInt(idSesion) : null,

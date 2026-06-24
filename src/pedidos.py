@@ -1,7 +1,7 @@
 from database.db import conectar_db
 from datetime import datetime
 
-def registrar_pedidos_mesa (numero_mesa, id_usuario, lista_producto):
+def registrar_pedidos_mesa (numero_mesa, id_usuario, lista_producto, id_cliente=None, telefono=None, cedula_ruc='9999999999'):
     db=conectar_db()
     if db is None:
         return False
@@ -13,9 +13,12 @@ def registrar_pedidos_mesa (numero_mesa, id_usuario, lista_producto):
     try: 
         db.start_transaction()
 
-        sql_pedido="INSERT INTO pedidos (id_cliente, numero_mesa, fecha_p, total_p, id_usuario, estado) VALUES (NULL,%s,%s,%s,%s,'Pendiente')"
+        sql_pedido = """
+            INSERT INTO pedidos (id_cliente, numero_mesa, fecha_p, total_p, id_usuario, estado, telefono_entrega, cedula_ruc, metodo_pago) 
+            VALUES (%s, %s, %s, %s, %s, 'Pendiente', %s, %s, 'efectivo')
+        """
 
-        valores_pedidos= (numero_mesa, fecha_actual,total_pedido,id_usuario)
+        valores_pedidos= (id_cliente, numero_mesa, fecha_actual,total_pedido,id_usuario, telefono, cedula_ruc)
 
         cursor.execute(sql_pedido,valores_pedidos)
 
