@@ -162,14 +162,10 @@
             </div>
 
             <div id="panel-acciones-pago" class="border-t border-white/10 pt-5 mt-4 hidden fade-in">
-                <!-- Selector de Forma de Pago -->
-                <div class="flex justify-between items-center mb-3 bg-stone-950/50 p-3 rounded-2xl border border-white/10">
+                <!-- Forma de Pago del Cliente -->
+                <div class="flex justify-between items-center mb-3 bg-stone-950/50 p-3.5 rounded-2xl border border-white/10">
                     <span class="text-stone-400 font-bold text-xs uppercase tracking-wider">Forma de Pago:</span>
-                    <select id="cajero-metodo-pago" class="bg-stone-900 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-amber-100 focus:outline-none cursor-pointer">
-                        <option value="efectivo">💵 Efectivo</option>
-                        <option value="tarjeta">💳 Tarjeta</option>
-                        <option value="transferencia">🏦 Transferencia</option>
-                    </select>
+                    <span id="cajero-metodo-pago-text" class="text-xs font-black text-amber-400 uppercase tracking-widest bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/20">💵 EFECTIVO</span>
                 </div>
 
                 <div class="flex justify-between items-center mb-5 bg-stone-950/50 p-4 rounded-2xl border border-white/10 shadow-inner">
@@ -326,14 +322,7 @@
                 if (idPedidoSeleccionado) {
                     const pedidoActualizado = pedidos.find(p => p.id_pedido === idPedidoSeleccionado);
                     if (pedidoActualizado) {
-                        const selectPago = document.getElementById('cajero-metodo-pago');
-                        const metodoPrevio = selectPago ? selectPago.value : null;
-                        
                         verDetallePedido(pedidoActualizado);
-                        
-                        if (metodoPrevio && selectPago) {
-                            selectPago.value = metodoPrevio;
-                        }
                     } else {
                         resetearDetalleDerecho();
                         idPedidoSeleccionado = null;
@@ -382,9 +371,14 @@
             }
             detalleContenedor.innerHTML = infoClienteHTML;
 
-            // Rellenar selector de forma de pago por defecto con la del pedido
-            if (document.getElementById('cajero-metodo-pago')) {
-                document.getElementById('cajero-metodo-pago').value = pedido.metodo_pago || 'efectivo';
+            // Mostrar la forma de pago del cliente
+            const metodoTxt = document.getElementById('cajero-metodo-pago-text');
+            if (metodoTxt) {
+                const metodo = (pedido.metodo_pago || 'efectivo').toLowerCase();
+                let emoji = '💵';
+                if (metodo === 'tarjeta') emoji = '💳';
+                if (metodo === 'transferencia') emoji = '🏦';
+                metodoTxt.innerText = `${emoji} ${metodo.toUpperCase()}`;
             }
             
             pedido.productos.forEach(item => {
@@ -447,9 +441,9 @@
                 return;
             }
             
-            const metodoPagoElegido = document.getElementById('cajero-metodo-pago')?.value || 'efectivo';
+            const metodoPagoElegido = pedidoSeleccionadoCompleto.metodo_pago || 'efectivo';
             
-            const confirmado = await mostrarConfirmacionPersonalizada(`¿Confirmar cobro definitivo y cierre de la Cuenta #${idPedidoSeleccionado} vía ${metodoPagoElegido.toUpperCase()}?`);
+            const confirmado = await mostrarConfirmacionPersonalizada(`¿Confirmar cobro definitivo y cierre de la Cuenta #${idPedidoSeleccionado}?`);
             if (!confirmado) return;
 
             try {

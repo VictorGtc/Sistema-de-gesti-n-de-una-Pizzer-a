@@ -147,6 +147,25 @@
                             <p class="text-xs text-stone-200 mt-1.5 leading-relaxed">Tu orden irá directo a la cocina. Pagas en caja física al finalizar de comer.</p>
                         </div>
                         <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-1.5">Nombre</label>
+                                    <input type="text" id="nombreClienteMesa" required placeholder="Ej: Gabriel"
+                                        class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200 backdrop-blur-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-1.5">Apellido</label>
+                                    <input type="text" id="apellidoClienteMesa" required placeholder="Ej: Castro"
+                                        class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200 backdrop-blur-sm">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-1.5">Dirección de Facturación</label>
+                                <input type="text" id="direccionClienteMesa" required placeholder="Ej: Av. Principal 123"
+                                    class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200 backdrop-blur-sm">
+                            </div>
+
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-1.5">Teléfono de Contacto</label>
@@ -160,6 +179,17 @@
                                         onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                                         class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-200 backdrop-blur-sm">
                                 </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold text-amber-400/90 uppercase tracking-wider mb-1.5">Forma de Pago</label>
+                                <select id="metodoPagoMesa" required
+                                    class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-3 py-2 text-sm text-stone-200 focus:outline-none focus:border-orange-500 cursor-pointer backdrop-blur-sm font-medium">
+                                    <option value="">Seleccione Forma de Pago...</option>
+                                    <option value="efectivo">💵 Efectivo (Pagas al finalizar)</option>
+                                    <option value="transferencia">🏦 Transferencia Bancaria</option>
+                                    <option value="tarjeta">💳 Tarjeta de Crédito / Débito</option>
+                                </select>
                             </div>
                         </div>
                     {% else %}
@@ -272,6 +302,15 @@
 
         if (numeroMesaActual) {
             document.getElementById('nombreUsuario').innerText = `Comensal - Mesa ${numeroMesaActual}`;
+            if (document.getElementById('nombreClienteMesa')) {
+                document.getElementById('nombreClienteMesa').value = localStorage.getItem('nombre_cliente') || '';
+            }
+            if (document.getElementById('apellidoClienteMesa')) {
+                document.getElementById('apellidoClienteMesa').value = localStorage.getItem('apellido_cliente') || '';
+            }
+            if (document.getElementById('direccionClienteMesa')) {
+                document.getElementById('direccionClienteMesa').value = localStorage.getItem('direccion_cliente') || '';
+            }
         } else {
             document.getElementById('nombreUsuario').innerText = `Hola, ${localStorage.getItem('nombre_cliente') || 'Cliente'}`;
             
@@ -536,24 +575,68 @@
                 return;
             }
 
-            localStorage.setItem('telefono_cliente', telefono);
-            localStorage.setItem('cedula_cliente', cedulaRuc);
+            let nombre = '';
+            let apellido = '';
+            let direccion = '';
+            let metodoPago = 'efectivo';
 
             if (numeroMesaActual) {
+                nombre = document.getElementById('nombreClienteMesa')?.value || '';
+                apellido = document.getElementById('apellidoClienteMesa')?.value || '';
+                direccion = document.getElementById('direccionClienteMesa')?.value || '';
+                metodoPago = document.getElementById('metodoPagoMesa')?.value || '';
+
+                if (!nombre.trim()) {
+                    mostrarNotificacion('Por favor, ingresa tu nombre.', 'error');
+                    return;
+                }
+                const nombrePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+                if (!nombrePattern.test(nombre.trim())) {
+                    mostrarNotificacion('El nombre solo debe contener letras.', 'error');
+                    return;
+                }
+
+                if (!apellido.trim()) {
+                    mostrarNotificacion('Por favor, ingresa tu apellido.', 'error');
+                    return;
+                }
+                if (!nombrePattern.test(apellido.trim())) {
+                    mostrarNotificacion('El apellido solo debe contener letras.', 'error');
+                    return;
+                }
+
+                if (!direccion.trim()) {
+                    mostrarNotificacion('Por favor, ingresa tu dirección de facturación.', 'error');
+                    return;
+                }
+
+                if (!metodoPago) {
+                    mostrarNotificacion('Por favor, selecciona una forma de pago.', 'error');
+                    return;
+                }
+
+                localStorage.setItem('nombre_cliente', nombre);
+                localStorage.setItem('apellido_cliente', apellido);
+                localStorage.setItem('direccion_cliente', direccion);
+                localStorage.setItem('telefono_cliente', telefono);
+                localStorage.setItem('cedula_cliente', cedulaRuc);
+
                 urlTarget = '/api/pedido_local'; 
                 bodyPayload = {
                     numero_mesa: parseInt(numeroMesaActual),
                     id_usuario: 1, 
                     lista_producto: productosPayload,
                     id_cliente: idSesion ? parseInt(idSesion) : null,
+                    nombre: nombre,
+                    apellido: apellido,
+                    direccion: direccion,
                     telefono: telefono,
-                    cedula_ruc: cedulaRuc
+                    cedula_ruc: cedulaRuc,
+                    metodo_pago: metodoPago
                 };
             } else {
-                urlTarget = '/api/pagar_domicilio';
-                
-                const direccion = document.getElementById('direccionEntrega').value;
-                const metodoPago = document.getElementById('metodoPago').value;
+                direccion = document.getElementById('direccionEntrega')?.value || '';
+                metodoPago = document.getElementById('metodoPago')?.value || 'efectivo';
 
                 if (!direccion.trim()) {
                     mostrarNotificacion('Ingresa una dirección de entrega para llevar tu pedido.', 'error');
@@ -573,7 +656,10 @@
                 }
 
                 localStorage.setItem('direccion_cliente', direccion);
+                localStorage.setItem('telefono_cliente', telefono);
+                localStorage.setItem('cedula_cliente', cedulaRuc);
 
+                urlTarget = '/api/pagar_domicilio';
                 bodyPayload = {
                     id_cliente: idSesion ? parseInt(idSesion) : null,
                     id_usuario: null, 

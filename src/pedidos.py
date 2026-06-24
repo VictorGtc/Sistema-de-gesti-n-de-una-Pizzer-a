@@ -1,7 +1,7 @@
 from database.db import conectar_db
 from datetime import datetime
 
-def registrar_pedidos_mesa (numero_mesa, id_usuario, lista_producto, id_cliente=None, telefono=None, cedula_ruc='9999999999'):
+def registrar_pedidos_mesa (numero_mesa, id_usuario, lista_producto, id_cliente=None, nombre=None, apellido=None, direccion=None, telefono=None, cedula_ruc='9999999999', metodo_pago='efectivo'):
     db=conectar_db()
     if db is None:
         return False
@@ -13,12 +13,18 @@ def registrar_pedidos_mesa (numero_mesa, id_usuario, lista_producto, id_cliente=
     try: 
         db.start_transaction()
 
+        if not id_cliente:
+            # Crear cliente temporal/invitado para asociarle su nombre y apellido
+            sql_invitado = "INSERT INTO clientes (nombre_cl, apellido_cl, telefono_cl, direccion) VALUES (%s, %s, %s, %s)"
+            cursor.execute(sql_invitado, (nombre or 'Comensal', apellido or f"Mesa {numero_mesa}", telefono, direccion))
+            id_cliente = cursor.lastrowid
+
         sql_pedido = """
-            INSERT INTO pedidos (id_cliente, numero_mesa, fecha_p, total_p, id_usuario, estado, telefono_entrega, cedula_ruc, metodo_pago) 
-            VALUES (%s, %s, %s, %s, %s, 'Pendiente', %s, %s, 'efectivo')
+            INSERT INTO pedidos (id_cliente, numero_mesa, fecha_p, total_p, id_usuario, estado, telefono_entrega, cedula_ruc, metodo_pago, direccion_entrega) 
+            VALUES (%s, %s, %s, %s, %s, 'Pendiente', %s, %s, %s, %s)
         """
 
-        valores_pedidos= (id_cliente, numero_mesa, fecha_actual,total_pedido,id_usuario, telefono, cedula_ruc)
+        valores_pedidos= (id_cliente, numero_mesa, fecha_actual, total_pedido, id_usuario, telefono, cedula_ruc, metodo_pago, direccion)
 
         cursor.execute(sql_pedido,valores_pedidos)
 

@@ -194,13 +194,28 @@ def api_registrar_pedido_local():
     lita_productos= datos.get('lista_producto')
     
     id_cliente = datos.get('id_cliente')
+    nombre = datos.get('nombre')
+    apellido = datos.get('apellido')
+    direccion = datos.get('direccion')
     telefono = datos.get('telefono')
     cedula_ruc = datos.get('cedula_ruc', '9999999999')
+    metodo_pago = datos.get('metodo_pago', 'efectivo')
 
     if not numero_mesa or not id_usuario or not lita_productos:
         return jsonify({"mensaje": "Faltan compos obligatorios para este procedimiento"})
 
-    resultado=registrar_pedidos_mesa(numero_mesa, id_usuario, lita_productos, id_cliente=id_cliente, telefono=telefono, cedula_ruc=cedula_ruc)
+    resultado=registrar_pedidos_mesa(
+        numero_mesa, 
+        id_usuario, 
+        lita_productos, 
+        id_cliente=id_cliente, 
+        nombre=nombre, 
+        apellido=apellido, 
+        direccion=direccion, 
+        telefono=telefono, 
+        cedula_ruc=cedula_ruc, 
+        metodo_pago=metodo_pago
+    )
 
     if resultado is True:
         return jsonify({"mensaje" : "El pedido ha sido registrado exitosamente"}), 200
