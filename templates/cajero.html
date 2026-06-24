@@ -270,10 +270,13 @@
                 pedidos.forEach(pedido => {
                     if (!pedido.estado) pedido.estado = 'Pendiente';
                     let badgeColor = 'bg-stone-950/60 text-stone-400 border-white/10';
-                    if (pedido.estado === 'Listo') badgeColor = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+                    if (pedido.estado === 'Listo') badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-500/30';
                     if (pedido.estado === 'Entregado') badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-                    if (pedido.estado === 'Pendiente') badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-500/30';
-                    if (pedido.estado === 'Cocinado') badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                    if (pedido.estado === 'Pendiente') badgeColor = 'bg-red-500/20 text-red-300 border-red-500/30';
+                    if (pedido.estado === 'Cocinado') badgeColor = 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+
+                    let estadoTexto = pedido.estado;
+                    if (pedido.estado === 'Cocinado') estadoTexto = 'En Preparación';
 
                     const iconType = pedido.numero_mesa ? 'fa-chair text-amber-400' : 'fa-motorcycle text-orange-400';
 
@@ -281,6 +284,10 @@
                     card.id = `card-pedido-${pedido.id_pedido}`;
                     card.className = "bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/20 hover:bg-white/10 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 shadow-lg group relative overflow-hidden fade-in";
                     
+                    if (pedido.id_pedido === idPedidoSeleccionado) {
+                        card.classList.add('pedido-card-activa');
+                    }
+
                     card.onclick = () => {
                         document.querySelectorAll('[id^="card-pedido-"]').forEach(c => c.classList.remove('pedido-card-activa'));
                         card.classList.add('pedido-card-activa');
@@ -299,7 +306,7 @@
                                 </div>
                             </div>
                             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider border uppercase shadow-sm ${badgeColor}">
-                                ${pedido.estado}
+                                ${estadoTexto}
                             </span>
                         </div>
                         <div class="flex justify-between items-center pt-3.5 border-t border-white/10">
@@ -314,6 +321,26 @@
                     `;
                     contenedor.appendChild(card);
                 });
+
+                // Mantener detalle seleccionado actualizado en tiempo real
+                if (idPedidoSeleccionado) {
+                    const pedidoActualizado = pedidos.find(p => p.id_pedido === idPedidoSeleccionado);
+                    if (pedidoActualizado) {
+                        const selectPago = document.getElementById('cajero-metodo-pago');
+                        const metodoPrevio = selectPago ? selectPago.value : null;
+                        
+                        verDetallePedido(pedidoActualizado);
+                        
+                        if (metodoPrevio && selectPago) {
+                            selectPago.value = metodoPrevio;
+                        }
+                    } else {
+                        resetearDetalleDerecho();
+                        idPedidoSeleccionado = null;
+                        pedidoSeleccionadoCompleto = null;
+                        document.getElementById('panel-acciones-pago').classList.add('hidden');
+                    }
+                }
             } catch (error) {
                 console.error("Error al cargar pedidos activos:", error);
                 mostrarNotificacion("No se pudieron cargar los pedidos de caja.", "error");
@@ -379,6 +406,24 @@
             });
 
             totalPagoTxt.innerText = `$${pedido.total_p.toFixed(2)}`;
+            
+            // Bloquear pago si no está despachado o entregado
+            const btnPago = document.getElementById('btn-confirmar-pago');
+            const estadoNormalizado = (pedido.estado || '').trim();
+            const esListoOEntregado = (estadoNormalizado === 'Listo' || estadoNormalizado === 'Entregado');
+            
+            if (btnPago) {
+                if (esListoOEntregado) {
+                    btnPago.disabled = false;
+                    btnPago.className = "w-full bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 hover:brightness-110 text-stone-950 font-black py-4 px-4 rounded-xl shadow-xl transform active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-xs uppercase tracking-wider shadow-orange-500/10";
+                    btnPago.innerHTML = `<i class="fa-solid fa-money-bill-wave text-base"></i> Confirmar Pago e Imprimir`;
+                } else {
+                    btnPago.disabled = true;
+                    btnPago.className = "w-full bg-gradient-to-r from-stone-600 via-stone-500 to-stone-400 opacity-40 cursor-not-allowed text-stone-300 font-black py-4 px-4 rounded-xl shadow-xl transition-all flex items-center justify-center gap-2.5 text-xs uppercase tracking-wider";
+                    btnPago.innerHTML = `<i class="fa-solid fa-hourglass-half text-base"></i> Esperando Cocina (Pago Bloqueado)`;
+                }
+            }
+
             panelAcciones.classList.remove('hidden');
         }
 
@@ -395,6 +440,12 @@
 
         async function procesarCobro() {
             if (!idPedidoSeleccionado || !pedidoSeleccionadoCompleto) return;
+            
+            const estadoNormalizado = (pedidoSeleccionadoCompleto.estado || '').trim();
+            if (estadoNormalizado !== 'Listo' && estadoNormalizado !== 'Entregado') {
+                mostrarNotificacion("La comida aún está en preparación. Espere a que cocina la despache o entregue.", "error");
+                return;
+            }
             
             const metodoPagoElegido = document.getElementById('cajero-metodo-pago')?.value || 'efectivo';
             
@@ -421,7 +472,8 @@
                     resetearDetalleDerecho();
                     cargarPedidosActivos(); 
                 } else {
-                    mostrarNotificacion("Error en el servidor al intentar cerrar la cuenta.", "error");
+                    const dataError = await respuesta.json().catch(() => ({}));
+                    mostrarNotificacion(dataError.error || "Error en el servidor al intentar cerrar la cuenta.", "error");
                 }
             } catch (error) {
                 console.error("Error de conexión al cobrar:", error);

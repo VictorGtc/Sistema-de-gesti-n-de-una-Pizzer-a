@@ -686,26 +686,50 @@
                         estadoNormalizado = 'Pendiente';
                         claseEstado = "bg-amber-500/10 text-amber-400 border-amber-500/30";
                         iconoEstado = "fa-receipt";
-                        progressPercent = 25;
-                        estTime = "10 min";
                         colorBar = "bg-amber-500";
+                        
+                        // Calcular tiempo y progreso dinámico (cuenta regresiva de 10 min)
+                        const fechaPedido = new Date(pedido.fecha_p.replace(' ', 'T'));
+                        const ahora = new Date();
+                        const diffSegundos = Math.floor((ahora - fechaPedido) / 1000);
+                        const segundosRestantes = 600 - diffSegundos;
+                        if (segundosRestantes > 0) {
+                            const mins = Math.floor(segundosRestantes / 60);
+                            const secs = segundosRestantes % 60;
+                            estTime = `<span class="timer-cuenta-atras text-amber-400 font-bold font-mono" data-fecha="${pedido.fecha_p}" data-estado="${estadoNormalizado}">${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}</span>`;
+                        } else {
+                            estTime = `<span class="timer-cuenta-atras text-stone-450 font-bold font-mono" data-fecha="${pedido.fecha_p}" data-estado="${estadoNormalizado}">Casi listo...</span>`;
+                        }
+                        progressPercent = Math.min(45, Math.max(10, Math.floor((diffSegundos / 600) * 45)));
                     } else if (estadoNormalizado === 'Cocina' || estadoNormalizado === 'Cocinado' || estadoNormalizado === 'En preparación') {
                         claseEstado = "bg-orange-500/10 text-orange-400 border-orange-500/30";
                         iconoEstado = "fa-fire-burner";
-                        progressPercent = 50;
-                        estTime = "15 min";
                         colorBar = "bg-orange-500";
+                        
+                        // Calcular tiempo y progreso dinámico
+                        const fechaPedido = new Date(pedido.fecha_p.replace(' ', 'T'));
+                        const ahora = new Date();
+                        const diffSegundos = Math.floor((ahora - fechaPedido) / 1000);
+                        const segundosRestantes = 600 - diffSegundos;
+                        if (segundosRestantes > 0) {
+                            const mins = Math.floor(segundosRestantes / 60);
+                            const secs = segundosRestantes % 60;
+                            estTime = `<span class="timer-cuenta-atras text-amber-400 font-bold font-mono" data-fecha="${pedido.fecha_p}" data-estado="${estadoNormalizado}">${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}</span>`;
+                        } else {
+                            estTime = `<span class="timer-cuenta-atras text-stone-450 font-bold font-mono" data-fecha="${pedido.fecha_p}" data-estado="${estadoNormalizado}">Casi listo...</span>`;
+                        }
+                        progressPercent = Math.min(85, Math.max(45, Math.floor(45 + (diffSegundos / 600) * 40)));
                     } else if (estadoNormalizado === 'Listo') {
                         claseEstado = "bg-purple-500/10 text-purple-400 border-purple-500/30";
                         iconoEstado = "fa-boxes-packing";
-                        progressPercent = 75;
-                        estTime = "5 min";
+                        progressPercent = 90;
+                        estTime = `<span class="timer-cuenta-atras text-purple-400 font-bold" data-fecha="${pedido.fecha_p}" data-estado="${estadoNormalizado}">¡Listo!</span>`;
                         colorBar = "bg-purple-500";
                     } else if (estadoNormalizado === 'Enviado' || estadoNormalizado === 'En camino') {
                         claseEstado = "bg-blue-500/10 text-blue-400 border-blue-500/30";
                         iconoEstado = "fa-motorcycle";
-                        progressPercent = 90;
-                        estTime = "15 min";
+                        progressPercent = 95;
+                        estTime = `<span class="timer-cuenta-atras text-blue-400 font-bold" data-fecha="${pedido.fecha_p}" data-estado="${estadoNormalizado}">En camino</span>`;
                         colorBar = "bg-blue-500";
                     } else if (['Pagado', 'Entregado', 'Cancelado'].includes(estadoNormalizado)) {
                         claseEstado = "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
@@ -717,7 +741,7 @@
 
                     const idMostrado = pedido.id_pedido || pedido.id_pedidos || '---';
                     const totalMostrado = parseFloat(pedido.total_p || 0).toFixed(2);
-                    const fechaFormateada = pedido.fecha_p ? new Date(pedido.fecha_p).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Reciente';
+                    const fechaFormateada = pedido.fecha_p ? new Date(pedido.fecha_p.replace(' ', 'T')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Reciente';
 
                     contenedor.innerHTML += `
                         <div class="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3 transition-all hover:bg-white/10 fade-in">
@@ -835,6 +859,41 @@
         actualizarEstadoPedidosCliente();
         
         setInterval(actualizarEstadoPedidosCliente, 5000);
+
+        // Temporizador de cuenta atrás en tiempo real de 10 minutos para clientes
+        setInterval(function() {
+            document.querySelectorAll('.timer-cuenta-atras').forEach(el => {
+                const fechaStr = el.getAttribute('data-fecha');
+                const estado = el.getAttribute('data-estado');
+                if (!fechaStr) return;
+                
+                if (['Pagado', 'Entregado', 'Cancelado'].includes(estado)) {
+                    el.innerText = "Entregado";
+                    return;
+                }
+                if (estado === 'Listo') {
+                    el.innerText = "¡Listo!";
+                    return;
+                }
+                if (estado === 'Enviado' || estado === 'En camino') {
+                    el.innerText = "En camino";
+                    return;
+                }
+                
+                const fechaPedido = new Date(fechaStr.replace(' ', 'T'));
+                const ahora = new Date();
+                const diffSegundos = Math.floor((ahora - fechaPedido) / 1000);
+                const segundosRestantes = 600 - diffSegundos; // 10 minutos = 600s
+                
+                if (segundosRestantes > 0) {
+                    const mins = Math.floor(segundosRestantes / 60);
+                    const secs = segundosRestantes % 60;
+                    el.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                } else {
+                    el.innerText = "Casi listo...";
+                }
+            });
+        }, 1000);
     </script>
 </body>
 </html>

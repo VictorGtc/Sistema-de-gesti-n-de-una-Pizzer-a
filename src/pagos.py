@@ -36,6 +36,16 @@ def registrar_pago_pedido(id_pedido, metodo_pago='efectivo'):
     if db is None: return jsonify({"error": "DB error"}), 500
     cursor = db.cursor(dictionary=True)
     try:
+        # Verificar que el pedido haya sido cocinado/entregado antes de permitir el pago
+        cursor.execute("SELECT estado FROM pedidos WHERE id_pedido = %s", (id_pedido,))
+        pedido_actual = cursor.fetchone()
+        if not pedido_actual:
+            return jsonify({"error": "Pedido no encontrado"}), 404
+            
+        estado_actual = pedido_actual['estado'] or 'Pendiente'
+        if estado_actual not in ['Listo', 'Entregado', 'Pagado']:
+            return jsonify({"error": "La comida aún está en preparación. Espere a que cocina la despache o entrege."}), 400
+
         cursor.execute("UPDATE pedidos SET estado = 'Pagado', metodo_pago = %s WHERE id_pedido = %s", (metodo_pago, id_pedido))
         
         cursor.execute("SELECT id_producto, cantidad_v FROM detalle_pedido WHERE id_pedido = %s", (id_pedido,))
