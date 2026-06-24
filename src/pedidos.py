@@ -214,8 +214,9 @@ def obtener_pedidos_caja():
     pedidos_para_caja = []
     
     for pedido in todos_los_pedidos:
-        # Permitimos pedidos activos de mesas y a domicilio (no pagados/cancelados)
-        if pedido['estado'] not in ['Pagado', 'Cancelado']:
+        estado = pedido.get('estado') or 'Pendiente'
+        # Permitimos pedidos activos de mesas y a domicilio que ya pasaron por la cocina (Listo, Entregado, etc.)
+        if estado not in ['Pendiente', 'Cocinado', 'Cancelado', 'Pagado']:
             if pedido['total_p'] is not None:
                 pedido['total_p'] = float(pedido['total_p'])
             for prod in pedido['productos']:
