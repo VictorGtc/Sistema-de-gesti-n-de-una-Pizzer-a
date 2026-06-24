@@ -31,17 +31,17 @@ def obtener_pagopendiente():
         print(f"Error al obtener pedidos activos: {e}")
         return jsonify({"error": "Error interno"}), 500
     
-def registrar_pago_pedido(id_pedido):
+def registrar_pago_pedido(id_pedido, metodo_pago='efectivo'):
     db = conectar_db()
     if db is None: return jsonify({"error": "DB error"}), 500
     cursor = db.cursor(dictionary=True)
     try:
-        cursor.execute("UPDATE pedidos SET estado = 'Pagado' WHERE id_pedido = %s", (id_pedido,))
+        cursor.execute("UPDATE pedidos SET estado = 'Pagado', metodo_pago = %s WHERE id_pedido = %s", (metodo_pago, id_pedido))
         
         cursor.execute("SELECT id_producto, cantidad_v FROM detalle_pedido WHERE id_pedido = %s", (id_pedido,))
         items = cursor.fetchall()
         db.commit() 
-        return jsonify({"mensaje": "Pago registrado y stock actualizado"}), 200
+        return jsonify({"mensaje": "Pago registrado y stock de venta guardado"}), 200
     except Exception as e:
         db.rollback() 
         print(f"Error crítico en el proceso de pago: {e}")

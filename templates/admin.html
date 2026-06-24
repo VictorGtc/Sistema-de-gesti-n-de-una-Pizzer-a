@@ -58,6 +58,30 @@
                 transform: translateY(0);
             }
         }
+
+        @media print {
+            body > *:not(#modalFactura) {
+                display: none !important;
+            }
+            #modalFactura {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                background: white !important;
+                color: black !important;
+                display: block !important;
+                z-index: 99999 !important;
+            }
+            #modalFactura * {
+                background: white !important;
+                color: black !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -89,6 +113,23 @@
 
     <div id="contenedorToasts"
         class="fixed top-6 right-6 z-[99999] flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
+
+    <!-- Modal Factura (window.print() friendly) -->
+    <div id="modalFactura" class="fixed inset-0 z-[10000] hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+        <div class="bg-stone-900 border border-white/10 p-6 rounded-3xl max-w-md w-full shadow-2xl flex flex-col max-h-[90vh] no-print-modal text-amber-50">
+            <div class="overflow-y-auto pr-1 flex-1 space-y-4 font-mono text-xs text-stone-300" id="factura-print-area">
+                <!-- Se rellena con JS -->
+            </div>
+            <div class="flex gap-3 mt-5 pt-3 border-t border-white/10 no-print">
+                <button onclick="cerrarFacturaModal()" class="flex-1 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 font-bold text-xs border border-white/5 uppercase transition-all">
+                    Cerrar
+                </button>
+                <button onclick="imprimirFacturaArea()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 text-stone-950 font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i> Imprimir Factura
+                </button>
+            </div>
+        </div>
+    </div>
 
     <nav
         class="bg-[#362f2d]/70 backdrop-blur-md border-b border-white/10 px-6 py-4 flex justify-between items-center sticky top-0 z-40">
@@ -502,12 +543,13 @@
                                 class="border-b border-white/5 glass-input-bg text-[11px] font-bold text-gray-300 uppercase tracking-wider">
                                 <th class="py-3 px-6">Empleado</th>
                                 <th class="py-3 px-6">Contacto</th>
-                                <th class="py-3 px-6">Rol</th>
+                                <th class="py-3 px-6">Rol / Estado</th>
+                                <th class="py-3 px-6 text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-usuarios-body" class="divide-y divide-white/5 text-xs">
                             <tr>
-                                <td colspan="3" class="py-8 text-center text-gray-300">
+                                <td colspan="4" class="py-8 text-center text-gray-300">
                                     <i class="fa-solid fa-spinner fa-spin mr-2 text-[#f4ad42]"></i> Cargando personal...
                                 </td>
                             </tr>
@@ -559,16 +601,31 @@
                                     <th class="py-4 px-6">Detalle del Pedido</th>
                                     <th class="py-4 px-6 text-right">Total Pagado</th>
                                     <th class="py-4 px-6 text-center">Estado</th>
+                                    <th class="py-4 px-6 text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-ventas-body" class="divide-y divide-white/5 text-xs text-white">
                                 <tr>
-                                    <td colspan="6" class="py-8 text-center text-gray-300 italic">Cargando historial de
+                                    <td colspan="7" class="py-8 text-center text-gray-300 italic">Cargando historial de
                                         ventas...</td>
                                 </tr>
                             </tbody>
                         </table>
-                </div>
+                    </div>
+                    <!-- Paginación de ventas -->
+                    <div class="flex items-center justify-between p-4 bg-black/10 border-t border-white/5 text-xs text-stone-400 no-print">
+                        <div>
+                            Mostrando <span id="paginacion-info" class="font-bold text-white">0-0</span> de <span id="paginacion-total" class="font-bold text-white">0</span> ventas
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="btn-pag-prev" onclick="cambiarPaginaVentas(-1)" class="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-white font-bold transition-all" disabled>
+                                <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
+                            </button>
+                            <button id="btn-pag-next" onclick="cambiarPaginaVentas(1)" class="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 disabled:opacity-50 text-white font-bold transition-all" disabled>
+                                Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
 
                 <!-- Contenedor del Gráfico de Ventas (Estadísticas) -->
                 <div class="mt-8 border-t border-white/5 pt-6 space-y-4">
@@ -659,6 +716,38 @@
                 cargarProductos();
                 cargarInventario();
                 cargarUsuarios();
+
+                // Form validations for name, surname, and phone
+                const inputNombre = document.getElementById('emp-nombre');
+                const inputApellido = document.getElementById('emp-apellido');
+                const inputTelefono = document.getElementById('emp-telefono');
+
+                if (inputNombre) {
+                    inputNombre.addEventListener('keypress', (e) => {
+                        if (/\d/.test(e.key)) e.preventDefault();
+                    });
+                    inputNombre.addEventListener('input', function() {
+                        this.value = this.value.replace(/[0-9]/g, '');
+                    });
+                }
+
+                if (inputApellido) {
+                    inputApellido.addEventListener('keypress', (e) => {
+                        if (/\d/.test(e.key)) e.preventDefault();
+                    });
+                    inputApellido.addEventListener('input', function() {
+                        this.value = this.value.replace(/[0-9]/g, '');
+                    });
+                }
+
+                if (inputTelefono) {
+                    inputTelefono.addEventListener('keypress', (e) => {
+                        if (/[a-zA-Z]/.test(e.key)) e.preventDefault();
+                    });
+                    inputTelefono.addEventListener('input', function() {
+                        this.value = this.value.replace(/[a-zA-Z]/g, '');
+                    });
+                }
             });
 
             // CONTROL DE PESTAÑAS (TABS)
@@ -1192,7 +1281,7 @@
                             <i class="fa-solid fa-eye"></i>
                         </button>`;
 
-                        const botonSumar = `<button onclick="sumarStockIngrediente(${item.id_inventario})" 
+                        const botonSumar = `<button onclick="sumarStockIngrediente(${item.id_inventario}, '${nombreIngrediente}', '${unidadMedida}')" 
                                             class="text-slate-400 hover:text-emerald-400 p-1 transition-colors" 
                                             title="Agregar Stock">
                                             <i class="fa-solid fa-plus-circle"></i>
@@ -1392,9 +1481,16 @@
                     usuarios.forEach(user => {
                         // Mantenemos tus colores personalizados según el rol
                         let badgeColor = "bg-slate-950 text-slate-400 border border-slate-800";
-                        if (user.rol === 'admin') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                        if (user.rol === 'cocina') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-                        if (user.rol === 'mesero') badgeColor = "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+                        const rolNormalizado = (user.rol || '').toLowerCase();
+                        if (rolNormalizado === 'admin' || rolNormalizado === 'administrador') badgeColor = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
+                        if (rolNormalizado === 'cocina' || rolNormalizado === 'cocinero') badgeColor = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                        if (rolNormalizado === 'mesero') badgeColor = "bg-sky-500/10 text-sky-400 border border-sky-500/20";
+                        if (rolNormalizado === 'cajero') badgeColor = "bg-purple-500/10 text-purple-400 border border-purple-500/20";
+
+                        const estaActivo = user.activo === undefined || user.activo === 1 || user.activo === '1';
+                        const badgeActivo = estaActivo
+                            ? `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ml-1">Activo</span>`
+                            : `<span class="bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ml-1">Suspendido</span>`;
 
                         tbody.innerHTML += `
                         <tr class="border-b border-slate-800/40 hover:bg-slate-900/30 transition-all">
@@ -1406,14 +1502,25 @@
                                 <div class="mt-1"><i class="fa-solid fa-phone text-slate-500 w-4 mr-1"></i> ${user.telefono_u}</div>
                             </td>
                             <td class="py-4 px-6">
-                                <span class="px-2.5 py-1 rounded-md text-xs font-bold capitalize inline-block ${badgeColor}">
-                                    ${user.rol}
-                                </span>
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="px-2.5 py-1 rounded-md text-xs font-bold capitalize inline-block ${badgeColor}">
+                                        ${user.rol}
+                                    </span>
+                                    ${badgeActivo}
+                                </div>
                             </td>
-                            <td class="py-4 px-6 text-center">
-                                <button onclick='prepararEditarUsuario(${JSON.stringify(user)})' class="text-slate-400 hover:text-amber-400 p-1 transition-colors" title="Editar Empleado">
+                            <td class="py-4 px-6 text-center space-x-2">
+                                <button onclick='prepararEditarUsuario(${JSON.stringify(user)})' class="text-slate-400 hover:text-amber-400 p-1 transition-colors inline-block" title="Editar Empleado">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
+                                ${estaActivo
+                                    ? `<button onclick="alternarEstadoUsuario(${user.id_usuario}, 0)" class="text-slate-400 hover:text-red-400 p-1 transition-colors inline-block" title="Suspender Empleado">
+                                          <i class="fa-solid fa-user-slash"></i>
+                                       </button>`
+                                    : `<button onclick="alternarEstadoUsuario(${user.id_usuario}, 1)" class="text-slate-500 hover:text-emerald-400 p-1 transition-colors inline-block" title="Habilitar Empleado">
+                                          <i class="fa-solid fa-user-check"></i>
+                                       </button>`
+                                }
                             </td>
                         </tr>
                     `;
@@ -1423,6 +1530,41 @@
                     const tbody = document.getElementById('tabla-usuarios-body');
                     if (tbody) {
                         tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-red-400 font-medium"><i class="fa-solid fa-circle-exclamation mr-2"></i> Error al cargar el listado.</td></tr>`;
+                    }
+                }
+            }
+
+            async function alternarEstadoUsuario(id, nuevoEstado) {
+                const accion = nuevoEstado === 0 ? "suspender" : "habilitar";
+                const resultado = await Swal.fire({
+                    title: `¿Confirmar acción?`,
+                    text: `¿Estás seguro de que deseas ${accion} a este empleado?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#e05c3e',
+                    cancelButtonColor: '#1c1917',
+                    confirmButtonText: 'Sí, continuar',
+                    cancelButtonText: 'Cancelar'
+                });
+
+                if (resultado.isConfirmed) {
+                    try {
+                        const respuesta = await fetch('/api/usuarios/estado', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id_usuario: id, activo: nuevoEstado })
+                        });
+
+                        const data = await respuesta.json();
+                        if (respuesta.ok) {
+                            mostrarNotificacion(data.mensaje || `Empleado ${accion}do correctamente.`, 'exito');
+                            await cargarUsuarios();
+                        } else {
+                            mostrarNotificacion(data.mensaje || `No se pudo cambiar el estado del empleado.`, 'error');
+                        }
+                    } catch (error) {
+                        console.error("Error al alternar estado del usuario:", error);
+                        mostrarNotificacion("Error de conexión al servidor.", 'error');
                     }
                 }
             }
@@ -1634,6 +1776,9 @@
 
             let ventasLocales = []; // Cache en memoria para búsquedas instantáneas
             let graficoVentasInstance = null;
+            let paginaVentasActual = 1;
+            const limiteVentasPorPagina = 10;
+            let ventasRenderizadas = [];
 
             // 1. Fetch de datos desde la API
             async function cargarHistorialVentas() {
@@ -1652,6 +1797,7 @@
 
             // 2. Pintar los datos en el HTML y actualizar estadísticas
             function renderizarTablaVentas(listaVentas) {
+                ventasRenderizadas = listaVentas;
                 const tbody = document.getElementById('tabla-ventas-body');
                 tbody.innerHTML = '';
 
@@ -1704,18 +1850,47 @@
                 if (listaVentas.length === 0) {
                     tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center py-10 text-stone-500 italic">
+                <td colspan="7" class="text-center py-10 text-stone-500 italic">
                     No se registran transacciones finalizadas en el historial.
                 </td>
             </tr>`;
+                    
+                    const pagInfo = document.getElementById('paginacion-info');
+                    const pagTotal = document.getElementById('paginacion-total');
+                    const btnPrev = document.getElementById('btn-pag-prev');
+                    const btnNext = document.getElementById('btn-pag-next');
+                    if (pagInfo && pagTotal && btnPrev && btnNext) {
+                        pagTotal.innerText = '0';
+                        pagInfo.innerText = '0-0';
+                        btnPrev.disabled = true;
+                        btnNext.disabled = true;
+                    }
                     return;
                 }
 
-                listaVentas.forEach(v => {
+                // Paginación
+                const inicio = (paginaVentasActual - 1) * limiteVentasPorPagina;
+                const fin = inicio + limiteVentasPorPagina;
+                const ventasPaginadas = listaVentas.slice(inicio, fin);
+
+                const pagInfo = document.getElementById('paginacion-info');
+                const pagTotal = document.getElementById('paginacion-total');
+                const btnPrev = document.getElementById('btn-pag-prev');
+                const btnNext = document.getElementById('btn-pag-next');
+
+                if (pagInfo && pagTotal && btnPrev && btnNext) {
+                    const totalItems = listaVentas.length;
+                    pagTotal.innerText = totalItems;
+                    pagInfo.innerText = `${inicio + 1}-${Math.min(fin, totalItems)}`;
+                    btnPrev.disabled = (paginaVentasActual === 1);
+                    btnNext.disabled = (fin >= totalItems);
+                }
+
+                ventasPaginadas.forEach(v => {
                     // Formatear la lista de productos consumidos en un badge compacto
                     const detalleProductos = v.productos.map(p =>
                         `<span class="inline-block bg-stone-900/80 text-[11px] px-2 py-0.5 rounded-md border border-white/5 text-stone-400 mr-1 mb-1">
-                ${p.nombre_pr} <b class="text-amber-400">x${p.cantidad_v}</b>
+                ${p.nombre_pr || p.nombre_producto || 'Producto'} <b class="text-amber-400">x${p.cantidad_v || p.cantidad_p || 0}</b>
              </span>`
                     ).join('');
 
@@ -1741,6 +1916,11 @@
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border uppercase tracking-wider ${badgeColor}">
                         ${v.estado}
                     </span>
+                </td>
+                <td class="py-4 px-6 text-center">
+                    <button onclick="verFacturaVenta(${v.id_pedido})" class="text-slate-400 hover:text-amber-400 p-1 transition-colors" title="Ver Factura">
+                        <i class="fa-solid fa-receipt text-sm"></i>
+                    </button>
                 </td>
             </tr>
         `;
@@ -1823,6 +2003,7 @@
 
             // 3. Motor de filtrado en tiempo real sin recargar página
             function filtrarVentas() {
+                paginaVentasActual = 1; // Reset a página 1
                 const termino = document.getElementById('buscar-venta').value.toLowerCase().trim();
                 if (!termino) {
                     renderizarTablaVentas(ventasLocales);
@@ -1838,8 +2019,9 @@
             }
 
             async function cargarVentas() {
+                paginaVentasActual = 1; // Reset a página 1
                 const tbody = document.getElementById('tabla-ventas-body');
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-stone-400">Cargando datos...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-stone-400">Cargando datos...</td></tr>`;
 
                 try {
                     const respuesta = await fetch('/api/admin/historial_ventas'); // Asegúrate de que esta ruta coincida con tu backend
@@ -1850,53 +2032,41 @@
                     renderizarTablaVentas(ventas);
                 } catch (error) {
                     console.error("Error al cargar ventas:", error);
-                    tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-400">Error al cargar datos. Verifica el servidor.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-red-400">Error al cargar datos. Verifica el servidor.</td></tr>`;
                 }
             }
 
 
-            async function sumarStockIngrediente(id, nombre) {
-                const { value: formValues } = await Swal.fire({
+            async function sumarStockIngrediente(id, nombre, unidadBase) {
+                const { value: cantidad } = await Swal.fire({
                     title: `Agregar stock: ${nombre}`,
-                    html:
-                        '<input type="number" id="swal-input1" class="swal2-input" placeholder="Cantidad">' +
-                        '<select id="swal-input2" class="swal2-select">' +
-                        '<option value="g">Gramos (g)</option>' +
-                        '<option value="kg">Kilos (kg)</option>' +
-                        '<option value="ml">Mililitros (ml)</option>' +
-                        '<option value="l">Litros (l)</option>' +
-                        '<option value="unid">Unidades</option>' +
-                        '</select>',
-                    focusConfirm: false,
-                    preConfirm: () => {
-                        return [
-                            document.getElementById('swal-input1').value,
-                            document.getElementById('swal-input2').value
-                        ]
+                    text: `Ingrese la cantidad a agregar en la unidad base (${unidadBase}):`,
+                    input: 'number',
+                    inputPlaceholder: `Cantidad en ${unidadBase}`,
+                    showCancelButton: true,
+                    confirmButtonColor: '#e05c3e',
+                    cancelButtonColor: '#1c1917',
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    inputValidator: (value) => {
+                        if (!value || parseFloat(value) <= 0) {
+                            return '¡Debes ingresar una cantidad mayor a cero!';
+                        }
                     }
                 });
 
-                if (formValues) {
-                    const [cantidad, unidad] = formValues;
-
-                    // Validamos que sea un número
-                    if (!cantidad || parseFloat(cantidad) <= 0) {
-                        Swal.fire('Error', 'Ingresa una cantidad válida', 'error');
-                        return;
-                    }
-
+                if (cantidad) {
                     try {
                         const response = await fetch(`/api/inventario/sumar/${id}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ cantidad: parseFloat(cantidad), unidad: unidad })
+                            body: JSON.stringify({ cantidad: parseFloat(cantidad), unidad: unidadBase })
                         });
 
                         const resultado = await response.json();
 
                         if (response.ok) {
                             Swal.fire('¡Éxito!', 'Stock actualizado', 'success');
-                            // ESTO ES LO QUE TE FALTABA PARA EL REFRESCO:
                             await cargarInventario();
                         } else {
                             Swal.fire('Error', resultado.mensaje || 'No se pudo actualizar', 'error');
@@ -1906,6 +2076,84 @@
                         Swal.fire('Error', 'Fallo de conexión', 'error');
                     }
                 }
+            }
+
+            function verFacturaVenta(idPedido) {
+                const pedido = ventasLocales.find(v => v.id_pedido === idPedido);
+                if (pedido) {
+                    abrirFacturaImpresion(pedido);
+                } else {
+                    mostrarNotificacion("No se encontró el pedido en el historial local.", "error");
+                }
+            }
+
+            function abrirFacturaImpresion(pedido) {
+                const printArea = document.getElementById('factura-print-area');
+                const total = parseFloat(pedido.total_p || 0);
+                const subtotal = (total / 1.15);
+                const iva = total - subtotal;
+                const fechaStr = pedido.fecha_p ? new Date(pedido.fecha_p).toLocaleString('es-ES') : new Date().toLocaleString('es-ES');
+
+                // Asegurar que metodo_pago esté definido
+                const metodo = pedido.metodo_pago ? pedido.metodo_pago.toUpperCase() : 'EFECTIVO';
+
+                printArea.innerHTML = `
+                    <div class="text-center space-y-1 text-stone-900">
+                        <h2 class="text-sm font-black text-black">PIZZERÍA EL INGE</h2>
+                        <p class="text-[10px]">RUC: 1801020304001</p>
+                        <p class="text-[10px]">Av. Principal y Oriente, Ambato</p>
+                        <p class="text-[10px]">Teléfono: 0999999999</p>
+                        <div class="border-b border-dashed border-stone-400 my-2"></div>
+                    </div>
+                    <div class="space-y-1 text-[11px] text-stone-900">
+                        <p><b>FACTURA:</b> 001-001-${String(pedido.id_pedido).padStart(9, '0')}</p>
+                        <p><b>FECHA:</b> ${fechaStr}</p>
+                        <p><b>CLIENTE:</b> ${pedido.cliente_nombre || (pedido.numero_mesa ? 'Comensal Mesa ' + pedido.numero_mesa : 'Consumidor Final')}</p>
+                        <p><b>CI/RUC:</b> ${pedido.cedula_ruc || '9999999999'}</p>
+                        ${pedido.direccion_entrega ? `<p><b>DIRECCIÓN:</b> ${pedido.direccion_entrega}</p>` : ''}
+                        ${pedido.telefono_entrega ? `<p><b>TELÉFONO:</b> ${pedido.telefono_entrega}</p>` : ''}
+                        <p><b>FORMA DE PAGO:</b> ${metodo}</p>
+                    </div>
+                    <div class="border-b border-dashed border-stone-400 my-2"></div>
+                    <table class="w-full text-left text-[11px] border-collapse text-stone-900">
+                        <thead>
+                            <tr class="border-b border-stone-400">
+                                <th class="pb-1">Cant</th>
+                                <th class="pb-1">Producto</th>
+                                <th class="pb-1 text-right">P. Unit</th>
+                                <th class="pb-1 text-right">P. Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${pedido.productos.map(p => `
+                                <tr>
+                                    <td class="py-1 font-bold">${p.cantidad_v || p.cantidad_p || 0}</td>
+                                    <td class="py-1">${p.nombre_pr || p.nombre_producto || 'Producto'}</td>
+                                    <td class="py-1 text-right">$${parseFloat(p.precio_unitario || p.precio_pr || 0).toFixed(2)}</td>
+                                    <td class="py-1 text-right">$${((p.cantidad_v || p.cantidad_p || 0) * (p.precio_unitario || p.precio_pr || 0)).toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="border-b border-dashed border-stone-400 my-2"></div>
+                    <div class="space-y-1 text-right text-[11px] text-stone-900">
+                        <p>SUBTOTAL 12%: $${subtotal.toFixed(2)}</p>
+                        <p>I.V.A. 12%: $${iva.toFixed(2)}</p>
+                        <p class="text-sm font-black text-black">TOTAL: $${total.toFixed(2)}</p>
+                    </div>
+                    <div class="text-center mt-4 text-[10px] italic text-stone-900">
+                        ¡Venta realizada con éxito!
+                    </div>
+                `;
+                document.getElementById('modalFactura').classList.remove('hidden');
+            }
+
+            function cerrarFacturaModal() {
+                document.getElementById('modalFactura').classList.add('hidden');
+            }
+
+            function imprimirFacturaArea() {
+                window.print();
             }
         </script>
 </body>

@@ -55,7 +55,7 @@ def api_usuarios():
 def api_login():
     datos = request.get_json()
     correo = datos.get('correo')
-    password = datos.get('password') # CORREGIDO: Ahora coincide exactamente con el HTML
+    password = datos.get('password') 
 
     if not correo or not password:
         return jsonify({"mensaje": "Faltan datos requeridos"}), 400
@@ -72,6 +72,8 @@ def api_login():
                 "Tipo": "empleado"
             }
         }), 200
+    elif info_usuario == "Esta cuenta ha sido suspendida. Contacte al administrador.":
+        return jsonify({"mensaje": info_usuario}), 403
 
     # 2. Si no es empleado, buscamos en la tabla de Clientes
     es_cliente, info_cliente = validar_clientes(correo, password)
@@ -81,7 +83,7 @@ def api_login():
             "perfil": {
                 "Nombre": info_cliente.get('Nombre'),
                 "Correo": info_cliente.get('Correo'),
-                "Rol": "cliente",  # Rol asignado por defecto para el frontend
+                "Rol": "cliente",  
                 "Tipo": "cliente",
                 "id_cliente": info_cliente.get('id_cliente'),
                 "Direccion": info_cliente.get('Direccion')
@@ -237,6 +239,9 @@ def api_pedido_domicilio():
     productos = datos.get('productos') 
     metodo_pago = datos.get('metodo_pago', 'efectivo')
     numero_tarjeta = datos.get('numero_tarjeta', '')
+    direccion = datos.get('direccion', '')
+    telefono = datos.get('telefono', '')
+    cedula_ruc = datos.get('cedula_ruc', '9999999999')
 
     if not id_cliente or not productos:
         return jsonify({"error": "Faltan datos obligatorios (cliente o productos)"}), 400
@@ -252,7 +257,13 @@ def api_pedido_domicilio():
                 "error": "Transacción rechazada: La tarjeta simulada no cuenta con fondos suficientes o es inválida. Usa la tarjeta de pruebas."
             }), 402
 
-    exito = registrar_pedido_domicilio(id_cliente, None, productos)
+    exito = registrar_pedido_domicilio(
+        id_cliente, None, productos,
+        metodo_pago=metodo_pago,
+        direccion_entrega=direccion,
+        telefono_entrega=telefono,
+        cedula_ruc=cedula_ruc
+    )
     
     if exito:
         return jsonify({
@@ -333,7 +344,9 @@ def api_actualizar_categoria(id_categoria):
 
 @app.route('/api/pagar_pedido/<int:id_pedido>', methods=['POST'])
 def finalizar_cobro(id_pedido):
-    return registrar_pago_pedido(id_pedido)
+    datos = request.get_json() or {}
+    metodo_pago = datos.get('metodo_pago', 'efectivo')
+    return registrar_pago_pedido(id_pedido, metodo_pago)
     
 
 
@@ -344,11 +357,38 @@ def api_pagar_domicilio():
     id_cliente = datos.get('id_cliente')
     lista_producto = datos.get('lista_producto')
     id_usuario = datos.get('id_usuario', None) 
+    metodo_pago = datos.get('metodo_pago', 'efectivo')
+    numero_tarjeta = datos.get('numero_tarjeta', '')
+    direccion = datos.get('direccion', '')
+    telefono = datos.get('telefono', '')
+    cedula_ruc = datos.get('cedula_ruc', '9999999999')
 
-    id_pedido = registrar_pedido_domicilio(id_cliente, id_usuario, lista_producto)
+    estado_pago_simulado = 'Pendiente'
+    if metodo_pago == 'tarjeta':
+        tarjeta_limpia = numero_tarjeta.replace(" ", "")
+        if tarjeta_limpia == '4242424242424242':
+            estado_pago_simulado = 'Pagado'
+        else:
+            return jsonify({
+                "error": "Transacción rechazada: La tarjeta simulada no cuenta con fondos suficientes o es inválida. Usa la tarjeta de pruebas."
+            }), 402
+
+    id_pedido = registrar_pedido_domicilio(
+        id_cliente, id_usuario, lista_producto,
+        metodo_pago=metodo_pago,
+        direccion_entrega=direccion,
+        telefono_entrega=telefono,
+        cedula_ruc=cedula_ruc
+    )
     
     if id_pedido:
-        return registrar_pago_pedido(id_pedido)
+        # Retornamos éxito sin llamar a registrar_pago_pedido para que el estado de preparación
+        # siga en 'Pendiente' y la cocina pueda cocinarlo. El método de pago queda registrado.
+        return jsonify({
+            "mensaje": "Pedido a domicilio registrado con éxito",
+            "id_pedido": id_pedido,
+            "estado_pago": estado_pago_simulado
+        }), 201
     else:
         return jsonify({"error": "Error al registrar pedido"}), 500
 
@@ -390,6 +430,7 @@ def api_cambiar_estado_categoria():
 def api_mis_pedidos_activos():
     try:
         id_cliente = request.args.get('id_cliente')
+        numero_mesa = request.args.get('numero_mesa')
         todos_los_pedidos = obtener_pedido()
         
         if not todos_los_pedidos:
@@ -404,13 +445,14 @@ def api_mis_pedidos_activos():
             if estado_p not in ['Pagado', 'Entregado', 'Cancelado']:
                 
                 id_p_cliente = p.get('id_cliente')
+                p_mesa = p.get('numero_mesa')
                 
-                # --- AQUÍ ESTÁ LA LÓGICA CORREGIDA ---
-                # Comparamos ambos como STRINGS para evitar el problema de int vs str
                 if id_cliente and id_p_cliente is not None:
                     if str(id_p_cliente).strip() == str(id_cliente).strip():
                         pedidos_filtrados.append(p)
-                # -------------------------------------
+                elif numero_mesa and p_mesa is not None:
+                    if str(p_mesa).strip() == str(numero_mesa).strip():
+                        pedidos_filtrados.append(p)
 
         return jsonify(pedidos_filtrados), 200
 
@@ -679,6 +721,64 @@ def vista_cajero():
 def vista_menu_qr():
     numero_mesa = request.args.get('mesa')
     return render_template('index.html', mesa=numero_mesa)
+
+@app.route('/mesero', methods=['GET'])
+def vista_mesero():
+    return render_template('mesero.html')
+
+@app.route('/api/mis_pedidos_historial', methods=['GET'])
+def api_mis_pedidos_historial():
+    try:
+        id_cliente = request.args.get('id_cliente')
+        numero_mesa = request.args.get('numero_mesa')
+        todos_los_pedidos = obtener_pedido()
+        
+        if not todos_los_pedidos:
+            return jsonify([]), 200
+
+        pedidos_filtrados = []
+        for p in todos_los_pedidos:
+            estado_crudo = p.get('estado') or p.get('estado_p')
+            estado_p = str(estado_crudo).strip() if estado_crudo is not None else 'Pendiente'
+        
+            # Pedidos completados
+            if estado_p in ['Pagado', 'Entregado', 'Cancelado']:
+                id_p_cliente = p.get('id_cliente')
+                p_mesa = p.get('numero_mesa')
+                
+                if id_cliente and id_p_cliente is not None:
+                    if str(id_p_cliente).strip() == str(id_cliente).strip():
+                        pedidos_filtrados.append(p)
+                elif numero_mesa and p_mesa is not None:
+                    if str(p_mesa).strip() == str(numero_mesa).strip():
+                        pedidos_filtrados.append(p)
+
+        return jsonify(pedidos_filtrados), 200
+    except Exception as e:
+        print(f"Error en API mis_pedidos_historial: {e}")
+        return jsonify({"mensaje": "Error interno al obtener el historial"}), 500
+
+@app.route('/api/usuarios/estado', methods=['PUT'])
+def api_cambiar_estado_usuario():
+    try:
+        datos = request.get_json()
+        id_usuario = datos.get('id_usuario')
+        nuevo_estado = datos.get('activo')
+        
+        if id_usuario is None or nuevo_estado is None:
+            return jsonify({"mensaje": "Datos incompletos"}), 400
+            
+        from src.usuarios import cambiar_estado_usuario
+        exito = cambiar_estado_usuario(int(id_usuario), int(nuevo_estado))
+        
+        if exito:
+            mensaje = "Empleado suspendido con éxito" if int(nuevo_estado) == 0 else "Empleado habilitado con éxito"
+            return jsonify({"mensaje": mensaje}), 200
+        else:
+            return jsonify({"mensaje": "No se pudo cambiar el estado del empleado"}), 500
+    except Exception as e:
+        print(f"Error en API cambiar_estado_usuario: {e}")
+        return jsonify({"mensaje": "Error interno del servidor"}), 500
 
 
 

@@ -64,13 +64,13 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Nombre</label>
-                    <input type="text" id="nombre" required
+                    <input type="text" id="nombre" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" title="El nombre solo debe contener letras."
                         class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Apellido</label>
-                    <input type="text" id="apellido" required
+                    <input type="text" id="apellido" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" title="El apellido solo debe contener letras."
                         class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm">
                 </div>
             </div>
@@ -92,7 +92,8 @@
 
             <div>
                 <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Teléfono</label>
-                <input type="tel" id="telefono" required
+                <input type="tel" id="telefono" required maxlength="10"
+                    onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                     class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm">
             </div>
 
@@ -156,7 +157,7 @@
             const direccion = document.getElementById('direccion').value;
 
             try {
-                const respuesta = await fetch('http://127.0.0.1:5000/api/registrar_cliente', {
+                const respuesta = await fetch('/api/registrar_cliente', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

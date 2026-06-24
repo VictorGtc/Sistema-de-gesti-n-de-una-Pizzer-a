@@ -4,25 +4,36 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def registrar_clientes(nombre, apellido, correo, password, telefono, direccion):
-    pass_hasheado=generate_password_hash(password)
-
     db=conectar_db()
-
     if db is None:
         return False
     
     cursor=db.cursor()
+    try:
+        # Verificar duplicados en clientes
+        cursor.execute("SELECT id_cliente FROM clientes WHERE correo_cl = %s", (correo,))
+        if cursor.fetchone():
+            return False
+            
+        # Verificar duplicados en usuarios
+        cursor.execute("SELECT id_usuario FROM usuarios WHERE correo_u = %s", (correo,))
+        if cursor.fetchone():
+            return False
 
-    consulta_sql="INSERT INTO clientes (nombre_cl, apellido_cl, correo_cl, contraseña_cl, telefono_cl, direccion) VALUES (%s,%s,%s,%s,%s,%s)"
-    valores=(nombre,apellido,correo,pass_hasheado,telefono,direccion)
-    cursor.execute(consulta_sql,valores)
+        pass_hasheado=generate_password_hash(password)
+        consulta_sql="INSERT INTO clientes (nombre_cl, apellido_cl, correo_cl, contraseña_cl, telefono_cl, direccion) VALUES (%s,%s,%s,%s,%s,%s)"
+        valores=(nombre,apellido,correo,pass_hasheado,telefono,direccion)
+        cursor.execute(consulta_sql,valores)
 
-    db.commit()
-
-    cursor.close()
-    db.close()
-
-    return True
+        db.commit()
+        cursor.close()
+        db.close()
+        return True
+    except Exception as e:
+        print(f"Error al registrar cliente: {e}")
+        cursor.close()
+        db.close()
+        return False
 
 
 def validar_clientes(correo, password):
