@@ -496,10 +496,16 @@ def api_historial_ventas():
             if estado in ['Pagado', 'Cancelado']:
                 historial.append({
                     "id_pedido": p.get('id_pedido'),
+                    "numero_mesa": p.get('numero_mesa'),
                     "origen_pedido": p.get('origen_pedido', 'No especificado'),
                     "fecha_p": p.get('fecha_p'),
                     "total_p": p.get('total_p', 0),
                     "estado": estado,
+                    "metodo_pago": p.get('metodo_pago', 'efectivo'),
+                    "direccion_entrega": p.get('direccion_entrega'),
+                    "telefono_entrega": p.get('telefono_entrega'),
+                    "cedula_ruc": p.get('cedula_ruc', '9999999999'),
+                    "cliente_nombre": p.get('cliente_nombre'),
                     "productos": p.get('productos', [])
                 })
         historial.sort(key=lambda x: x['id_pedido'], reverse=True)
