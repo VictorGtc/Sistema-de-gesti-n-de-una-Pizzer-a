@@ -626,7 +626,7 @@
                     numero_mesa: parseInt(numeroMesaActual),
                     id_usuario: 1, 
                     lista_producto: productosPayload,
-                    id_cliente: idSesion ? parseInt(idSesion) : null,
+                    id_cliente: null, // Forzar cliente independiente para la mesa
                     nombre: nombre,
                     apellido: apellido,
                     direccion: direccion,
@@ -747,10 +747,10 @@
                 
                 const apiPath = tabSeguimientoActual === 'activos' ? '/api/mis_pedidos_activos' : '/api/mis_pedidos_historial';
 
-                if (idSesion) {
-                    url = `${apiPath}?id_cliente=${idSesion}`;
-                } else if (numeroMesaActual) {
+                if (numeroMesaActual) {
                     url = `${apiPath}?numero_mesa=${numeroMesaActual}`;
+                } else if (idSesion) {
+                    url = `${apiPath}?id_cliente=${idSesion}`;
                 } else {
                     url = apiPath;
                 }

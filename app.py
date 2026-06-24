@@ -466,11 +466,12 @@ def api_mis_pedidos_activos():
                 id_p_cliente = p.get('id_cliente')
                 p_mesa = p.get('numero_mesa')
                 
-                if id_cliente and id_p_cliente is not None:
-                    if str(id_p_cliente).strip() == str(id_cliente).strip():
-                        pedidos_filtrados.append(p)
-                elif numero_mesa and p_mesa is not None:
+                if numero_mesa and p_mesa is not None:
                     if str(p_mesa).strip() == str(numero_mesa).strip():
+                        pedidos_filtrados.append(p)
+                elif id_cliente and id_p_cliente is not None:
+                    # Solo pedidos a domicilio (numero_mesa es None)
+                    if str(id_p_cliente).strip() == str(id_cliente).strip() and p_mesa is None:
                         pedidos_filtrados.append(p)
 
         return jsonify(pedidos_filtrados), 200
@@ -765,11 +766,12 @@ def api_mis_pedidos_historial():
                 id_p_cliente = p.get('id_cliente')
                 p_mesa = p.get('numero_mesa')
                 
-                if id_cliente and id_p_cliente is not None:
-                    if str(id_p_cliente).strip() == str(id_cliente).strip():
-                        pedidos_filtrados.append(p)
-                elif numero_mesa and p_mesa is not None:
+                if numero_mesa and p_mesa is not None:
                     if str(p_mesa).strip() == str(numero_mesa).strip():
+                        pedidos_filtrados.append(p)
+                elif id_cliente and id_p_cliente is not None:
+                    # Solo pedidos a domicilio (numero_mesa es None)
+                    if str(id_p_cliente).strip() == str(id_cliente).strip() and p_mesa is None:
                         pedidos_filtrados.append(p)
 
         return jsonify(pedidos_filtrados), 200
