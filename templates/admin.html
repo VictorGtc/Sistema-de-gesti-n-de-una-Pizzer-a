@@ -583,7 +583,7 @@
                         <div class="relative">
                             <i
                                 class="fa-solid fa-calendar-days absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs"></i>
-                            <input type="date" id="filtro-fecha-venta" onchange="filtrarVentas()"
+                            <input type="date" id="filtro-fecha-venta" onchange="filtrarVentas()" min="2020-01-01" max="2100-12-31"
                                 class="glass-input-bg text-white rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:border-[#f4ad42] transition-all font-medium">
                         </div>
                     </div>
@@ -2004,17 +2004,52 @@
             // 3. Motor de filtrado en tiempo real sin recargar página
             function filtrarVentas() {
                 paginaVentasActual = 1; // Reset a página 1
-                const termino = document.getElementById('buscar-venta').value.toLowerCase().trim();
-                if (!termino) {
-                    renderizarTablaVentas(ventasLocales);
-                    return;
+                
+                const inputBuscar = document.getElementById('buscar-venta');
+                let termino = inputBuscar.value;
+                
+                // Sanitizar para permitir solo letras, números, espacios y tildes/eñes
+                const terminoSanitizado = termino.replace(/[^a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑ]/g, '');
+                if (termino !== terminoSanitizado) {
+                    inputBuscar.value = terminoSanitizado;
+                }
+                
+                const terminoLower = terminoSanitizado.toLowerCase().trim();
+
+                // Validar la fecha si se ingresó algo
+                const inputFecha = document.getElementById('filtro-fecha-venta');
+                let fechaFiltro = inputFecha.value;
+                if (fechaFiltro) {
+                    const parts = fechaFiltro.split('-');
+                    if (parts.length > 0) {
+                        const year = parseInt(parts[0]);
+                        if (isNaN(year) || year < 2020 || year > 2100) {
+                            mostrarNotificacion("Por favor, ingrese un año válido (entre 2020 y 2100)", "error");
+                            inputFecha.value = '';
+                            fechaFiltro = '';
+                        }
+                    }
                 }
 
-                const filtrados = ventasLocales.filter(v =>
-                    v.id_pedido.toString().includes(termino) ||
-                    v.origen_pedido.toLowerCase().includes(termino) ||
-                    v.estado.toLowerCase().includes(termino)
-                );
+                let filtrados = ventasLocales;
+
+                // Filtrar por término de búsqueda (ID, Origen, Estado o Nombre de Producto)
+                if (terminoLower) {
+                    filtrados = filtrados.filter(v =>
+                        v.id_pedido.toString().includes(terminoLower) ||
+                        v.origen_pedido.toLowerCase().includes(terminoLower) ||
+                        v.estado.toLowerCase().includes(terminoLower) ||
+                        (v.productos && v.productos.some(p => (p.nombre_pr || '').toLowerCase().includes(terminoLower)))
+                    );
+                }
+
+                // Filtrar por fecha
+                if (fechaFiltro) {
+                    filtrados = filtrados.filter(v => {
+                        return v.fecha_p && v.fecha_p.startsWith(fechaFiltro);
+                    });
+                }
+
                 renderizarTablaVentas(filtrados);
             }
 
