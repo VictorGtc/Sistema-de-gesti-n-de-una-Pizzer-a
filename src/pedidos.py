@@ -7,7 +7,7 @@ def registrar_pedidos_mesa (numero_mesa, id_usuario, lista_producto):
         return False
     cursor=db.cursor()
 
-    total_pedido= sum(item['cantidad'] * item['precio_unitario'] for item in lista_producto)
+    total_pedido= round(sum(item['cantidad'] * item['precio_unitario'] for item in lista_producto) * 1.15, 2)
 
     fecha_actual= datetime.now()
     try: 
@@ -138,7 +138,7 @@ def registrar_pedido_domicilio(id_cliente, id_usuario, lista_producto, metodo_pa
         return False
     cursor = db.cursor(dictionary=True)
 
-    total_pedido = sum(item['cantidad'] * item['precio_unitario'] for item in lista_producto)
+    total_pedido = round(sum(item['cantidad'] * item['precio_unitario'] for item in lista_producto) * 1.15, 2)
     fecha_actual = datetime.now()
     
     try: 
@@ -214,8 +214,8 @@ def obtener_pedidos_caja():
     pedidos_para_caja = []
     
     for pedido in todos_los_pedidos:
-        # Permitimos pedidos activos de mesas y a domicilio
-        if pedido['estado'] not in ['Pagado', 'Entregado', 'Cancelado']:
+        # Permitimos pedidos activos de mesas y a domicilio (no pagados/cancelados)
+        if pedido['estado'] not in ['Pagado', 'Cancelado']:
             if pedido['total_p'] is not None:
                 pedido['total_p'] = float(pedido['total_p'])
             for prod in pedido['productos']:

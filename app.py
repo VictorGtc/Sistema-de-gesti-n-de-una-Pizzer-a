@@ -441,8 +441,8 @@ def api_mis_pedidos_activos():
             estado_crudo = p.get('estado') or p.get('estado_p')
             estado_p = str(estado_crudo).strip() if estado_crudo is not None else 'Pendiente'
         
-            # Solo procesamos estados activos
-            if estado_p not in ['Pagado', 'Entregado', 'Cancelado']:
+            # Solo procesamos estados activos (no pagados/cancelados)
+            if estado_p not in ['Pagado', 'Cancelado']:
                 
                 id_p_cliente = p.get('id_cliente')
                 p_mesa = p.get('numero_mesa')
@@ -473,7 +473,7 @@ def api_historial_ventas():
         for p in todos_los_pedidos:
             estado_crudo = p.get('estado') or p.get('estado_p')
             estado = str(estado_crudo).strip() if estado_crudo is not None else 'Pendiente'
-            if estado in ['Pagado', 'Entregado', 'Cancelado']:
+            if estado in ['Pagado', 'Cancelado']:
                 historial.append({
                     "id_pedido": p.get('id_pedido'),
                     "origen_pedido": p.get('origen_pedido', 'No especificado'),
@@ -741,8 +741,8 @@ def api_mis_pedidos_historial():
             estado_crudo = p.get('estado') or p.get('estado_p')
             estado_p = str(estado_crudo).strip() if estado_crudo is not None else 'Pendiente'
         
-            # Pedidos completados
-            if estado_p in ['Pagado', 'Entregado', 'Cancelado']:
+            # Pedidos completados (pagados/cancelados)
+            if estado_p in ['Pagado', 'Cancelado']:
                 id_p_cliente = p.get('id_cliente')
                 p_mesa = p.get('numero_mesa')
                 
