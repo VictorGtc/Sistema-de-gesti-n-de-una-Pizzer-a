@@ -6,7 +6,7 @@ from src.categorias import registrar_categoria, obtener_categorias, actualizar_c
 from src.recetas import registrar_recetas, obtener_receta, borrar_ingrediente_de_receta
 from src.inventario import registrar_inventario, obtener_inventario,cambiar_estado_ingrediente, actualizar_inventario, sumar_stock_db
 from src.pedidos import registrar_pedidos_mesa,obtener_pedido,registrar_pedido_domicilio, actualizar_pedidos,obtener_pedidos_caja, registrar_pedido_domicilio
-from src.clientes import registrar_clientes, validar_clientes
+from src.clientes import registrar_clientes, validar_clientes, actualizar_datos_cliente
 from src.pagos import obtener_pagopendiente,registrar_pago_pedido
 
 import os
@@ -84,11 +84,13 @@ def api_login():
             "mensaje": "Inicio exitoso",
             "perfil": {
                 "Nombre": info_cliente.get('Nombre'),
+                "Apellido": info_cliente.get('Apellido'),
                 "Correo": info_cliente.get('Correo'),
                 "Rol": "cliente",  
                 "Tipo": "cliente",
                 "id_cliente": info_cliente.get('id_cliente'),
-                "Direccion": info_cliente.get('Direccion')
+                "Direccion": info_cliente.get('Direccion'),
+                "Telefono": info_cliente.get('Telefono')
             }
         }), 200
 
@@ -277,6 +279,32 @@ def api_registrar_cliente():
         return jsonify({"mensaje": "Cliente registrado con éxito"}), 201
     else:
         return jsonify({"error": "No se pudo registrar al cliente"}), 500
+
+
+@app.route('/api/clientes/actualizar_perfil', methods=['PUT'])
+def api_actualizar_perfil_cliente():
+    try:
+        datos = request.get_json()
+        id_cliente = datos.get('id_cliente')
+        password = datos.get('password')
+        telefono = datos.get('telefono')
+
+        if not id_cliente or not telefono:
+            return jsonify({"mensaje": "Datos incompletos"}), 400
+
+        # Validamos el teléfono (debe tener solo números, max 10 dígitos)
+        telefono_limpio = re.sub(r'\D', '', str(telefono))
+        if len(telefono_limpio) > 10:
+            return jsonify({"mensaje": "El teléfono no puede tener más de 10 dígitos."}), 400
+
+        exito = actualizar_datos_cliente(int(id_cliente), password, telefono_limpio)
+        if exito:
+            return jsonify({"mensaje": "Tus datos han sido actualizados con éxito"}), 200
+        else:
+            return jsonify({"mensaje": "No se pudieron actualizar tus datos"}), 500
+    except Exception as e:
+        print(f"Error en API api_actualizar_perfil_cliente: {e}")
+        return jsonify({"mensaje": "Error interno del servidor"}), 500
 
 
 

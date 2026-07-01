@@ -122,6 +122,8 @@
 
                 // Guardado original de variables en localStorage intacto
                 localStorage.setItem('nombre_usuario', data.perfil.Nombre);
+                localStorage.setItem('apellido_usuario', data.perfil.Apellido || '');
+                localStorage.setItem('telefono_usuario', data.perfil.Telefono || '');
                 localStorage.setItem('correo_usuario', data.perfil.Correo);
                 localStorage.setItem('rol_usuario', data.perfil.Rol);
                 localStorage.setItem('tipo_usuario', data.perfil.Tipo);

@@ -47,7 +47,7 @@ def validar_clientes(correo, password):
     mensaje = "Credenciales incorrectas"
     
     try:
-        consulta_sql = 'SELECT id_cliente, nombre_cl, apellido_cl, correo_cl, contraseña_cl, direccion FROM clientes WHERE correo_cl = %s'
+        consulta_sql = 'SELECT id_cliente, nombre_cl, apellido_cl, correo_cl, contraseña_cl, direccion, telefono_cl FROM clientes WHERE correo_cl = %s'
         valores = (correo,)
         cursor.execute(consulta_sql, valores)
 
@@ -60,7 +60,8 @@ def validar_clientes(correo, password):
                     'Nombre': resultado[1], 
                     'Apellido': resultado[2],
                     'Correo': resultado[3], 
-                    'Direccion': resultado[5]
+                    'Direccion': resultado[5],
+                    'Telefono': resultado[6]
                 }
                 es_valido = True
                 mensaje = "Éxito"
@@ -84,3 +85,28 @@ def validar_clientes(correo, password):
             db.close()
             
     return es_valido, datos_usuarios if es_valido else mensaje
+
+
+def actualizar_datos_cliente(id_cliente, password, telefono):
+    db = conectar_db()
+    if db is None:
+        return False
+    cursor = db.cursor()
+    try:
+        if password and password.strip():
+            pass_hasheado = generate_password_hash(password)
+            sql = "UPDATE clientes SET contraseña_cl = %s, telefono_cl = %s WHERE id_cliente = %s"
+            valores = (pass_hasheado, telefono, id_cliente)
+        else:
+            sql = "UPDATE clientes SET telefono_cl = %s WHERE id_cliente = %s"
+            valores = (telefono, id_cliente)
+        cursor.execute(sql, valores)
+        db.commit()
+        cursor.close()
+        db.close()
+        return True
+    except Exception as e:
+        print(f"Error al actualizar datos de cliente: {e}")
+        cursor.close()
+        db.close()
+        return False
