@@ -64,13 +64,15 @@
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Nombre</label>
-                    <input type="text" id="nombre" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" title="El nombre solo debe contener letras."
+                    <input type="text" id="nombre" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$" title="El nombre solo debe contener letras."
+                        oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '')"
                         class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-amber-400 uppercase tracking-wider mb-1">Apellido</label>
-                    <input type="text" id="apellido" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$" title="El apellido solo debe contener letras."
+                    <input type="text" id="apellido" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$" title="El apellido solo debe contener letras."
+                        oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '')"
                         class="w-full bg-stone-950/40 border border-white/20 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition duration-200 backdrop-blur-sm">
                 </div>
             </div>
@@ -155,6 +157,16 @@
             const password = document.getElementById('password').value;
             const telefono = document.getElementById('telefono').value;
             const direccion = document.getElementById('direccion').value;
+
+            const nombrePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+            if (!nombrePattern.test(nombre.trim())) {
+                mostrarNotificacion('El nombre solo debe contener letras.', 'error');
+                return;
+            }
+            if (!nombrePattern.test(apellido.trim())) {
+                mostrarNotificacion('El apellido solo debe contener letras.', 'error');
+                return;
+            }
 
             try {
                 const respuesta = await fetch('/api/registrar_cliente', {

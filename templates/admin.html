@@ -484,13 +484,15 @@
                     <div>
                         <label
                             class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Nombres</label>
-                        <input type="text" id="emp-nombre" required
+                        <input type="text" id="emp-nombre" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$" title="El nombre solo debe contener letras."
+                            oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '')"
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     <div>
                         <label
                             class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Apellidos</label>
-                        <input type="text" id="emp-apellido" required
+                        <input type="text" id="emp-apellido" required pattern="^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$" title="El apellido solo debe contener letras."
+                            oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '')"
                             class="w-full glass-input-bg rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-[#f4ad42] transition-all">
                     </div>
                     <div>
@@ -1432,6 +1434,16 @@
                 const telefono = document.getElementById('emp-telefono').value; // Nuevo
                 const rol = document.getElementById('emp-rol').value;
 
+                const nombrePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+                if (!nombrePattern.test(nombre.trim())) {
+                    mostrarNotificacion('El nombre solo debe contener letras.', 'error');
+                    return;
+                }
+                if (!nombrePattern.test(apellido.trim())) {
+                    mostrarNotificacion('El apellido solo debe contener letras.', 'error');
+                    return;
+                }
+
                 try {
                     const respuesta = await fetch('/api/usuarios/registrar_empleado', {
                         method: 'POST',
@@ -1727,6 +1739,16 @@
                 const correo = document.getElementById('emp-correo')?.value || '';
                 const telefono = document.getElementById('emp-telefono')?.value || '';
                 const rol = document.getElementById('emp-rol')?.value || 'Mesero';
+
+                const nombrePattern = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+                if (!nombrePattern.test(nombre.trim())) {
+                    mostrarNotificacion('El nombre solo debe contener letras.', 'error');
+                    return;
+                }
+                if (!nombrePattern.test(apellido.trim())) {
+                    mostrarNotificacion('El apellido solo debe contener letras.', 'error');
+                    return;
+                }
 
                 try {
                     const respuesta = await fetch('/api/usuarios/actualizar', {
@@ -2145,9 +2167,9 @@
                         <p><b>FECHA:</b> ${fechaStr}</p>
                         <p><b>CLIENTE:</b> ${pedido.cliente_nombre || (pedido.numero_mesa ? 'Comensal Mesa ' + pedido.numero_mesa : 'Consumidor Final')}</p>
                         <p><b>CI/RUC:</b> ${pedido.cedula_ruc || '9999999999'}</p>
-                        ${pedido.direccion_entrega ? `<p><b>DIRECCIÓN:</b> ${pedido.direccion_entrega}</p>` : ''}
-                        ${pedido.telefono_entrega ? `<p><b>TELÉFONO:</b> ${pedido.telefono_entrega}</p>` : ''}
-                        <p><b>FORMA DE PAGO:</b> ${metodo}</p>
+                        <p><b>DIRECCIÓN:</b> ${pedido.direccion_entrega || 'N/A'}</p>
+                        <p><b>TELÉFONO:</b> ${pedido.telefono_entrega || 'N/A'}</p>
+                        <p><b>PAGO:</b> ${metodo}</p>
                     </div>
                     <div class="border-b border-dashed border-stone-400 my-2"></div>
                     <table class="w-full text-left text-[11px] border-collapse text-stone-900">

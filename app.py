@@ -10,7 +10,9 @@ from src.clientes import registrar_clientes, validar_clientes
 from src.pagos import obtener_pagopendiente,registrar_pago_pedido
 
 import os
+import re
 from werkzeug.utils import secure_filename
+from database.db import conectar_db
 
 
 
@@ -201,6 +203,15 @@ def api_registrar_pedido_local():
     cedula_ruc = datos.get('cedula_ruc', '9999999999')
     metodo_pago = datos.get('metodo_pago', 'efectivo')
 
+    if nombre:
+        nombre_pattern = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$')
+        if not nombre_pattern.match(nombre.strip()):
+            return jsonify({"mensaje": "El nombre solo debe contener letras."}), 400
+    if apellido:
+        nombre_pattern = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$')
+        if not nombre_pattern.match(apellido.strip()):
+            return jsonify({"mensaje": "El apellido solo debe contener letras."}), 400
+
     if not numero_mesa or not id_usuario or not lita_productos:
         return jsonify({"mensaje": "Faltan compos obligatorios para este procedimiento"})
 
@@ -235,6 +246,29 @@ def api_registrar_cliente():
     password = datos.get('password')
     telefono = datos.get('telefono')
     direccion = datos.get('direccion')
+
+    nombre_pattern = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$')
+    if not nombre or not nombre_pattern.match(nombre.strip()):
+        return jsonify({"error": "El nombre solo debe contener letras."}), 400
+    if not apellido or not nombre_pattern.match(apellido.strip()):
+        return jsonify({"error": "El apellido solo debe contener letras."}), 400
+
+    # Verificar duplicidad de correo en clientes y usuarios
+    db = conectar_db()
+    if db:
+        cursor = db.cursor()
+        cursor.execute("SELECT id_cliente FROM clientes WHERE correo_cl = %s", (correo,))
+        if cursor.fetchone():
+            cursor.close()
+            db.close()
+            return jsonify({"error": "El correo electrónico ya está registrado."}), 400
+        cursor.execute("SELECT id_usuario FROM usuarios WHERE correo_u = %s", (correo,))
+        if cursor.fetchone():
+            cursor.close()
+            db.close()
+            return jsonify({"error": "El correo electrónico ya está registrado."}), 400
+        cursor.close()
+        db.close()
 
     exito = registrar_clientes(nombre, apellido, correo, password, telefono, direccion)
     
@@ -305,6 +339,29 @@ def api_registrar_empleado():
 
     if not all([nombre,apellido, correo, password, telefono, rol]):
         return jsonify({"mensaje": "Todos los campos son obligatorios"}), 400
+
+    nombre_pattern = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$')
+    if not nombre_pattern.match(nombre.strip()):
+        return jsonify({"mensaje": "El nombre solo debe contener letras."}), 400
+    if not nombre_pattern.match(apellido.strip()):
+        return jsonify({"mensaje": "El apellido solo debe contener letras."}), 400
+
+    # Verificar duplicidad de correo en clientes y usuarios
+    db = conectar_db()
+    if db:
+        cursor = db.cursor()
+        cursor.execute("SELECT id_usuario FROM usuarios WHERE correo_u = %s", (correo,))
+        if cursor.fetchone():
+            cursor.close()
+            db.close()
+            return jsonify({"mensaje": "El correo electrónico ya está registrado."}), 400
+        cursor.execute("SELECT id_cliente FROM clientes WHERE correo_cl = %s", (correo,))
+        if cursor.fetchone():
+            cursor.close()
+            db.close()
+            return jsonify({"mensaje": "El correo electrónico ya está registrado."}), 400
+        cursor.close()
+        db.close()
 
     # Llamamos a la función de tu módulo con el nuevo parámetro 'rol'
     exito = registrar_usuarios(nombre,apellido, correo, password, telefono, rol)
@@ -679,6 +736,29 @@ def api_actualizar_usuario_completo():
         if not all([id_usuario, nombre, apellido, usuario, rol, telefono]):
             return jsonify({"mensaje": "Datos del empleado incompletos"}), 400
 
+        nombre_pattern = re.compile(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$')
+        if not nombre_pattern.match(nombre.strip()):
+            return jsonify({"mensaje": "El nombre solo debe contener letras."}), 400
+        if not nombre_pattern.match(apellido.strip()):
+            return jsonify({"mensaje": "El apellido solo debe contener letras."}), 400
+
+        # Verificar duplicidad de correo en clientes y otros usuarios
+        db = conectar_db()
+        if db:
+            cursor = db.cursor()
+            cursor.execute("SELECT id_usuario FROM usuarios WHERE correo_u = %s AND id_usuario != %s", (usuario, int(id_usuario)))
+            if cursor.fetchone():
+                cursor.close()
+                db.close()
+                return jsonify({"mensaje": "El correo electrónico ya está registrado por otro empleado."}), 400
+            cursor.execute("SELECT id_cliente FROM clientes WHERE correo_cl = %s", (usuario,))
+            if cursor.fetchone():
+                cursor.close()
+                db.close()
+                return jsonify({"mensaje": "El correo electrónico ya está registrado por un cliente."}), 400
+            cursor.close()
+            db.close()
+
         exito = actualizar_usuario_completo(int(id_usuario), nombre, apellido, usuario, rol, telefono)
 
         if exito:
@@ -740,6 +820,8 @@ def vista_admin():
     return render_template('admin.html')
 
 @app.route('/cajero', methods=['GET'])
+@app.route('/caja', methods=['GET'])
+@app.route('/cajeros', methods=['GET'])
 def vista_cajero():
     return render_template('cajero.html')
 

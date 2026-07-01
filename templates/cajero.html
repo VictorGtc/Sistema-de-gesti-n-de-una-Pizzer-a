@@ -305,7 +305,7 @@
                             </span>
                             <div class="text-right">
                                 <span class="text-stone-500 block text-[9px] font-bold uppercase tracking-wider">A pagar</span>
-                                <span class="font-black text-xl text-amber-400 tracking-tight">$${pedido.total_p.toFixed(2)}</span>
+                                <span class="font-black text-xl text-amber-400 tracking-tight">$${parseFloat(pedido.total_p).toFixed(2)}</span>
                             </div>
                         </div>
                     `;
@@ -393,7 +393,7 @@
                 detalleContenedor.appendChild(itemDiv);
             });
 
-            totalPagoTxt.innerText = `$${pedido.total_p.toFixed(2)}`;
+            totalPagoTxt.innerText = `$${parseFloat(pedido.total_p).toFixed(2)}`;
             
             // Bloquear pago si no está despachado o entregado
             const btnPago = document.getElementById('btn-confirmar-pago');
@@ -489,9 +489,9 @@
                     <p><b>FECHA:</b> ${fechaStr}</p>
                     <p><b>CLIENTE:</b> ${pedido.cliente_nombre || (pedido.numero_mesa ? 'Comensal Mesa ' + pedido.numero_mesa : 'Consumidor Final')}</p>
                     <p><b>CI/RUC:</b> ${pedido.cedula_ruc || '9999999999'}</p>
-                    ${pedido.direccion_entrega ? `<p><b>DIRECCIÓN:</b> ${pedido.direccion_entrega}</p>` : ''}
-                    ${pedido.telefono_entrega ? `<p><b>TELÉFONO:</b> ${pedido.telefono_entrega}</p>` : ''}
-                    <p><b>FORMA DE PAGO:</b> ${pedido.metodo_pago.toUpperCase()}</p>
+                    <p><b>DIRECCIÓN:</b> ${pedido.direccion_entrega || 'N/A'}</p>
+                    <p><b>TELÉFONO:</b> ${pedido.telefono_entrega || 'N/A'}</p>
+                    <p><b>PAGO:</b> ${pedido.metodo_pago.toUpperCase()}</p>
                 </div>
                 <div class="border-b border-dashed border-stone-700 my-2"></div>
                 <table class="w-full text-left text-[11px] border-collapse">
@@ -509,7 +509,7 @@
                                 <td class="py-1 font-bold">${p.cantidad_v}</td>
                                 <td class="py-1">${p.nombre_pr}</td>
                                 <td class="py-1 text-right">$${parseFloat(p.precio_unitario).toFixed(2)}</td>
-                                <td class="py-1 text-right">$${(p.cantidad_v * p.precio_unitario).toFixed(2)}</td>
+                                <td class="py-1 text-right">$${(p.cantidad_v * parseFloat(p.precio_unitario)).toFixed(2)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
