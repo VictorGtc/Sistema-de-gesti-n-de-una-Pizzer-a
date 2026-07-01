@@ -215,6 +215,12 @@
                             class="w-full glass-input-bg rounded-xl px-3 py-2 text-xs text-gray-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#4a3f3c] file:text-white hover:file:bg-[#5a4e4a] transition-all">
                     </div>
 
+                    <div>
+                        <label class="block text-xs font-bold text-[#f4ad42] uppercase tracking-wider mb-2">Descripción</label>
+                        <textarea id="prod-descripcion" placeholder="Ej: Pizza artesanal deliciosa preparada al horno..." rows="3"
+                            class="w-full glass-input-bg rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#f4ad42] transition-all resize-none"></textarea>
+                    </div>
+
                     <div class="pt-4 flex gap-3">
                         <button type="submit"
                             class="flex-1 bg-gradient-to-r from-[#e05c3e] to-[#f4ad42] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md active:scale-95 uppercase text-xs tracking-wider">
@@ -965,6 +971,7 @@
                 try {
                     const respuesta = await fetch('/api/obtener_productos');
                     const productos = await respuesta.json();
+                    window.productosLocales = productos;
                     const tbody = document.getElementById('tabla-productos');
                     tbody.innerHTML = '';
 
@@ -993,7 +1000,7 @@
                             </td>
                             <td class="py-4 px-6 text-center">
                                 <div class="flex justify-center items-center gap-3">
-                                    <button onclick="prepararEditarProducto(${prod.id_producto}, '${prod.nombre_pr}', ${prod.precio_pr}, ${prod.id_categoria})" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-2 px-3 rounded-lg transition-all">
+                                    <button onclick="prepararEditarProducto(${prod.id_producto})" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-2 px-3 rounded-lg transition-all">
                                         <i class="fa-solid fa-pen mr-1"></i> Editar
                                     </button>
                                     ${botonAccion}
@@ -1013,12 +1020,14 @@
                 const nombre = document.getElementById('prod-nombre').value;
                 const precio = document.getElementById('prod-precio').value;
                 const idCategoria = document.getElementById('prod-categoria').value;
+                const descripcion = document.getElementById('prod-descripcion').value;
                 const archivoInput = document.getElementById('prod-imagen');
 
                 const formData = new FormData();
                 formData.append('nombre', nombre);
                 formData.append('precio', precio);
                 formData.append('id_categoria', idCategoria);
+                formData.append('descripcion', descripcion);
                 if (archivoInput.files[0]) {
                     formData.append('imagen_route', archivoInput.files[0]);
                 }
@@ -1042,11 +1051,14 @@
                 }
             }
 
-            function prepararEditarProducto(id, nombre, precio, idCategoria) {
-                document.getElementById('prod-id').value = id;
-                document.getElementById('prod-nombre').value = nombre;
-                document.getElementById('prod-precio').value = precio;
-                document.getElementById('prod-categoria').value = idCategoria;
+            function prepararEditarProducto(id) {
+                const prod = window.productosLocales.find(p => p.id_producto === id);
+                if (!prod) return;
+                document.getElementById('prod-id').value = prod.id_producto;
+                document.getElementById('prod-nombre').value = prod.nombre_pr;
+                document.getElementById('prod-precio').value = prod.precio_pr;
+                document.getElementById('prod-categoria').value = prod.id_categoria;
+                document.getElementById('prod-descripcion').value = prod.descripcion || '';
                 document.getElementById('titulo-form-producto').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Producto';
                 document.getElementById('btn-cancelar-prod').classList.remove('hidden');
             }

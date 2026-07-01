@@ -101,6 +101,7 @@ def api_regis_producto():
     nombre=request.form.get('nombre')
     precio=request.form.get('precio')
     id_categori=request.form.get('id_categoria')
+    descripcion=request.form.get('descripcion')
     archivo_foto=request.files.get('imagen_route')
 
     if not archivo_foto or archivo_foto.filename == '':
@@ -115,7 +116,7 @@ def api_regis_producto():
 
     archivo_foto.save(ruta_segura)
 
-    resultado=registrar_producto(nombre, precio, nombre_limpio, id_categori)
+    resultado=registrar_producto(nombre, precio, nombre_limpio, id_categori, descripcion)
 
     if resultado is True:
         return jsonify({"mensaje" : "El producto ha sido ingresado exitosamente" }), 200
@@ -378,6 +379,7 @@ def api_actualizar_producto(id_producto):
     nombre = request.form.get('nombre')
     precio = request.form.get('precio')
     id_categoria = request.form.get('id_categoria')
+    descripcion = request.form.get('descripcion')
     archivo_foto = request.files.get('imagen_route') 
     nombre_limpio = None
 
@@ -388,7 +390,7 @@ def api_actualizar_producto(id_producto):
         nombre_limpio = secure_filename(archivo_foto.filename)
         ruta_segura = os.path.join(app.config['CARPETA_PRODUCTOS'], nombre_limpio)
         archivo_foto.save(ruta_segura)
-    resultado = actualizar_producto(id_producto, nombre, precio, nombre_limpio, id_categoria)
+    resultado = actualizar_producto(id_producto, nombre, precio, nombre_limpio, id_categoria, descripcion)
 
     if resultado is True:
         return jsonify({"mensaje": "El producto ha sido actualizado exitosamente"}), 200
